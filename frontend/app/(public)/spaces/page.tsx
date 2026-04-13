@@ -15,9 +15,9 @@ export default async function SpacesPage() {
       <div className="space-y-8">
         <section className="soft-panel p-6 sm:p-8">
           <p className="eyebrow">Espaces</p>
-          <h1 className="editorial-title mt-3 text-4xl font-bold text-foreground">Les espaces publics</h1>
+          <h1 className="editorial-title mt-3 text-4xl font-bold text-foreground">Les espaces politiques</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-            Chaque espace rassemble des sujets proches pour faciliter la lecture et le suivi.
+            Le feed global coexiste ici avec des espaces de camp, de bloc et de suivi politique.
           </p>
         </section>
 
