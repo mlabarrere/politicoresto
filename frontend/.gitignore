@@ -1,0 +1,13 @@
+.next
+node_modules
+.vercel
+coverage
+dist
+playwright-report
+test-results
+.env.local
+.env
+
+.vercel
+.next-dev.log
+.next-dev.err.log
