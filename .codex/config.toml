@@ -1,0 +1,8 @@
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=gzdpisxkavpyfmhsktcg"
+
+[mcp_servers.supabase.env]
+SUPABASE_ACCESS_TOKEN = "sbp_f6fd925ef7f015426eda6a29288ea78981702f06"
+
+[features]
+rmcp_client = true

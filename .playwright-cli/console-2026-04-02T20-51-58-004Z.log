@@ -1,0 +1,12 @@
+[    4011ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://politicoresto.vercel.app/favicon.ico:0
+[   34118ms] Error: Missing environment variable: NEXT_PUBLIC_SUPABASE_URL
+    at s (https://politicoresto.vercel.app/_next/static/chunks/app/auth/login/page-f672339d1e46904a.js:1:206)
+    at Object.url (https://politicoresto.vercel.app/_next/static/chunks/app/auth/login/page-f672339d1e46904a.js:1:277)
+    at s (https://politicoresto.vercel.app/_next/static/chunks/app/auth/login/page-f672339d1e46904a.js:1:1050)
+    at onClick (https://politicoresto.vercel.app/_next/static/chunks/app/auth/login/page-f672339d1e46904a.js:1:1525)
+    at i8 (https://politicoresto.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:135363)
+    at https://politicoresto.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:141449
+    at nz (https://politicoresto.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:19197)
+    at sn (https://politicoresto.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:136596)
+    at cc (https://politicoresto.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:163598)
+    at ci (https://politicoresto.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:163420)

@@ -1,0 +1,3 @@
+[    1235ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://politicoresto.vercel.app/favicon.ico:0
+[   35404ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://gzdpisxkavpyfmhsktcg.supabase.co/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Fpoliticoresto.vercel.app%2Fauth%2Fcallback%3Fnext%3D%252Fme&code_challenge=_6WrXac-qP-4AsHcoqnwHWVClHAL3Su1zWSZevP9WCE&code_challenge_method=s256:0
+[   35455ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://gzdpisxkavpyfmhsktcg.supabase.co/favicon.ico:0
