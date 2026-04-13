@@ -1,0 +1,33 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "politicoresto.com" [ref=e6] [cursor=pointer]:
+            - /url: /
+          - paragraph [ref=e7]: Frontend foundation Next.js / Supabase
+        - generic [ref=e8]:
+          - navigation [ref=e9]:
+            - link "Accueil" [ref=e10] [cursor=pointer]:
+              - /url: /
+            - link "Espaces" [ref=e11] [cursor=pointer]:
+              - /url: /spaces
+            - link "Sujets" [ref=e12] [cursor=pointer]:
+              - /url: /topics
+            - link "Territoires" [ref=e13] [cursor=pointer]:
+              - /url: /territories
+            - link "Cartes" [ref=e14] [cursor=pointer]:
+              - /url: /cards
+          - link "Se connecter" [ref=e15] [cursor=pointer]:
+            - /url: /auth/login
+    - main [ref=e16]:
+      - generic [ref=e18]:
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Supabase Auth
+          - heading "Connexion" [level=2] [ref=e22]
+        - generic [ref=e24]:
+          - paragraph [ref=e25]: Le frontend n'implémente aucune authentification maison. Cette base utilise uniquement le flux OAuth Google fourni par Supabase.
+          - button "Continuer avec Google" [active] [ref=e27] [cursor=pointer]
+    - contentinfo [ref=e28]:
+      - paragraph [ref=e30]: Frontend mince, SSR par défaut, sécurité et logique métier déportées vers Supabase.
+  - alert [ref=e31]
