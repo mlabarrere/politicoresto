@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/layout/page-container";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function LoadingTopicDetail() {
+export default function LoadingThreadDetail() {
   return (
     <PageContainer>
       <div className="space-y-6">

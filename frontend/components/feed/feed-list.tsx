@@ -1,4 +1,4 @@
-import type { HomeFeedTopicView } from "@/lib/types/views";
+import type { ThreadFeedItemView } from "@/lib/types/views";
 
 import { ThreadCard } from "@/components/feed/thread-card";
 
@@ -6,7 +6,7 @@ export function FeedList({
   items,
   featuredCount = 1
 }: {
-  items: HomeFeedTopicView[];
+  items: ThreadFeedItemView[];
   featuredCount?: number;
 }) {
   return (

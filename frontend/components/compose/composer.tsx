@@ -22,7 +22,7 @@ export function Composer({
           <p className="eyebrow">{title}</p>
           <input
             name="title"
-            placeholder="Titre du sujet"
+            placeholder="Titre du thread"
             className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none"
           />
         </div>

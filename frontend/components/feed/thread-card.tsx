@@ -1,15 +1,16 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 import { ScoreBadge } from "@/components/scores/score-badge";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { HomeFeedTopicView } from "@/lib/types/views";
+import type { ThreadFeedItemView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
 
 export function ThreadCard({
   item,
   featured = false
 }: {
-  item: HomeFeedTopicView;
+  item: ThreadFeedItemView;
   featured?: boolean;
 }) {
   return (
@@ -21,7 +22,7 @@ export function ThreadCard({
       </div>
 
       <div className="mt-4">
-        <Link href={`/topic/${item.topic_slug}`} className="block text-balance text-xl font-semibold tracking-tight text-foreground hover:text-primary">
+        <Link href={`/thread/${item.topic_slug}` as Route} className="block text-balance text-xl font-semibold tracking-tight text-foreground hover:text-primary">
           {item.topic_title}
         </Link>
         {item.topic_description ? (
@@ -52,7 +53,7 @@ export function ThreadCard({
           <span>{formatNumber(item.active_prediction_count ?? 0)} paris</span>
           <span>{formatDate(item.last_activity_at)}</span>
         </div>
-        <Link href={`/topic/${item.topic_slug}`} className="text-sm font-medium text-foreground hover:text-primary">
+        <Link href={`/thread/${item.topic_slug}` as Route} className="text-sm font-medium text-foreground hover:text-primary">
           Ouvrir
         </Link>
       </div>

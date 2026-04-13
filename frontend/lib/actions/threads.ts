@@ -30,7 +30,7 @@ export async function createThreadAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath("/topics");
+  revalidatePath("/threads");
   if (redirectPath !== "/") {
     revalidatePath(redirectPath);
   }
@@ -61,6 +61,6 @@ export async function createThreadPostAction(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath("/topics");
+  revalidatePath("/threads");
   revalidatePath(redirectPath);
 }

@@ -1,30 +1,30 @@
 import { expect, test } from "@playwright/test";
 
-test("homepage renders on desktop and exposes the editorial feed", async ({ page }, testInfo) => {
+test("homepage renders on desktop and exposes the feed", async ({ page }, testInfo) => {
   await page.goto("/");
 
   await expect(
     page.getByRole("heading", {
-      name: "Suivez les sujets publics qui comptent."
+      name: "Feed politique"
     })
   ).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "A surveiller" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Cartes a debloquer" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Pres de vous" })).toBeVisible();
+  await expect(page.getByText("Navigation")).toBeVisible();
+  await expect(page.getByText("Analystes")).toBeVisible();
+  await expect(page.getByText("Watchlist")).toBeVisible();
 
-  const cards = page.locator("article").filter({ hasText: "Question" });
+  const cards = page.locator("article");
   const cardCount = await cards.count();
 
   if (cardCount > 0) {
     await expect(cards.first()).toBeVisible();
 
-    const firstTopicLink = cards.first().getByRole("link").first();
-    await firstTopicLink.click();
-    await expect(page).toHaveURL(/\/topic\//);
+    const firstThreadLink = cards.first().getByRole("link").first();
+    await firstThreadLink.click();
+    await expect(page).toHaveURL(/\/thread\//);
   } else {
-    const emptyVisible = await page.getByText("Les sujets arrivent").count();
-    const unavailableVisible = await page.getByText("Le flux principal est partiellement disponible").count();
+    const emptyVisible = await page.getByText("Aucun thread visible").count();
+    const unavailableVisible = await page.getByText("Feed partiel").count();
 
     expect(emptyVisible + unavailableVisible).toBeGreaterThan(0);
   }
@@ -40,20 +40,20 @@ test("homepage stays readable on mobile", async ({ page }, testInfo) => {
 
   await expect(
     page.getByRole("heading", {
-      name: "Suivez les sujets publics qui comptent."
+      name: "Feed politique"
     })
   ).toBeVisible();
 
-  const cards = page.locator("article").filter({ hasText: "Question" });
-  await expect(page.getByRole("heading", { name: "A surveiller" })).toBeVisible();
+  const cards = page.locator("article");
+  await expect(page.getByText("Watchlist")).toBeVisible();
 
   const cardCount = await cards.count();
 
   if (cardCount > 0) {
     await expect(cards.first()).toBeVisible();
   } else {
-    const emptyVisible = await page.getByText("Les sujets arrivent").count();
-    const unavailableVisible = await page.getByText("Le flux principal est partiellement disponible").count();
+    const emptyVisible = await page.getByText("Aucun thread visible").count();
+    const unavailableVisible = await page.getByText("Feed partiel").count();
 
     expect(emptyVisible + unavailableVisible).toBeGreaterThan(0);
   }

@@ -39,7 +39,7 @@ export default async function SpacesPage() {
                     <StatusBadge label={space.space_type} tone="accent" />
                   </div>
                   <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                    {space.description ?? "Espace public pret a rassembler ses premiers sujets."}
+                    {space.description ?? "Espace public pret a rassembler ses premiers threads."}
                   </p>
                   <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
                     <span>Publie le {formatDate(space.created_at)}</span>

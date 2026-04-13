@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import type { Route } from "next";
 
 import { EmptyState } from "@/components/layout/empty-state";
 import { ScreenState } from "@/components/layout/screen-state";
@@ -11,7 +12,7 @@ describe("Editorial UI states", () => {
       <EmptyState
         title="Aucun thread visible pour le moment"
         body="Revenez plus tard ou explorez un autre espace partisan."
-        actionHref="/spaces"
+        actionHref={"/spaces" as Route}
         actionLabel="Voir les espaces"
       />
     );
@@ -31,7 +32,7 @@ describe("Editorial UI states", () => {
       <ScreenState
         title="Le feed demande une nouvelle verification"
         body="Les donnees reviennent, mais pas encore de facon stable."
-        actionHref="/topics"
+        actionHref={"/threads" as Route}
         actionLabel="Voir les threads"
         retryLabel="Recharger"
         onRetry={onRetry}
@@ -39,7 +40,7 @@ describe("Editorial UI states", () => {
     );
 
     expect(screen.getByText("Infos utiles")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Voir les threads" })).toHaveAttribute("href", "/topics");
+    expect(screen.getByRole("link", { name: "Voir les threads" })).toHaveAttribute("href", "/threads");
 
     fireEvent.click(screen.getByRole("button", { name: "Recharger" }));
     expect(onRetry).toHaveBeenCalledTimes(1);
