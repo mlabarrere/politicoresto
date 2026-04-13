@@ -1,12 +1,12 @@
 export const siteConfig = {
   name: "Politicoresto",
   description:
-    "Suivez la presidentielle via un feed de sujets, de sondages, de paris et d'espaces partisans.",
+    "Suivez la presidentielle via un feed de threads, de sondages, de paris et d'espaces partisans.",
   navigation: {
     primary: [
       { href: "/", label: "Accueil" },
       { href: "/spaces", label: "Espaces" },
-      { href: "/topics", label: "Sujets" },
+      { href: "/threads", label: "Threads" },
       { href: "/leaderboard", label: "Classements" },
       { href: "/cards", label: "Cartes" }
     ],

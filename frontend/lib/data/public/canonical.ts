@@ -3,6 +3,9 @@ import type {
   PostRow,
   PredictionQuestionRow,
   SpaceRow,
+  ThreadPredictionAggregateView,
+  ThreadRow,
+  ThreadSummaryView,
   TopicAggregatePayload,
   TopicCardPayload,
   TopicDiscussionPayload,
@@ -348,6 +351,37 @@ export function toTopicRow(
     close_at: row.close_at,
     created_at: row.created_at
   };
+}
+
+export function toThreadFeedItem(row: FeedRow, rank: number): HomeFeedTopicView {
+  return toHomeFeedTopic(row, rank);
+}
+
+export function toThreadSummary(row: ThreadDetailRow): ThreadSummaryView {
+  return toTopicSummary(row);
+}
+
+export function toThreadAggregate(
+  row: JsonRecord & { id: string; prediction_type?: string | null; submission_count?: number | null }
+): ThreadPredictionAggregateView | null {
+  return toTopicAggregate(row);
+}
+
+export function toThreadRow(
+  row: JsonRecord & {
+    id: string;
+    slug: string;
+    title: string;
+    topic_status: string;
+    effective_visibility: string;
+    open_at: string;
+    close_at: string;
+    created_at: string;
+    space_id?: string | null;
+    description?: string | null;
+  }
+): ThreadRow {
+  return toTopicRow(row);
 }
 
 export function toPredictionQuestion(row: JsonRecord | null): PredictionQuestionRow | null {

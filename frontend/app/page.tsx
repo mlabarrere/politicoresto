@@ -76,7 +76,7 @@ export default async function HomePage() {
           ) : (
             <EmptyState
               title="Aucun thread visible"
-              body="Le feed apparaitra ici des que les premiers sujets publics seront publies."
+              body="Le feed apparaitra ici des que les premiers threads publics seront publies."
             />
           )}
         </main>
@@ -96,7 +96,7 @@ export default async function HomePage() {
                 data.watchlist.map((item) => (
                   <Link
                     key={item.topic_id}
-                    href={`/topic/${item.topic_slug}`}
+                    href={`/thread/${item.topic_slug}` as Route}
                     className="block rounded-2xl border border-border px-3 py-3 transition hover:bg-muted"
                   >
                     <p className="text-sm font-medium text-foreground">{item.topic_title}</p>

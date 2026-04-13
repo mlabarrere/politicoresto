@@ -17,7 +17,7 @@ export default async function MePredictionsPage() {
         <div className="space-y-3">
           {data.map((entry) => (
             <div key={entry.id} className="rounded-lg border border-border bg-background p-5 text-sm">
-              <p className="font-semibold text-foreground">Topic {entry.topic_id}</p>
+              <p className="font-semibold text-foreground">Thread {entry.topic_id}</p>
               <p className="mt-2 text-muted-foreground">Statut: {entry.submission_status}</p>
               <p className="mt-2 text-muted-foreground">Enregistre: {formatDate(entry.recorded_at)}</p>
             </div>

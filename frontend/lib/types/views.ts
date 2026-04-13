@@ -343,3 +343,8 @@ export type LeaderboardEntryView = {
   entity_name?: string | null;
   updated_at?: string | null;
 };
+
+export type ThreadFeedItemView = HomeFeedTopicView;
+export type ThreadSummaryView = TopicSummaryView;
+export type ThreadPredictionAggregateView = TopicPredictionAggregateView;
+export type ThreadRow = TopicRow;

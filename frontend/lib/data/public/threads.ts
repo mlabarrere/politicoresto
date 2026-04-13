@@ -1,24 +1,24 @@
-import type { LoadState, TopicDetailScreenData, TopicsScreenData } from "@/lib/types/screens";
+import type { LoadState, ThreadDetailScreenData, ThreadsScreenData } from "@/lib/types/screens";
 import type {
   PollOptionRow,
   PollQuestionRow,
   PollRow,
   PredictionOptionRow,
   PublicPollResultsView,
-  TopicPredictionAggregateView
+  ThreadPredictionAggregateView
 } from "@/lib/types/views";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
   toLegacyPost,
   toPredictionQuestion,
   toThreadPost,
-  toTopicAggregate,
-  toTopicRow,
-  toTopicSummary
+  toThreadAggregate,
+  toThreadRow,
+  toThreadSummary
 } from "./canonical";
 import { getEntityLeaderboard } from "./leaderboards";
 
-export async function getTopicsScreenData(): Promise<LoadState<TopicsScreenData>> {
+export async function getThreadsScreenData(): Promise<LoadState<ThreadsScreenData>> {
   const supabase = await createServerSupabaseClient();
 
   const { data: topics, error } = await supabase
@@ -29,21 +29,21 @@ export async function getTopicsScreenData(): Promise<LoadState<TopicsScreenData>
     .order("created_at", { ascending: false });
 
   if (error) {
-    return { data: { topics: [] }, error: error.message };
+    return { data: { threads: [] }, error: error.message };
   }
 
   return {
     data: {
-      topics: (topics ?? []).map((topic) => ({
-        ...toTopicSummary(topic as Record<string, unknown> & { id: string; slug: string; title: string; topic_status: string; effective_visibility: string; open_at: string; close_at: string; created_at: string }),
-        aggregate: toTopicAggregate(topic as Record<string, unknown> & { id: string; prediction_type?: string | null }) as TopicPredictionAggregateView | null
+      threads: (topics ?? []).map((topic) => ({
+        ...toThreadSummary(topic as Record<string, unknown> & { id: string; slug: string; title: string; topic_status: string; effective_visibility: string; open_at: string; close_at: string; created_at: string }),
+        aggregate: toThreadAggregate(topic as Record<string, unknown> & { id: string; prediction_type?: string | null }) as ThreadPredictionAggregateView | null
       }))
     },
     error: null
   };
 }
 
-export async function getTopicDetail(slug: string): Promise<TopicDetailScreenData | null> {
+export async function getThreadDetail(slug: string): Promise<ThreadDetailScreenData | null> {
   const supabase = await createServerSupabaseClient();
 
   const { data: topic, error } = await supabase
@@ -180,7 +180,7 @@ export async function getTopicDetail(slug: string): Promise<TopicDetailScreenDat
   }
 
   return {
-    topic: toTopicRow(topic as Record<string, unknown> & { id: string; slug: string; title: string; topic_status: string; effective_visibility: string; open_at: string; close_at: string; created_at: string }),
+    thread: toThreadRow(topic as Record<string, unknown> & { id: string; slug: string; title: string; topic_status: string; effective_visibility: string; open_at: string; close_at: string; created_at: string }),
     question: toPredictionQuestion(question as Record<string, unknown> | null),
     options: (options ?? []) as PredictionOptionRow[],
     polls: (polls ?? []).map((poll) => {
@@ -243,11 +243,11 @@ export async function getTopicDetail(slug: string): Promise<TopicDetailScreenDat
       };
     }),
     posts,
-    threadPosts: (threadPosts ?? []) as TopicDetailScreenData["threadPosts"],
-    comments: (comments ?? []) as TopicDetailScreenData["comments"],
+    threadPosts: (threadPosts ?? []) as ThreadDetailScreenData["threadPosts"],
+    comments: (comments ?? []) as ThreadDetailScreenData["comments"],
     localLeaderboard,
-    relatedTopics: (relatedTopics ?? []).map((item) =>
-      toTopicSummary({
+    relatedThreads: (relatedTopics ?? []).map((item) =>
+      toThreadSummary({
         ...(item as Record<string, unknown>),
         id: String((item as Record<string, unknown>).topic_id),
         space_id: ((item as Record<string, unknown>).space_id as string | null) ?? null,
@@ -262,6 +262,6 @@ export async function getTopicDetail(slug: string): Promise<TopicDetailScreenDat
         created_at: String((item as Record<string, unknown>).created_at)
       })
     ),
-    aggregate: toTopicAggregate(topic as Record<string, unknown> & { id: string; prediction_type?: string | null }) as TopicPredictionAggregateView | null
+    aggregate: toThreadAggregate(topic as Record<string, unknown> & { id: string; prediction_type?: string | null }) as ThreadPredictionAggregateView | null
   };
 }

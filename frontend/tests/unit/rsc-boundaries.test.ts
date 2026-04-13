@@ -11,8 +11,7 @@ describe("RSC boundaries", () => {
       "app/page.tsx",
       "components/layout/empty-state.tsx",
       "components/layout/screen-state.tsx",
-      "components/layout/site-header.tsx",
-      "components/topics/topic-card.tsx"
+      "components/layout/site-header.tsx"
     ];
 
     for (const file of files) {

@@ -19,13 +19,12 @@ const bannedClassPatterns = [
 const sourceFiles = [
   "app/page.tsx",
   "app/auth/login/page.tsx",
-  "app/(public)/topics/page.tsx",
-  "app/(public)/topic/[slug]/page.tsx",
+  "app/(public)/threads/page.tsx",
+  "app/(public)/thread/[slug]/page.tsx",
   "app/(public)/spaces/page.tsx",
   "app/(public)/space/[slug]/page.tsx",
   "app/(public)/cards/page.tsx",
   "app/(public)/profile/[username]/page.tsx",
-  "app/(public)/poll/[id]/page.tsx",
   "components/layout/app-shell.tsx",
   "components/layout/site-header.tsx",
   "components/layout/site-footer.tsx",
@@ -33,7 +32,7 @@ const sourceFiles = [
   "components/layout/empty-state.tsx",
   "components/layout/screen-state.tsx",
   "app/not-found.tsx",
-  "components/topics/topic-card.tsx",
+  "components/feed/thread-card.tsx",
   "components/navigation/main-nav.tsx",
   "components/navigation/auth-nav.tsx"
 ];

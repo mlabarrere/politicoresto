@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+import type { Route } from "next";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { ScreenState } from "@/components/layout/screen-state";
 
-export default function TopicError({
+export default function ThreadError({
   error,
   reset
 }: {
@@ -19,10 +20,10 @@ export default function TopicError({
   return (
     <PageContainer>
       <ScreenState
-        title="Le sujet n'a pas pu etre charge"
-        body="La page publique du sujet reste momentanement indisponible. Vous pouvez relancer la lecture ou revenir vers l'index."
-        actionHref="/topics"
-        actionLabel="Retour aux sujets"
+        title="Le thread n'a pas pu etre charge"
+        body="La page publique du thread reste momentanement indisponible. Vous pouvez relancer la lecture ou revenir vers l'index."
+        actionHref={"/threads" as Route}
+        actionLabel="Retour aux threads"
         retryLabel="Reessayer"
         onRetry={reset}
       />

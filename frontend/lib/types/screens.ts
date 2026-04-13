@@ -1,6 +1,6 @@
 import type {
   CardCatalogRow,
-  HomeFeedTopicView,
+  CommentView,
   LeaderboardEntryView,
   MyCardInventoryView,
   MyPredictionHistoryView,
@@ -9,19 +9,17 @@ import type {
   PollQuestionRow,
   PollRow,
   PostRow,
-  CommentView,
   PredictionOptionRow,
   PredictionQuestionRow,
   PublicCardShowcaseView,
   PublicPollResultsView,
   PublicProfileView,
   SpaceRow,
+  ThreadFeedItemView,
   ThreadPostView,
-  TerritoryPredictionRollupView,
-  TerritoryTopicRollupView,
-  TopicPredictionAggregateView,
-  TopicRow,
-  TopicSummaryView
+  ThreadPredictionAggregateView,
+  ThreadRow,
+  ThreadSummaryView
 } from "@/lib/types/views";
 
 export type LoadState<T> = {
@@ -30,24 +28,19 @@ export type LoadState<T> = {
 };
 
 export type HomeScreenData = {
-  feed: HomeFeedTopicView[];
-  watchlist: HomeFeedTopicView[];
+  feed: ThreadFeedItemView[];
+  watchlist: ThreadFeedItemView[];
   featuredSpaces: SpaceRow[];
   leaderboard: LeaderboardEntryView[];
 };
 
 export type SpacesScreenData = {
   spaces: SpaceRow[];
-  highlightedTopics: TopicSummaryView[];
+  highlightedThreads: ThreadSummaryView[];
 };
 
-export type TopicsScreenData = {
-  topics: Array<TopicSummaryView & { aggregate?: TopicPredictionAggregateView | null }>;
-};
-
-export type TerritoriesScreenData = {
-  topicRollups: TerritoryTopicRollupView[];
-  predictionRollups: TerritoryPredictionRollupView[];
+export type ThreadsScreenData = {
+  threads: Array<ThreadSummaryView & { aggregate?: ThreadPredictionAggregateView | null }>;
 };
 
 export type CardsScreenData = {
@@ -59,8 +52,8 @@ export type PublicProfileScreenData = {
   profile: PublicProfileView | null;
 };
 
-export type TopicDetailScreenData = {
-  topic: TopicRow | null;
+export type ThreadDetailScreenData = {
+  thread: ThreadRow | null;
   question: PredictionQuestionRow | null;
   options: PredictionOptionRow[];
   polls: Array<PollRow & { questions: Array<PollQuestionRow & { options: PollOptionRow[]; results: PublicPollResultsView[] }> }>;
@@ -68,20 +61,15 @@ export type TopicDetailScreenData = {
   threadPosts: ThreadPostView[];
   comments: CommentView[];
   localLeaderboard: LeaderboardEntryView[];
-  relatedTopics: TopicSummaryView[];
-  aggregate: TopicPredictionAggregateView | null;
+  relatedThreads: ThreadSummaryView[];
+  aggregate: ThreadPredictionAggregateView | null;
 };
 
 export type SpaceDetailScreenData = {
   space: SpaceRow | null;
-  topics: TopicSummaryView[];
-  feed: HomeFeedTopicView[];
+  threads: ThreadSummaryView[];
+  feed: ThreadFeedItemView[];
   leaderboard: LeaderboardEntryView[];
-};
-
-export type PollDetailScreenData = {
-  poll: PollRow | null;
-  questions: Array<PollQuestionRow & { options: PollOptionRow[]; results: PublicPollResultsView[] }>;
 };
 
 export type MeDashboardScreenData = {

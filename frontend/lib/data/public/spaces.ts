@@ -1,6 +1,6 @@
 import type { LoadState, SpaceDetailScreenData, SpacesScreenData } from "@/lib/types/screens";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { toHomeFeedTopic, toSpaceRow, toTopicSummary } from "./canonical";
+import { toHomeFeedTopic, toSpaceRow, toThreadSummary } from "./canonical";
 import { getEntityLeaderboard } from "./leaderboards";
 
 export async function getSpacesScreenData(): Promise<LoadState<SpacesScreenData>> {
@@ -29,8 +29,8 @@ export async function getSpacesScreenData(): Promise<LoadState<SpacesScreenData>
   return {
     data: {
       spaces: (spacesResult.data ?? []).map((space) => toSpaceRow(space as Record<string, unknown>)),
-      highlightedTopics: (topicsResult.data ?? []).map((topic, index) =>
-        toTopicSummary({
+      highlightedThreads: (topicsResult.data ?? []).map((topic, index) =>
+        toThreadSummary({
           ...(topic as Record<string, unknown>),
           id: String((topic as Record<string, unknown>).topic_id),
           slug: String((topic as Record<string, unknown>).topic_slug),
@@ -96,7 +96,7 @@ export async function getSpaceDetail(slug: string): Promise<SpaceDetailScreenDat
   const mappedTopics =
     typeof space.primary_entity_id === "string" && space.primary_entity_id
       ? (topics ?? []).map((topic) =>
-          toTopicSummary({
+          toThreadSummary({
             ...(topic as Record<string, unknown>),
             id: String((topic as Record<string, unknown>).topic_id),
             slug: String((topic as Record<string, unknown>).topic_slug),
@@ -110,7 +110,7 @@ export async function getSpaceDetail(slug: string): Promise<SpaceDetailScreenDat
           })
         )
       : (topics ?? []).map((topic) =>
-          toTopicSummary(
+          toThreadSummary(
             topic as Record<string, unknown> & {
               id: string;
               slug: string;
@@ -126,7 +126,7 @@ export async function getSpaceDetail(slug: string): Promise<SpaceDetailScreenDat
 
   return {
     space: spaceRow,
-    topics: mappedTopics,
+    threads: mappedTopics,
     feed: (topics ?? []).map((item, index) =>
       "topic_id" in (item as Record<string, unknown>)
         ? toHomeFeedTopic(item as Record<string, unknown>, index + 1)
