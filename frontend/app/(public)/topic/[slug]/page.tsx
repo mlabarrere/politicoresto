@@ -1,11 +1,18 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock3, Layers3, MessagesSquare, Sparkles } from "lucide-react";
 
+import { BetCard } from "@/components/feed/bet-card";
+import { PollCard } from "@/components/feed/poll-card";
+import { createThreadPostAction } from "@/lib/actions/threads";
+import { CommentList } from "@/components/comments/comment-list";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
-import { SectionCard } from "@/components/layout/section-card";
+import { LeaderboardCard } from "@/components/scores/leaderboard-card";
+import { ScoreBadge } from "@/components/scores/score-badge";
+import { ReactionBar } from "@/components/social/reaction-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getTopicDetail } from "@/lib/data/public/topics";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { formatDate, formatNumber } from "@/lib/utils/format";
 
 export default async function TopicDetailPage({
@@ -19,146 +26,173 @@ export default async function TopicDetailPage({
   if (!detail?.topic) {
     notFound();
   }
+  const topic = detail.topic;
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  const primaryThreadPost = detail.threadPosts[0] ?? null;
+  const marketThreadPost = detail.threadPosts.find((item) => item.type === "market") ?? primaryThreadPost;
 
   return (
     <PageContainer>
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_320px]">
-        <div className="space-y-6">
-          <section className="soft-panel p-6 sm:p-8">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <main className="space-y-5">
+          <section className="rounded-3xl border border-border bg-card p-6">
             <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge label={detail.topic.topic_status} tone="default" />
-              <StatusBadge label={detail.topic.visibility} tone="muted" />
+              <StatusBadge label={topic.topic_status} tone="default" />
+              {topic.visibility ? <StatusBadge label={topic.visibility} tone="muted" /> : null}
+              {detail.question?.prediction_type ? (
+                <StatusBadge label={detail.question.prediction_type} tone="accent" />
+              ) : null}
             </div>
-            <h1 className="editorial-title mt-4 text-4xl font-bold text-foreground">
-              {detail.topic.title}
+
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-foreground">
+              {topic.title}
             </h1>
-            <p className="mt-4 max-w-4xl text-base leading-7 text-muted-foreground">
-              {detail.topic.description ?? "Aucune description publique detaillee pour ce sujet."}
-            </p>
-            <div className="mt-6 grid gap-4 rounded-lg border border-border bg-background p-4 text-sm text-muted-foreground sm:grid-cols-3">
-              <div>
+            {topic.description ? (
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
+                {topic.description}
+              </p>
+            ) : null}
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <ScoreBadge label="Paris" value={formatNumber(detail.aggregate?.submission_count ?? 0)} />
+              <ScoreBadge label="Blocs" value={formatNumber(detail.threadPosts.length)} />
+              <ScoreBadge label="Commentaires" value={formatNumber(detail.comments.length)} />
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-border bg-background px-4 py-3">
                 <p className="eyebrow">Ouverture</p>
-                <p className="mt-2 font-semibold text-foreground">{formatDate(detail.topic.open_at)}</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{formatDate(topic.open_at)}</p>
               </div>
-              <div>
+              <div className="rounded-2xl border border-border bg-background px-4 py-3">
                 <p className="eyebrow">Cloture</p>
-                <p className="mt-2 font-semibold text-foreground">{formatDate(detail.topic.close_at)}</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{formatDate(topic.close_at)}</p>
               </div>
-              <div>
-                <p className="eyebrow">Visibilite</p>
-                <p className="mt-2 font-semibold text-foreground">{detail.topic.visibility}</p>
+              <div className="rounded-2xl border border-border bg-background px-4 py-3">
+                <p className="eyebrow">Activite</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{formatNumber(detail.comments.length + detail.threadPosts.length)}</p>
               </div>
             </div>
           </section>
 
-          <SectionCard title="Question" eyebrow="A suivre">
-            {detail.question ? (
-              <div className="space-y-5">
-                <div className="rounded-lg border border-border bg-muted/60 p-5">
-                  <p className="eyebrow">Question principale</p>
-                  <p className="mt-3 text-lg font-semibold leading-8 text-foreground">
-                    {detail.question.title}
-                  </p>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-lg border border-border bg-background p-4">
-                    <p className="eyebrow">Type</p>
-                    <p className="mt-2 font-semibold text-foreground">{detail.question.prediction_type}</p>
+          {detail.threadPosts.length ? (
+            <section className="space-y-4">
+              {detail.threadPosts.map((post) => (
+                <article key={post.id} className="rounded-3xl border border-border bg-card p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge label={post.type} tone="muted" />
+                      {post.entity_name ? <StatusBadge label={post.entity_name} tone="info" /> : null}
+                    </div>
+                    <ReactionBar
+                      targetType="thread_post"
+                      targetId={post.id}
+                      redirectPath={`/topic/${topic.slug}`}
+                      upvotes={post.upvote_weight ?? 0}
+                      downvotes={post.downvote_weight ?? 0}
+                    />
                   </div>
-                  <div className="rounded-lg border border-border bg-background p-4">
-                    <p className="eyebrow">Mises a jour</p>
-                    <p className="mt-2 font-semibold text-foreground">
-                      {detail.question.allow_submission_update ? "Autorisees" : "Figees"}
-                    </p>
+                  {post.title ? <h2 className="mt-3 text-lg font-semibold text-foreground">{post.title}</h2> : null}
+                  {post.content ? (
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">{post.content}</p>
+                  ) : null}
+                  <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>{post.display_name ?? post.username ?? "Analyste"}</span>
+                    <span>{formatDate(post.created_at)}</span>
+                    <span>{formatNumber(post.comment_count ?? 0)} commentaires</span>
                   </div>
-                  <div className="rounded-lg border border-border bg-background p-4">
-                    <p className="eyebrow">Participations</p>
-                    <p className="mt-2 font-semibold text-foreground">
-                      {formatNumber(detail.aggregate?.submission_count ?? 0)}
-                    </p>
-                  </div>
-                </div>
-                {detail.options.length ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {detail.options.map((option) => (
-                      <div
-                        key={option.id}
-                        className="rounded-lg border border-border bg-background p-4 text-sm text-foreground"
-                      >
-                        {option.label}
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <EmptyState
-                title="La question n'est pas encore disponible"
-                body="Le sujet est visible, mais sa question complete n'est pas encore exposee ici."
+                </article>
+              ))}
+            </section>
+          ) : (
+            <EmptyState title="Aucun bloc visible" body="Le thread existe, mais aucun contenu feedable n'est encore attache." />
+          )}
+
+          {detail.polls.map((poll) => (
+            <PollCard key={poll.id} poll={poll} questions={poll.questions} redirectPath={`/topic/${topic.slug}`} />
+          ))}
+
+          {detail.question ? (
+            <BetCard
+              threadId={topic.id}
+              threadPost={marketThreadPost}
+              question={detail.question as Parameters<typeof BetCard>[0]["question"]}
+              options={detail.options}
+              redirectPath={`/topic/${topic.slug}`}
+            />
+          ) : null}
+
+          {session ? (
+            <form action={createThreadPostAction} className="rounded-3xl border border-border bg-card p-4">
+              <input type="hidden" name="thread_id" value={topic.id} />
+              <input type="hidden" name="type" value="article" />
+              <input type="hidden" name="redirect_path" value={`/topic/${topic.slug}`} />
+              <p className="eyebrow">Ajouter un bloc</p>
+              <input
+                name="title"
+                placeholder="Titre"
+                className="mt-2 w-full rounded-2xl border border-border px-4 py-3 text-sm"
               />
-            )}
-          </SectionCard>
-
-          <SectionCard title="Discussion" eyebrow="Messages">
-            {detail.posts.length ? (
-              <div className="space-y-4">
-                {detail.posts.map((post) => (
-                  <article key={post.id} className="rounded-lg border border-border bg-background p-5">
-                    <p className="font-semibold text-foreground">
-                      {post.title ?? "Message sans titre"}
-                    </p>
-                    <p className="mt-3 text-sm leading-7 text-muted-foreground">{post.body_markdown}</p>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="La discussion apparaitra ici"
-                body="Le sujet est deja visible, mais aucun message public n'est encore rattache."
+              <textarea
+                name="content"
+                rows={4}
+                placeholder="Article court. Angle. Mise en contexte."
+                className="mt-3 w-full rounded-2xl border border-border px-4 py-3 text-sm"
               />
-            )}
-          </SectionCard>
-        </div>
+              <div className="mt-3 flex justify-end">
+                <button type="submit" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
+                  Publier un article
+                </button>
+              </div>
+            </form>
+          ) : null}
 
-        <aside className="space-y-6">
-          <SectionCard title="En bref" eyebrow="Infos utiles">
-            <div className="grid gap-4 text-sm text-muted-foreground">
-              <div className="flex gap-3">
-                <Sparkles className="mt-0.5 size-4 text-primary" />
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {formatNumber(detail.aggregate?.submission_count ?? 0)} participations
-                  </p>
-                  <p>Participation visible</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <MessagesSquare className="mt-0.5 size-4 text-sky-700" />
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {formatNumber(detail.posts.length)} messages visibles
-                  </p>
-                  <p>Discussion liee au sujet</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Clock3 className="mt-0.5 size-4 text-amber-700" />
-                <div>
-                  <p className="font-semibold text-foreground">{formatDate(detail.topic.close_at)}</p>
-                  <p>Prochaine date utile</p>
-                </div>
-              </div>
+          <section className="space-y-4">
+            <div>
+              <p className="eyebrow">Commentaires</p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">Discussion</h2>
             </div>
-          </SectionCard>
+            <CommentList
+              comments={detail.comments}
+              redirectPath={`/topic/${topic.slug}`}
+              defaultThreadPost={primaryThreadPost}
+            />
+          </section>
+        </main>
 
-          <SectionCard title="Ce sujet en clair" eyebrow="Contexte">
-            <div className="flex gap-3 text-sm text-muted-foreground">
-              <Layers3 className="mt-0.5 size-4 text-primary" />
-              <p>
-                Le sujet reste au centre. Les messages servent a documenter et a clarifier sa lecture.
-              </p>
+        <aside className="space-y-4">
+          <LeaderboardCard
+            title="Classement local"
+            eyebrow="Analystes"
+            rows={detail.localLeaderboard}
+          />
+
+          <div className="rounded-3xl border border-border bg-card p-4">
+            <p className="eyebrow">Threads lies</p>
+            <div className="mt-3 space-y-3">
+              {detail.relatedTopics.length ? (
+                detail.relatedTopics.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/topic/${item.slug}`}
+                    className="block rounded-2xl border border-border px-3 py-3 transition hover:bg-muted"
+                  >
+                    <p className="text-sm font-medium text-foreground">{item.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {item.description ?? "Thread visible dans le meme espace."}
+                    </p>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">Aucun thread lie visible.</p>
+              )}
             </div>
-          </SectionCard>
+          </div>
         </aside>
       </div>
     </PageContainer>

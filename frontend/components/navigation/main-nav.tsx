@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 import {
   NavigationMenu,
@@ -14,7 +15,7 @@ export function MainNav() {
         {siteConfig.navigation.primary.map((item) => (
           <NavigationMenuItem key={item.href}>
             <Link
-              href={item.href}
+              href={item.href as Route}
               className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
             >
               {item.label}

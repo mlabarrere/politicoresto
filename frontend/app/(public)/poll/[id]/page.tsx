@@ -1,10 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { SectionCard } from "@/components/layout/section-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getPollDetail } from "@/lib/data/public/polls";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { formatDate, formatNumber } from "@/lib/utils/format";
 
 export default async function PollDetailPage({
@@ -17,6 +18,19 @@ export default async function PollDetailPage({
 
   if (!detail?.poll) {
     notFound();
+  }
+
+  if (detail.poll.topic_id) {
+    const supabase = await createServerSupabaseClient();
+    const { data: topic } = await supabase
+      .from("topic")
+      .select("slug")
+      .eq("id", detail.poll.topic_id)
+      .maybeSingle();
+
+    if (topic?.slug) {
+      redirect(`/topic/${topic.slug}`);
+    }
   }
 
   return (

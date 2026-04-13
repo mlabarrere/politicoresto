@@ -24,7 +24,6 @@ const sourceFiles = [
   "app/(public)/spaces/page.tsx",
   "app/(public)/space/[slug]/page.tsx",
   "app/(public)/cards/page.tsx",
-  "app/(public)/territories/page.tsx",
   "app/(public)/profile/[username]/page.tsx",
   "app/(public)/poll/[id]/page.tsx",
   "components/layout/app-shell.tsx",

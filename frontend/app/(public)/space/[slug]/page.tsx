@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
 
+import { Composer } from "@/components/compose/composer";
+import { FeedList } from "@/components/feed/feed-list";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
-import { SectionCard } from "@/components/layout/section-card";
+import { LeaderboardCard } from "@/components/scores/leaderboard-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getSpaceDetail } from "@/lib/data/public/spaces";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function SpaceDetailPage({
   params
@@ -18,38 +21,56 @@ export default async function SpaceDetailPage({
     notFound();
   }
 
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
   return (
     <PageContainer>
-      <div className="space-y-8">
-        <SectionCard
-          title={detail.space.name}
-          eyebrow="Espace"
-          aside={<StatusBadge label={detail.space.space_type} />}
-        >
-          <p className="text-sm leading-7 text-muted-foreground">
-            {detail.space.description ?? "Aucune description editoriale disponible."}
-          </p>
-        </SectionCard>
+      <div className="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_300px]">
+        <aside className="space-y-4">
+          <div className="rounded-3xl border border-border bg-card p-4">
+            <p className="eyebrow">Espace</p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+              {detail.space.name}
+            </h1>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+              {detail.space.description ?? "Espace politique visible dans le cycle presidentiel."}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <StatusBadge label={detail.space.space_type} tone="accent" />
+              <StatusBadge label={detail.space.visibility} tone="muted" />
+            </div>
+          </div>
 
-        <SectionCard title="Sujets de l'espace" eyebrow="Flux">
-          {detail.topics.length ? (
-            <ul className="space-y-3">
-              {detail.topics.map((topic) => (
-                <li key={topic.id} className="rounded-lg border border-border bg-background p-4">
-                  <p className="font-semibold text-foreground">{topic.title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {topic.description ?? "Sujet sans description publique."}
-                  </p>
-                </li>
-              ))}
-            </ul>
+          {session ? (
+            <Composer
+              redirectPath={`/space/${detail.space.slug}`}
+              title="Nouveau thread local"
+              spaceId={detail.space.id}
+            />
+          ) : null}
+        </aside>
+
+        <main className="space-y-4">
+          {detail.feed.length ? (
+            <FeedList items={detail.feed} featuredCount={1} />
           ) : (
             <EmptyState
-              title="Aucun sujet visible"
-              body="L'espace est publie, mais aucun sujet public n'y est encore expose."
+              title="Aucun thread visible"
+              body="L'espace existe, mais aucun thread public n'y remonte encore."
             />
           )}
-        </SectionCard>
+        </main>
+
+        <aside className="space-y-4">
+          <LeaderboardCard
+            title="Classement local"
+            eyebrow={detail.space.name}
+            rows={detail.leaderboard}
+          />
+        </aside>
       </div>
     </PageContainer>
   );

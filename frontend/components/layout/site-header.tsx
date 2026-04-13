@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { Menu } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -33,7 +34,7 @@ export async function SiteHeader() {
                   {siteConfig.navigation.primary.map((item) => (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      href={item.href as Route}
                       className="rounded-lg border border-border px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
                     >
                       {item.label}
@@ -45,18 +46,18 @@ export async function SiteHeader() {
           </div>
 
           <div>
-            <Link href="/" className="text-2xl font-semibold tracking-tight text-foreground">
+            <Link href="/" className="text-xl font-semibold tracking-tight text-foreground">
               {siteConfig.name}
             </Link>
             <p className="mt-1 text-sm text-muted-foreground">
-              Suivre les sujets publics, simplement.
+              Feed presidentiel
             </p>
           </div>
         </div>
 
         <div className="hidden min-w-[240px] max-w-sm flex-1 xl:block">
-          <div className="rounded-lg border border-border bg-muted px-4 py-2 text-sm text-muted-foreground">
-            Recherche disponible bientot
+          <div className="rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground">
+            Global · partis · threads
           </div>
         </div>
 

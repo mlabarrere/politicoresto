@@ -9,18 +9,18 @@ describe("Editorial UI states", () => {
   it("renders an empty state with a clear recovery action", () => {
     render(
       <EmptyState
-        title="Aucun sujet local pour le moment"
-        body="Revenez plus tard ou explorez un autre territoire."
-        actionHref="/territories"
-        actionLabel="Voir les territoires"
+        title="Aucun thread visible pour le moment"
+        body="Revenez plus tard ou explorez un autre espace partisan."
+        actionHref="/spaces"
+        actionLabel="Voir les espaces"
       />
     );
 
-    expect(screen.getByText("Aucun sujet local pour le moment")).toBeInTheDocument();
-    expect(screen.getByText("Revenez plus tard ou explorez un autre territoire.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Voir les territoires" })).toHaveAttribute(
+    expect(screen.getByText("Aucun thread visible pour le moment")).toBeInTheDocument();
+    expect(screen.getByText("Revenez plus tard ou explorez un autre espace partisan.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Voir les espaces" })).toHaveAttribute(
       "href",
-      "/territories"
+      "/spaces"
     );
   });
 
@@ -29,17 +29,17 @@ describe("Editorial UI states", () => {
 
     render(
       <ScreenState
-        title="Le territoire demande une nouvelle verification"
+        title="Le feed demande une nouvelle verification"
         body="Les donnees reviennent, mais pas encore de facon stable."
         actionHref="/topics"
-        actionLabel="Voir les sujets"
+        actionLabel="Voir les threads"
         retryLabel="Recharger"
         onRetry={onRetry}
       />
     );
 
     expect(screen.getByText("Infos utiles")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Voir les sujets" })).toHaveAttribute("href", "/topics");
+    expect(screen.getByRole("link", { name: "Voir les threads" })).toHaveAttribute("href", "/topics");
 
     fireEvent.click(screen.getByRole("button", { name: "Recharger" }));
     expect(onRetry).toHaveBeenCalledTimes(1);

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "@/app/page";
 import type { HomeScreenData } from "@/lib/types/screens";
 import { getHomeScreenData } from "@/lib/data/public/home";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 import { buildHomeFeedTopic } from "../fixtures/home-feed-topic";
 
@@ -11,7 +12,12 @@ vi.mock("@/lib/data/public/home", () => ({
   getHomeScreenData: vi.fn()
 }));
 
+vi.mock("@/lib/supabase/server", () => ({
+  createServerSupabaseClient: vi.fn()
+}));
+
 const mockedGetHomeScreenData = vi.mocked(getHomeScreenData);
+const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 
 function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreenData {
   const feed = [
@@ -51,8 +57,19 @@ function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreen
   return {
     feed,
     watchlist: [feed[1]],
-    cards: [feed[0]],
-    territories: [feed[0]],
+    featuredSpaces: [
+      {
+        id: "space-1",
+        slug: "rn",
+        name: "RN",
+        description: "Espace parti",
+        space_type: "party",
+        space_status: "active",
+        visibility: "public",
+        created_at: "2026-04-01T00:00:00Z"
+      }
+    ],
+    leaderboard: [],
     ...overrides
   };
 }
@@ -60,9 +77,17 @@ function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreen
 describe("HomePage", () => {
   beforeEach(() => {
     mockedGetHomeScreenData.mockReset();
+    mockedCreateServerSupabaseClient.mockReset();
+    mockedCreateServerSupabaseClient.mockResolvedValue({
+      auth: {
+        getSession: vi.fn().mockResolvedValue({
+          data: { session: null }
+        })
+      }
+    } as never);
   });
 
-  it("renders the editorial homepage with feed data", async () => {
+  it("renders the feed homepage with canonical data", async () => {
     mockedGetHomeScreenData.mockResolvedValue({
       data: makeHomeScreenData(),
       error: null
@@ -70,14 +95,11 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(
-      screen.getByText("Suivez la presidentielle comme un jeu de conversation.")
-    ).toBeInTheDocument();
-    expect(screen.getByText("A surveiller")).toBeInTheDocument();
-    expect(screen.getByText("Cartes a debloquer")).toBeInTheDocument();
-    expect(screen.getByText("Derniers resultats")).toBeInTheDocument();
-    expect(screen.getByText("Familles visibles")).toBeInTheDocument();
-    expect(screen.getByText("Espaces en vue")).toBeInTheDocument();
+    expect(screen.getByText("Feed politique")).toBeInTheDocument();
+    expect(screen.getByText("Navigation")).toBeInTheDocument();
+    expect(screen.getByText("Analystes")).toBeInTheDocument();
+    expect(screen.getByText("Watchlist")).toBeInTheDocument();
+    expect(screen.getByText("RN")).toBeInTheDocument();
   });
 
   it("renders an empty state when the feed is empty", async () => {
@@ -85,26 +107,26 @@ describe("HomePage", () => {
       data: makeHomeScreenData({
         feed: [],
         watchlist: [],
-        cards: [],
-        territories: []
+        featuredSpaces: [],
+        leaderboard: []
       }),
       error: null
     });
 
     render(await HomePage());
 
-    expect(screen.getByText("Les sujets arrivent")).toBeInTheDocument();
+    expect(screen.getByText("Aucun thread visible")).toBeInTheDocument();
   });
 
   it("renders an unavailable state when the feed query fails", async () => {
     mockedGetHomeScreenData.mockResolvedValue({
       data: makeHomeScreenData(),
-      error: "relation public.home_feed_topic_cache does not exist"
+      error: "relation public.thread_feed_cache does not exist"
     });
 
     render(await HomePage());
 
-    expect(screen.getByText("Le flux principal est partiellement disponible")).toBeInTheDocument();
-    expect(screen.getByText(/home_feed_topic_cache/)).toBeInTheDocument();
+    expect(screen.getByText("Feed partiel")).toBeInTheDocument();
+    expect(screen.getByText(/thread_feed_cache/)).toBeInTheDocument();
   });
 });

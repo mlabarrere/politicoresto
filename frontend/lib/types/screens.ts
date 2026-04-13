@@ -1,6 +1,7 @@
 import type {
   CardCatalogRow,
   HomeFeedTopicView,
+  LeaderboardEntryView,
   MyCardInventoryView,
   MyPredictionHistoryView,
   MyReputationSummaryView,
@@ -8,12 +9,14 @@ import type {
   PollQuestionRow,
   PollRow,
   PostRow,
+  CommentView,
   PredictionOptionRow,
   PredictionQuestionRow,
   PublicCardShowcaseView,
   PublicPollResultsView,
   PublicProfileView,
   SpaceRow,
+  ThreadPostView,
   TerritoryPredictionRollupView,
   TerritoryTopicRollupView,
   TopicPredictionAggregateView,
@@ -29,8 +32,8 @@ export type LoadState<T> = {
 export type HomeScreenData = {
   feed: HomeFeedTopicView[];
   watchlist: HomeFeedTopicView[];
-  cards: HomeFeedTopicView[];
-  territories: HomeFeedTopicView[];
+  featuredSpaces: SpaceRow[];
+  leaderboard: LeaderboardEntryView[];
 };
 
 export type SpacesScreenData = {
@@ -60,13 +63,20 @@ export type TopicDetailScreenData = {
   topic: TopicRow | null;
   question: PredictionQuestionRow | null;
   options: PredictionOptionRow[];
+  polls: Array<PollRow & { questions: Array<PollQuestionRow & { options: PollOptionRow[]; results: PublicPollResultsView[] }> }>;
   posts: PostRow[];
+  threadPosts: ThreadPostView[];
+  comments: CommentView[];
+  localLeaderboard: LeaderboardEntryView[];
+  relatedTopics: TopicSummaryView[];
   aggregate: TopicPredictionAggregateView | null;
 };
 
 export type SpaceDetailScreenData = {
   space: SpaceRow | null;
   topics: TopicSummaryView[];
+  feed: HomeFeedTopicView[];
+  leaderboard: LeaderboardEntryView[];
 };
 
 export type PollDetailScreenData = {

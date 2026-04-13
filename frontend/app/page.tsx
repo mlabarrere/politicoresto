@@ -1,340 +1,114 @@
 import Link from "next/link";
-import { Compass, MapPinned, Sparkles, Trophy } from "lucide-react";
+import type { Route } from "next";
 
+import { Composer } from "@/components/compose/composer";
+import { FeedList } from "@/components/feed/feed-list";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
-import { SectionCard } from "@/components/layout/section-card";
-import { TopicCard } from "@/components/topics/topic-card";
+import { LeaderboardCard } from "@/components/scores/leaderboard-card";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { Separator } from "@/components/ui/separator";
-import { siteConfig } from "@/lib/config/site";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { getHomeScreenData } from "@/lib/data/public/home";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 export default async function HomePage() {
   const { data, error } = await getHomeScreenData();
-  const featuredTopics = data.feed.slice(0, 2);
-  const feedTopics = data.feed.slice(2);
-  const resolvedTopics = data.watchlist
-    .filter((topic) => topic.feed_reason_code === "recently_resolved")
-    .slice(0, 3);
-  const urgentTopics = data.watchlist
-    .filter((topic) => topic.feed_reason_code !== "recently_resolved")
-    .slice(0, 3);
-  const unlockableCards = data.cards.slice(0, 3);
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
 
   return (
     <PageContainer>
-      <div className="space-y-8">
-        <section className="soft-panel p-6 sm:p-8">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
-            <div className="space-y-6">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="eyebrow text-primary">Accueil</p>
-                <span className="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-primary">
-                  Feed presidentiel, familles politiques et resultats
-                </span>
-              </div>
-              <div className="space-y-4">
-                <h1 className="editorial-title max-w-4xl text-4xl font-bold leading-tight text-foreground sm:text-5xl">
-                  Suivez la presidentielle comme un jeu de conversation.
-                </h1>
-                <p className="max-w-3xl text-lg leading-8 text-muted-foreground">
-                  Politicoresto rassemble des sujets, des sondages, des paris et des espaces
-                  partisans dans un meme feed public.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Link href="/topics" className={cn(buttonVariants({ size: "lg" }))}>
-                  Voir les sujets
-                </Link>
+      <div className="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_300px]">
+        <aside className="space-y-4">
+          <div className="rounded-3xl border border-border bg-card p-4">
+            <p className="eyebrow">Navigation</p>
+            <div className="mt-3 space-y-2">
+              <Link
+                href="/"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "flex w-full justify-start rounded-2xl bg-muted px-3 text-foreground"
+                )}
+              >
+                Feed global
+              </Link>
+              {data.featuredSpaces.map((space) => (
                 <Link
-                  href="/territories"
-                  className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+                  key={space.id}
+                  href={`/space/${space.slug}`}
+                  className="block rounded-2xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 >
-                  Ouvrir les reperes publics
+                  {space.name}
                 </Link>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border border-border bg-background p-4">
-                  <p className="eyebrow">Ce que vous lisez ici</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Des fils politiques lisibles, pas un mur de messages sans contexte.
-                  </p>
-                </div>
-                <div className="rounded-lg border border-border bg-background p-4">
-                  <p className="eyebrow">Ce qui remonte</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Fraicheur, activite, friction entre camps et resultats attendus.
-                  </p>
-                </div>
-                <div className="rounded-lg border border-border bg-background p-4">
-                  <p className="eyebrow">Pourquoi revenir</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Pour revoir les sondages, les bascules de camps et les sujets qui repartent.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-border bg-muted/60 p-5">
-              <p className="eyebrow">En bref</p>
-              <div className="mt-4 grid gap-4 text-sm text-muted-foreground">
-                <div className="flex gap-3">
-                  <Compass className="mt-0.5 size-4 text-sky-700" />
-                  <div>
-                    <p className="font-semibold text-foreground">Global et partisan</p>
-                    <p>Les sujets se lisent dans le feed global et dans les espaces de camp.</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Sparkles className="mt-0.5 size-4 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">Des priorites visibles</p>
-                    <p>Chaque sujet remonte pour une raison lisible, pas pour un score opaque.</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Trophy className="mt-0.5 size-4 text-amber-700" />
-                  <div>
-                    <p className="font-semibold text-foreground">Reputation et progression</p>
-                    <p>Les cartes et la reconnaissance restent visibles sans remplacer le debat.</p>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-        </section>
 
-        <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
-          <aside className="space-y-6">
-            <SectionCard title="Explorer" eyebrow="Navigation">
-              <div className="grid gap-3">
-                <Link
-                  href="/topics"
-                  className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-secondary"
-                >
-                  Tous les sujets
-                </Link>
-                <Link
-                  href="/spaces"
-                  className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-secondary"
-                >
-                  Espaces
-                </Link>
-                <Link
-                  href="/territories"
-                  className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-secondary"
-                >
-                  Territoires
-                </Link>
-                <Link
-                  href="/cards"
-                  className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-secondary"
-                >
-                  Cartes
-                </Link>
-              </div>
-            </SectionCard>
+          {session ? <Composer redirectPath="/" title="Nouveau thread" /> : null}
+        </aside>
 
-            <SectionCard title="Familles visibles" eyebrow="Espaces">
-              {data.territories.length ? (
-                <div className="space-y-3">
-                  {data.territories.slice(0, 3).map((topic) => (
-                    <div
-                      key={`${topic.space_slug}-${topic.topic_id}`}
-                      className="rounded-lg border border-border bg-background p-4"
-                    >
-                      <p className="font-semibold text-foreground">
-                        {topic.space_name ?? "Espace non renseigne"}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">{topic.topic_title}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Les espaces partisans arrivent"
-                  body="Les espaces les plus visibles apparaitront ici des qu'ils remonteront dans le feed."
-                  actionHref="/spaces"
-                  actionLabel="Ouvrir les espaces"
-                />
-              )}
-            </SectionCard>
+        <main className="space-y-5">
+          <section className="rounded-3xl border border-border bg-card p-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge label="Global" tone="info" />
+              <StatusBadge label="Presidentielle" tone="muted" />
+            </div>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-foreground">
+              Feed politique
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+              Threads, sondages, paris, commentaires. Une seule surface. Des espaces de camp autour.
+            </p>
+          </section>
 
-            <SectionCard title="Themes suivis" eyebrow="Explorer">
-              <div className="flex flex-wrap gap-2">
-                {siteConfig.editorialTabs.map((tab) => (
-                  <span
-                    key={tab}
-                    className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-muted-foreground"
+          {error ? (
+            <EmptyState
+              title="Feed partiel"
+              body={`Lecture incomplete: ${error}`}
+            />
+          ) : null}
+
+          {data.feed.length ? (
+            <FeedList items={data.feed} featuredCount={2} />
+          ) : (
+            <EmptyState
+              title="Aucun thread visible"
+              body="Le feed apparaitra ici des que les premiers sujets publics seront publies."
+            />
+          )}
+        </main>
+
+        <aside className="space-y-4">
+          <LeaderboardCard
+            title="Analystes"
+            eyebrow="Global"
+            rows={data.leaderboard}
+            href={"/leaderboard" as Route}
+          />
+
+          <div className="rounded-3xl border border-border bg-card p-4">
+            <p className="eyebrow">Watchlist</p>
+            <div className="mt-3 space-y-3">
+              {data.watchlist.length ? (
+                data.watchlist.map((item) => (
+                  <Link
+                    key={item.topic_id}
+                    href={`/topic/${item.topic_slug}`}
+                    className="block rounded-2xl border border-border px-3 py-3 transition hover:bg-muted"
                   >
-                    {tab}
-                  </span>
-                ))}
-              </div>
-            </SectionCard>
-          </aside>
-
-          <div className="space-y-6">
-            {error ? (
-              <EmptyState
-                title="Le flux principal est partiellement disponible"
-                body={`Certaines donnees ne sont pas encore lisibles, mais l'exploration reste possible: ${error}`}
-                actionHref="/topics"
-                actionLabel="Voir les sujets"
-              />
-            ) : null}
-
-            {data.feed.length ? (
-              <>
-                <section className="space-y-4">
-                  <div className="flex items-end justify-between gap-4">
-                    <div>
-                      <p className="eyebrow">A la une</p>
-                      <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                        Les sujets a ouvrir en premier
-                      </h2>
-                    </div>
-                    <Link href="/topics" className="text-sm font-semibold text-primary">
-                      Voir tous les sujets
-                    </Link>
-                  </div>
-                  <div className="space-y-4">
-                    {featuredTopics.map((topic) => (
-                      <TopicCard key={topic.topic_id} topic={topic} featured />
-                    ))}
-                  </div>
-                </section>
-
-                <Separator />
-
-                <section className="space-y-4">
-                  <div className="space-y-1">
-                    <p className="eyebrow">Sujets</p>
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                      Le fil principal
-                    </h2>
-                  </div>
-                  <div className="space-y-4">
-                    {feedTopics.map((topic) => (
-                      <TopicCard key={topic.topic_id} topic={topic} />
-                    ))}
-                  </div>
-                </section>
-              </>
-            ) : (
-              <EmptyState
-                title="Les sujets arrivent"
-                body="Cette page affichera ici les sujets publics les plus utiles a lire et a suivre."
-                actionHref="/topics"
-                actionLabel="Voir les sujets"
-              />
-            )}
+                    <p className="text-sm font-medium text-foreground">{item.topic_title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.feed_reason_label}</p>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">Aucun signal urgent.</p>
+              )}
+            </div>
           </div>
-
-          <aside className="space-y-6">
-            <SectionCard
-              title="A surveiller"
-              eyebrow="A suivre"
-              aside={<MapPinned className="size-5 text-primary" />}
-            >
-              {urgentTopics.length ? (
-                <div className="space-y-3">
-                  {urgentTopics.map((topic) => (
-                    <Link
-                      key={topic.topic_id}
-                      href={`/topic/${topic.topic_slug}`}
-                      className="block rounded-lg border border-border bg-background p-4 transition hover:bg-secondary"
-                    >
-                      <p className="font-semibold text-foreground">{topic.topic_title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{topic.feed_reason_label}</p>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Rien d'urgent pour le moment"
-                  body="Quand un sujet approche d'une cloture ou d'un resultat, il remontera ici."
-                />
-              )}
-            </SectionCard>
-
-            <SectionCard title="Derniers resultats" eyebrow="Resultats">
-              {resolvedTopics.length ? (
-                <div className="space-y-3">
-                  {resolvedTopics.map((topic) => (
-                    <Link
-                      key={topic.topic_id}
-                      href={`/topic/${topic.topic_slug}`}
-                      className="block rounded-lg border border-emerald-200 bg-emerald-50 p-4 transition hover:bg-emerald-100/60"
-                    >
-                      <p className="font-semibold text-foreground">{topic.topic_title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {topic.resolution_payload?.resolved_label
-                          ? `Resultat: ${topic.resolution_payload.resolved_label}`
-                          : "Resultat publie"}
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Les resultats apparaitront ici"
-                  body="Les sujets resolus remonteront ici pour rester faciles a retrouver."
-                />
-              )}
-            </SectionCard>
-
-            <SectionCard title="Cartes a debloquer" eyebrow="Progression">
-              {unlockableCards.length ? (
-                <div className="space-y-3">
-                  {unlockableCards.map((topic) => (
-                    <div
-                      key={`${topic.topic_id}-${topic.card_payload?.primary_card_slug}`}
-                      className="rounded-lg border border-amber-200 bg-amber-50 p-4"
-                    >
-                      <p className="font-semibold text-foreground">
-                        {topic.card_payload?.primary_card_label ?? "Carte visible"}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">{topic.topic_title}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Les cartes apparaitront ici"
-                  body="Les cartes liees aux sujets visibles apparaitront ici au fil de vos lectures."
-                  actionHref="/cards"
-                  actionLabel="Voir le catalogue"
-                />
-              )}
-            </SectionCard>
-
-            <SectionCard title="Espaces en vue" eyebrow="Familles">
-              {data.territories.length ? (
-                <div className="space-y-3">
-                  {data.territories.map((topic) => (
-                    <div
-                      key={`${topic.space_slug}-${topic.topic_id}`}
-                      className="rounded-lg border border-border bg-background p-4"
-                    >
-                      <p className="font-semibold text-foreground">
-                        {topic.space_name ?? "Espace non renseigne"}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">{topic.topic_title}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Les espaces les plus visibles apparaitront ici"
-                  body="Cette colonne mettra en avant les familles et espaces qui structurent la conversation."
-                />
-              )}
-            </SectionCard>
-          </aside>
-        </div>
+        </aside>
       </div>
     </PageContainer>
   );
