@@ -7,7 +7,7 @@ export const siteConfig = {
       { href: "/", label: "Accueil" },
       { href: "/spaces", label: "Espaces" },
       { href: "/topics", label: "Sujets" },
-      { href: "/territories", label: "Territoires" },
+      { href: "/leaderboard", label: "Classements" },
       { href: "/cards", label: "Cartes" }
     ],
     authenticated: [

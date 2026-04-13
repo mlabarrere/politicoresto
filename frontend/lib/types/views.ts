@@ -289,3 +289,57 @@ export type CardCatalogRow = {
   is_stackable: boolean;
   is_active: boolean;
 };
+
+export type ThreadPostView = {
+  id: string;
+  thread_id: string;
+  type: string;
+  title: string | null;
+  content: string | null;
+  entity_slug: string | null;
+  entity_name: string | null;
+  created_by: string;
+  username: string | null;
+  display_name: string | null;
+  created_at: string;
+  updated_at: string;
+  status: string;
+  upvote_weight: number | null;
+  downvote_weight: number | null;
+  weighted_votes: number | null;
+  comment_count: number | null;
+};
+
+export type CommentView = {
+  id: string;
+  thread_id: string;
+  thread_post_id: string | null;
+  parent_post_id: string | null;
+  depth: number;
+  author_user_id: string;
+  username: string | null;
+  display_name: string | null;
+  title: string | null;
+  body_markdown: string;
+  created_at: string;
+  updated_at: string;
+  post_status: string;
+  upvote_weight: number | null;
+  downvote_weight: number | null;
+  comment_score: number | null;
+};
+
+export type LeaderboardEntryView = {
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  global_score?: number | null;
+  local_score?: number | null;
+  analytic_score?: number | null;
+  global_rank?: number | null;
+  local_rank?: number | null;
+  entity_id?: string | null;
+  entity_slug?: string | null;
+  entity_name?: string | null;
+  updated_at?: string | null;
+};

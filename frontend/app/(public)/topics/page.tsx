@@ -1,94 +1,56 @@
-import Link from "next/link";
-import { ArrowDownWideNarrow, SlidersHorizontal } from "lucide-react";
-
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
-import { SectionCard } from "@/components/layout/section-card";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { FeedList } from "@/components/feed/feed-list";
 import { getTopicsScreenData } from "@/lib/data/public/topics";
-import { formatDate, formatNumber } from "@/lib/utils/format";
+import { toHomeFeedTopic } from "@/lib/data/public/canonical";
 
 export default async function TopicsPage() {
   const { data, error } = await getTopicsScreenData();
+  const items = data.topics.map((topic, index) =>
+    toHomeFeedTopic(
+      {
+        topic_id: topic.id,
+        topic_slug: topic.slug,
+        topic_title: topic.title,
+        topic_description: topic.description,
+        topic_status: topic.topic_status,
+        visibility: topic.effective_visibility,
+        open_at: topic.open_at,
+        close_at: topic.close_at,
+        created_at: topic.created_at,
+        visible_post_count: topic.visible_post_count,
+        active_prediction_count: topic.active_prediction_count,
+        prediction_type: topic.aggregate?.prediction_type ?? null,
+        thread_score: index + 1,
+        editorial_feed_rank: index + 1
+      } as Record<string, unknown>,
+      index + 1
+    )
+  );
 
   return (
     <PageContainer>
-      <div className="space-y-8">
-        <section className="soft-panel p-6 sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
-              <p className="eyebrow">Sujets</p>
-              <h1 className="editorial-title text-4xl font-bold text-foreground">Tous les sujets</h1>
-              <p className="max-w-3xl text-base leading-7 text-muted-foreground">
-                Retrouvez les fils de campagne visibles, avec leurs signaux d'activite et leurs objets associes.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2">
-                <SlidersHorizontal className="size-4" />
-                Filtres
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2">
-                <ArrowDownWideNarrow className="size-4" />
-                Plus recents
-              </span>
-            </div>
-          </div>
+      <div className="mx-auto max-w-4xl space-y-5">
+        <section className="rounded-3xl border border-border bg-card p-6">
+          <p className="eyebrow">Sujets</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-foreground">
+            Tous les threads
+          </h1>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            Vue brute de tous les fils publics visibles.
+          </p>
         </section>
 
-        <SectionCard title="Liste des sujets" eyebrow={`${data.topics.length} sujets visibles`}>
-          {error ? (
-            <div className="mb-5">
-              <EmptyState
-                title="Lecture partielle"
-                body={`Certaines donnees ne sont pas encore completes: ${error}`}
-              />
-            </div>
-          ) : null}
+        {error ? <EmptyState title="Lecture partielle" body={`Certaines donnees manquent: ${error}`} /> : null}
 
-          {data.topics.length ? (
-            <ul className="grid gap-4">
-              {data.topics.map((topic) => (
-                <li key={topic.id} className="rounded-lg border border-border bg-background p-5">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusBadge label={topic.topic_status} tone="default" />
-                        {topic.primary_territory_id ? (
-                          <StatusBadge label="Territoire" tone="info" />
-                        ) : null}
-                      </div>
-                      <Link
-                        href={`/topic/${topic.slug}`}
-                        className="block text-xl font-semibold tracking-tight text-foreground transition hover:text-primary"
-                      >
-                        {topic.title}
-                      </Link>
-                      <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-                        {topic.description ?? "Sujet public pret a etre consulte."}
-                      </p>
-                    </div>
-                    <div className="grid gap-2 text-sm text-muted-foreground lg:min-w-[250px]">
-                      <p>Ouvert le {formatDate(topic.open_at)}</p>
-                      <p>Messages visibles: {formatNumber(topic.visible_post_count ?? 0)}</p>
-                      <p>
-                        Participations:{" "}
-                        {formatNumber(
-                          topic.aggregate?.submission_count ?? topic.active_prediction_count ?? 0
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState
-              title="Aucun sujet visible pour le moment"
-              body="Les sujets publics apparaitront ici des qu'ils seront disponibles."
-            />
-          )}
-        </SectionCard>
+        {items.length ? (
+          <FeedList items={items} featuredCount={0} />
+        ) : (
+          <EmptyState
+            title="Aucun sujet visible pour le moment"
+            body="Les sujets publics apparaitront ici des qu'ils seront disponibles."
+          />
+        )}
       </div>
     </PageContainer>
   );
