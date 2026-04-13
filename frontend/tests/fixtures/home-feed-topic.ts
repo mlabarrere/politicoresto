@@ -1,0 +1,200 @@
+import type { HomeFeedTopicView } from "@/lib/types/views";
+
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object
+    ? T[K] extends Array<infer U>
+      ? Array<DeepPartial<U>>
+      : DeepPartial<T[K]>
+    : T[K];
+};
+
+export function buildHomeFeedTopic(
+  overrides: DeepPartial<HomeFeedTopicView> = {}
+): HomeFeedTopicView {
+  const base: HomeFeedTopicView = {
+    topic_id: "topic-1",
+    topic_slug: "pacte-metropolitain",
+    topic_title: "Quel taux d'adhesion au pacte metropolitain ?",
+    topic_description: "Sujet regional de demonstration pour le feed homepage.",
+    topic_status: "open",
+    derived_lifecycle_state: "open",
+    visibility: "public",
+    is_sensitive: false,
+    space_id: "space-1",
+    space_slug: "ile-de-france-politique",
+    space_name: "Ile-de-France politique",
+    primary_taxonomy_slug: "local-municipal",
+    primary_taxonomy_label: "Local municipal",
+    primary_territory_id: "territory-1",
+    primary_territory_slug: "11",
+    primary_territory_name: "Ile-de-France",
+    primary_territory_level: "region",
+    prediction_type: "bounded_percentage",
+    prediction_question_title: "Part de responsables locaux favorables",
+    aggregate_payload: {
+      primary_value: 57,
+      primary_label: "Mediane",
+      secondary_value: 59,
+      secondary_label: "Moyenne",
+      unit_label: "%",
+      submission_count: 12,
+      distribution_hint: "numeric_summary"
+    },
+    metrics_payload: {
+      active_prediction_count: 12,
+      visible_post_count: 4,
+      time_label: "Cloture le 2026-04-21"
+    },
+    discussion_payload: {
+      excerpt_type: "analysis",
+      excerpt_title: "Le pacte metropolitain provoque des adhesions selectives",
+      excerpt_text: "Les signaux de soutien depassent Paris intra muros.",
+      excerpt_created_at: "2026-04-01T07:35:00Z"
+    },
+    card_payload: {
+      primary_card_slug: "paris-observer",
+      primary_card_label: "Paris Observer",
+      primary_card_rarity: "common",
+      additional_count: 0
+    },
+    resolution_payload: {
+      resolution_status: null,
+      resolved_label: null,
+      resolved_at: null,
+      resolution_note: null,
+      source_label: null,
+      source_url: null
+    },
+    last_activity_at: "2026-04-01T07:35:00Z",
+    open_at: "2026-03-22T08:00:00Z",
+    close_at: "2026-04-21T18:00:00Z",
+    resolve_deadline_at: "2026-04-28T18:00:00Z",
+    resolved_at: null,
+    visible_post_count: 4,
+    active_prediction_count: 12,
+    activity_score_raw: 0.8,
+    freshness_score_raw: 0.95,
+    participation_score_raw: 0.7,
+    territorial_relevance_score_raw: 0.72,
+    resolution_proximity_score_raw: 0,
+    editorial_priority_score_raw: 0,
+    shift_score_raw: 0,
+    editorial_feed_score: 0.61,
+    feed_reason_code: "territory_relevant",
+    feed_reason_label: "Remonte car ce sujet concerne votre zone",
+    editorial_feed_rank: 1,
+    topic_card_payload: {
+      topic_id: "topic-1",
+      topic_slug: "pacte-metropolitain",
+      topic_title: "Quel taux d'adhesion au pacte metropolitain ?",
+      topic_description: "Sujet regional de demonstration pour le feed homepage.",
+      derived_lifecycle_state: "open",
+      topic_status: "open",
+      visibility: "public",
+      is_sensitive: false,
+      space_id: "space-1",
+      space_slug: "ile-de-france-politique",
+      space_name: "Ile-de-France politique",
+      primary_taxonomy_slug: "local-municipal",
+      primary_taxonomy_label: "Local municipal",
+      primary_territory_id: "territory-1",
+      primary_territory_slug: "11",
+      primary_territory_name: "Ile-de-France",
+      primary_territory_level: "region",
+      prediction_type: "bounded_percentage",
+      prediction_question_title: "Part de responsables locaux favorables",
+      aggregate_payload: {
+        primary_value: 57,
+        primary_label: "Mediane",
+        secondary_value: 59,
+        secondary_label: "Moyenne",
+        unit_label: "%",
+        submission_count: 12,
+        distribution_hint: "numeric_summary"
+      },
+      metrics_payload: {
+        active_prediction_count: 12,
+        visible_post_count: 4,
+        time_label: "Cloture le 2026-04-21"
+      },
+      discussion_payload: {
+        excerpt_type: "analysis",
+        excerpt_title: "Le pacte metropolitain provoque des adhesions selectives",
+        excerpt_text: "Les signaux de soutien depassent Paris intra muros.",
+        excerpt_created_at: "2026-04-01T07:35:00Z"
+      },
+      card_payload: {
+        primary_card_slug: "paris-observer",
+        primary_card_label: "Paris Observer",
+        primary_card_rarity: "common",
+        additional_count: 0
+      },
+      resolution_payload: {
+        resolution_status: null,
+        resolved_label: null,
+        resolved_at: null,
+        resolution_note: null,
+        source_label: null,
+        source_url: null
+      },
+      feed_reason_code: "territory_relevant",
+      feed_reason_label: "Remonte car ce sujet concerne votre zone",
+      editorial_feed_score: 0.61
+    }
+  };
+
+  return {
+    ...base,
+    ...overrides,
+    aggregate_payload: {
+      ...base.aggregate_payload,
+      ...(overrides.aggregate_payload ?? {})
+    },
+    metrics_payload: {
+      ...base.metrics_payload,
+      ...(overrides.metrics_payload ?? {})
+    },
+    discussion_payload: {
+      ...base.discussion_payload,
+      ...(overrides.discussion_payload ?? {})
+    },
+    card_payload:
+      overrides.card_payload === null
+        ? null
+        : {
+            ...base.card_payload!,
+            ...(overrides.card_payload ?? {})
+          },
+    resolution_payload: {
+      ...base.resolution_payload,
+      ...(overrides.resolution_payload ?? {})
+    },
+    topic_card_payload: {
+      ...base.topic_card_payload,
+      ...(overrides.topic_card_payload ?? {}),
+      aggregate_payload: {
+        ...base.topic_card_payload.aggregate_payload,
+        ...(overrides.topic_card_payload?.aggregate_payload ?? {})
+      },
+      metrics_payload: {
+        ...base.topic_card_payload.metrics_payload,
+        ...(overrides.topic_card_payload?.metrics_payload ?? {})
+      },
+      discussion_payload: {
+        ...base.topic_card_payload.discussion_payload,
+        ...(overrides.topic_card_payload?.discussion_payload ?? {})
+      },
+      card_payload:
+        overrides.topic_card_payload?.card_payload === null
+          ? null
+          : {
+              ...base.topic_card_payload.card_payload!,
+              ...(overrides.topic_card_payload?.card_payload ?? {})
+            },
+      resolution_payload: {
+        ...base.topic_card_payload.resolution_payload,
+        ...(overrides.topic_card_payload?.resolution_payload ?? {})
+      }
+    }
+  };
+}
