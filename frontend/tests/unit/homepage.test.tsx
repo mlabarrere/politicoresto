@@ -70,11 +70,14 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(screen.getByText("Suivez les sujets publics qui comptent.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Suivez la presidentielle comme un jeu de conversation.")
+    ).toBeInTheDocument();
     expect(screen.getByText("A surveiller")).toBeInTheDocument();
     expect(screen.getByText("Cartes a debloquer")).toBeInTheDocument();
     expect(screen.getByText("Derniers resultats")).toBeInTheDocument();
-    expect(screen.getAllByText("Pres de vous")).toHaveLength(2);
+    expect(screen.getByText("Familles visibles")).toBeInTheDocument();
+    expect(screen.getByText("Espaces en vue")).toBeInTheDocument();
   });
 
   it("renders an empty state when the feed is empty", async () => {

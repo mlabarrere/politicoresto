@@ -32,16 +32,16 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-center gap-2">
                 <p className="eyebrow text-primary">Accueil</p>
                 <span className="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-primary">
-                  Sujets, discussions, territoires et resultats
+                  Feed presidentiel, familles politiques et resultats
                 </span>
               </div>
               <div className="space-y-4">
                 <h1 className="editorial-title max-w-4xl text-4xl font-bold leading-tight text-foreground sm:text-5xl">
-                  Suivez les sujets publics qui comptent.
+                  Suivez la presidentielle comme un jeu de conversation.
                 </h1>
                 <p className="max-w-3xl text-lg leading-8 text-muted-foreground">
-                  Politicoresto rassemble des sujets clairs, des discussions lisibles, des
-                  reperes locaux et des resultats a revoir dans le temps.
+                  Politicoresto rassemble des sujets, des sondages, des paris et des espaces
+                  partisans dans un meme feed public.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -52,26 +52,26 @@ export default async function HomePage() {
                   href="/territories"
                   className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                 >
-                  Explorer les territoires
+                  Ouvrir les reperes publics
                 </Link>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-lg border border-border bg-background p-4">
                   <p className="eyebrow">Ce que vous lisez ici</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Des sujets clairs, pas un fil de commentaires sans cadre.
+                    Des fils politiques lisibles, pas un mur de messages sans contexte.
                   </p>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-4">
                   <p className="eyebrow">Ce qui remonte</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Activite, territoire, cloture proche ou resultat attendu.
+                    Fraicheur, activite, friction entre camps et resultats attendus.
                   </p>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-4">
                   <p className="eyebrow">Pourquoi revenir</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Pour retrouver les sujets qui bougent, se resolvent ou debloquent des cartes.
+                    Pour revoir les sondages, les bascules de camps et les sujets qui repartent.
                   </p>
                 </div>
               </div>
@@ -83,22 +83,22 @@ export default async function HomePage() {
                 <div className="flex gap-3">
                   <Compass className="mt-0.5 size-4 text-sky-700" />
                   <div>
-                    <p className="font-semibold text-foreground">Du local au national</p>
-                    <p>Les sujets se lisent par territoire, par espace et par moment cle.</p>
+                    <p className="font-semibold text-foreground">Global et partisan</p>
+                    <p>Les sujets se lisent dans le feed global et dans les espaces de camp.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <Sparkles className="mt-0.5 size-4 text-primary" />
                   <div>
                     <p className="font-semibold text-foreground">Des priorites visibles</p>
-                    <p>Chaque sujet remonte pour une raison simple et lisible.</p>
+                    <p>Chaque sujet remonte pour une raison lisible, pas pour un score opaque.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <Trophy className="mt-0.5 size-4 text-amber-700" />
                   <div>
-                    <p className="font-semibold text-foreground">Des cartes en soutien</p>
-                    <p>La progression reste visible sans prendre le dessus sur les sujets.</p>
+                    <p className="font-semibold text-foreground">Reputation et progression</p>
+                    <p>Les cartes et la reconnaissance restent visibles sans remplacer le debat.</p>
                   </div>
                 </div>
               </div>
@@ -137,16 +137,16 @@ export default async function HomePage() {
               </div>
             </SectionCard>
 
-            <SectionCard title="Pres de vous" eyebrow="Territoires">
+            <SectionCard title="Familles visibles" eyebrow="Espaces">
               {data.territories.length ? (
                 <div className="space-y-3">
                   {data.territories.slice(0, 3).map((topic) => (
                     <div
-                      key={`${topic.primary_territory_slug}-${topic.topic_id}`}
+                      key={`${topic.space_slug}-${topic.topic_id}`}
                       className="rounded-lg border border-border bg-background p-4"
                     >
                       <p className="font-semibold text-foreground">
-                        {topic.primary_territory_name ?? "Territoire non renseigne"}
+                        {topic.space_name ?? "Espace non renseigne"}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">{topic.topic_title}</p>
                     </div>
@@ -154,10 +154,10 @@ export default async function HomePage() {
                 </div>
               ) : (
                 <EmptyState
-                  title="Les reperes locaux arrivent"
-                  body="Les premiers sujets locaux apparaitront ici des que des territoires visibles remonteront dans le feed."
-                  actionHref="/territories"
-                  actionLabel="Ouvrir les territoires"
+                  title="Les espaces partisans arrivent"
+                  body="Les espaces les plus visibles apparaitront ici des qu'ils remonteront dans le feed."
+                  actionHref="/spaces"
+                  actionLabel="Ouvrir les espaces"
                 />
               )}
             </SectionCard>
@@ -311,16 +311,16 @@ export default async function HomePage() {
               )}
             </SectionCard>
 
-            <SectionCard title="Pres de vous" eyebrow="Local">
+            <SectionCard title="Espaces en vue" eyebrow="Familles">
               {data.territories.length ? (
                 <div className="space-y-3">
                   {data.territories.map((topic) => (
                     <div
-                      key={`${topic.primary_territory_slug}-${topic.topic_id}`}
+                      key={`${topic.space_slug}-${topic.topic_id}`}
                       className="rounded-lg border border-border bg-background p-4"
                     >
                       <p className="font-semibold text-foreground">
-                        {topic.primary_territory_name ?? "Territoire non renseigne"}
+                        {topic.space_name ?? "Espace non renseigne"}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">{topic.topic_title}</p>
                     </div>
@@ -328,8 +328,8 @@ export default async function HomePage() {
                 </div>
               ) : (
                 <EmptyState
-                  title="Les sujets locaux apparaitront ici"
-                  body="Cette colonne mettra en avant les sujets lies a un territoire proche."
+                  title="Les espaces les plus visibles apparaitront ici"
+                  body="Cette colonne mettra en avant les familles et espaces qui structurent la conversation."
                 />
               )}
             </SectionCard>

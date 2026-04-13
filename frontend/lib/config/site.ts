@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "Politicoresto",
   description:
-    "Suivez des sujets publics, des discussions lisibles, des resultats et des reperes locaux dans une interface claire.",
+    "Suivez la presidentielle via un feed de sujets, de sondages, de paris et d'espaces partisans.",
   navigation: {
     primary: [
       { href: "/", label: "Accueil" },
@@ -20,10 +20,11 @@ export const siteConfig = {
   },
   editorialTabs: [
     "A la une",
-    "Local",
-    "Institutions",
-    "Judiciaire",
-    "International",
-    "Resolus"
+    "Bloc central",
+    "RN",
+    "LFI",
+    "LR",
+    "Ecologistes",
+    "Resultats"
   ]
 } as const;

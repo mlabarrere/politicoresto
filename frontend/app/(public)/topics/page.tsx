@@ -20,7 +20,7 @@ export default async function TopicsPage() {
               <p className="eyebrow">Sujets</p>
               <h1 className="editorial-title text-4xl font-bold text-foreground">Tous les sujets</h1>
               <p className="max-w-3xl text-base leading-7 text-muted-foreground">
-                Retrouvez les sujets publics par date, par etat et par niveau d'activite.
+                Retrouvez les fils de campagne visibles, avec leurs signaux d'activite et leurs objets associes.
               </p>
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
