@@ -11,18 +11,15 @@ describe("Editorial UI states", () => {
     render(
       <EmptyState
         title="Aucun thread visible pour le moment"
-        body="Revenez plus tard ou explorez un autre espace partisan."
-        actionHref={"/spaces" as Route}
-        actionLabel="Voir les espaces"
+        body="Revenez plus tard ou explorez un autre bloc."
+        actionHref={"/threads" as Route}
+        actionLabel="Voir les threads"
       />
     );
 
     expect(screen.getByText("Aucun thread visible pour le moment")).toBeInTheDocument();
-    expect(screen.getByText("Revenez plus tard ou explorez un autre espace partisan.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Voir les espaces" })).toHaveAttribute(
-      "href",
-      "/spaces"
-    );
+    expect(screen.getByText("Revenez plus tard ou explorez un autre bloc.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Voir les threads" })).toHaveAttribute("href", "/threads");
   });
 
   it("renders a screen state with navigation and retry affordances", () => {

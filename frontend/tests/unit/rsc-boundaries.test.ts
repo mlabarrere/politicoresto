@@ -6,20 +6,12 @@ import { describe, expect, it } from "vitest";
 const root = path.resolve(__dirname, "../..");
 
 describe("RSC boundaries", () => {
-  it("keeps buttonVariants in a server-safe module for server components", () => {
-    const files = [
-      "app/page.tsx",
-      "components/layout/empty-state.tsx",
-      "components/layout/screen-state.tsx",
-      "components/layout/site-header.tsx"
-    ];
+  it("keeps the home page on server-safe imports", () => {
+    const source = fs.readFileSync(path.join(root, "app/page.tsx"), "utf8");
 
-    for (const file of files) {
-      const source = fs.readFileSync(path.join(root, file), "utf8");
-
-      expect(source).not.toMatch(/buttonVariants\s*}\s*from\s+"@\/components\/ui\/button"/);
-      expect(source).not.toMatch(/buttonVariants\s*}\s*from\s+'@\/components\/ui\/button'/);
-      expect(source).toContain('from "@/components/ui/button-variants"');
-    }
+    expect(source).toContain('createServerSupabaseClient');
+    expect(source).toContain('PoliticalBlocSidebar');
+    expect(source).not.toContain('@/components/ui/button');
+    expect(source).not.toContain('createBrowserSupabaseClient');
   });
 });

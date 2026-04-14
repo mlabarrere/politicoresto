@@ -31,14 +31,9 @@ export default async function ThreadsPage() {
   return (
     <PageContainer>
       <div className="mx-auto max-w-4xl space-y-5">
-        <section className="rounded-3xl border border-border bg-card p-6">
-          <p className="eyebrow">Threads</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-foreground">
-            Tous les threads
-          </h1>
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Vue brute de tous les fils publics visibles.
-          </p>
+        <section className="rounded-2xl border border-border bg-card px-4 py-3">
+          <p className="text-sm font-medium text-foreground">Archive du feed</p>
+          <p className="mt-1 text-xs text-muted-foreground">Liste brute des threads publics.</p>
         </section>
 
         {error ? <EmptyState title="Lecture partielle" body={`Certaines donnees manquent: ${error}`} /> : null}

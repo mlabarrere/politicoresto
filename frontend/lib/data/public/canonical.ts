@@ -38,7 +38,6 @@ type ThreadDetailRow = JsonRecord & {
   description?: string | null;
   topic_status: string;
   effective_visibility: string;
-  primary_territory_id?: string | null;
   open_at: string;
   close_at: string;
   created_at: string;
@@ -240,10 +239,6 @@ export function toHomeFeedTopic(row: FeedRow, rank: number): HomeFeedTopicView {
     space_name: asString(row.space_name ?? nested.space_name),
     primary_taxonomy_slug: asString(row.primary_taxonomy_slug ?? nested.primary_taxonomy_slug),
     primary_taxonomy_label: asString(row.primary_taxonomy_label ?? nested.primary_taxonomy_label),
-    primary_territory_id: asString(row.primary_territory_id ?? nested.primary_territory_id),
-    primary_territory_slug: asString(row.primary_territory_slug ?? nested.primary_territory_slug),
-    primary_territory_name: asString(row.primary_territory_name ?? nested.primary_territory_name),
-    primary_territory_level: asString(row.primary_territory_level ?? nested.primary_territory_level),
     prediction_type: asString(row.prediction_type ?? nested.prediction_type),
     prediction_question_title: asString(
       row.prediction_question_title ?? nested.prediction_question_title ?? row.topic_title
@@ -278,7 +273,6 @@ export function toHomeFeedTopic(row: FeedRow, rank: number): HomeFeedTopicView {
     activity_score_raw: asNumber(row.activity_score_raw, 0),
     freshness_score_raw: asNumber(row.freshness_score_raw, 0),
     participation_score_raw: asNumber(row.participation_score_raw, 0),
-    territorial_relevance_score_raw: asNumber(row.territorial_relevance_score_raw, 0),
     resolution_proximity_score_raw: asNumber(row.resolution_proximity_score_raw, 0),
     editorial_priority_score_raw: asNumber(row.editorial_priority_score_raw, 0),
     shift_score_raw: asNumber(row.shift_score_raw, 0),
@@ -299,7 +293,6 @@ export function toTopicSummary(row: ThreadDetailRow): TopicSummaryView {
     description: row.description ?? null,
     topic_status: row.topic_status,
     effective_visibility: row.effective_visibility,
-    primary_territory_id: row.primary_territory_id ?? null,
     open_at: row.open_at,
     close_at: row.close_at,
     created_at: row.created_at,

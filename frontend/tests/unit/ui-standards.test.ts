@@ -21,9 +21,7 @@ const sourceFiles = [
   "app/auth/login/page.tsx",
   "app/(public)/threads/page.tsx",
   "app/(public)/thread/[slug]/page.tsx",
-  "app/(public)/spaces/page.tsx",
-  "app/(public)/space/[slug]/page.tsx",
-  "app/(public)/cards/page.tsx",
+  "app/(public)/leaderboard/page.tsx",
   "app/(public)/profile/[username]/page.tsx",
   "components/layout/app-shell.tsx",
   "components/layout/site-header.tsx",
@@ -33,6 +31,7 @@ const sourceFiles = [
   "components/layout/screen-state.tsx",
   "app/not-found.tsx",
   "components/feed/thread-card.tsx",
+  "components/navigation/political-bloc-sidebar.tsx",
   "components/navigation/main-nav.tsx",
   "components/navigation/auth-nav.tsx"
 ];

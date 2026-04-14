@@ -6,31 +6,33 @@ import { CommentItem } from "@/components/comments/comment-item";
 export function CommentList({
   comments,
   redirectPath,
-  defaultThreadPost
+  defaultThreadPost,
+  currentUserId
 }: {
   comments: CommentView[];
   redirectPath: string;
   defaultThreadPost: ThreadPostView | null;
+  currentUserId: string | null;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {defaultThreadPost ? (
-        <form action={createCommentAction} className="rounded-2xl border border-border bg-card p-4">
+        <form id="reply-form" action={createCommentAction} className="rounded-2xl border border-border bg-card p-3">
           <input type="hidden" name="thread_post_id" value={defaultThreadPost.id} />
           <input type="hidden" name="redirect_path" value={redirectPath} />
           <label className="block">
-            <span className="eyebrow">Commenter</span>
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reponse rapide</span>
             <textarea
               name="body"
-              rows={4}
-              placeholder="Ajouter un angle, une objection, un signal."
-              className="mt-2 w-full resize-y rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none ring-0 placeholder:text-muted-foreground"
+              rows={3}
+              placeholder="Votre reponse"
+              className="mt-2 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-0 placeholder:text-muted-foreground"
             />
           </label>
-          <div className="mt-3 flex justify-end">
+          <div className="mt-2 flex justify-end">
             <button
               type="submit"
-              className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90"
+              className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90"
             >
               Publier
             </button>
@@ -41,7 +43,12 @@ export function CommentList({
       {comments.length ? (
         <div className="space-y-3">
           {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} redirectPath={redirectPath} />
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              redirectPath={redirectPath}
+              canEdit={Boolean(currentUserId && currentUserId === comment.author_user_id)}
+            />
           ))}
         </div>
       ) : (

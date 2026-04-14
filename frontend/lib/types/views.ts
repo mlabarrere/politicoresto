@@ -2,7 +2,6 @@ export type PublicProfileView = {
   user_id: string;
   display_name: string | null;
   bio: string | null;
-  public_territory_id: string | null;
   created_at: string;
 };
 
@@ -59,10 +58,6 @@ export type TopicCardPayload = {
   space_name: string | null;
   primary_taxonomy_slug: string | null;
   primary_taxonomy_label: string | null;
-  primary_territory_id: string | null;
-  primary_territory_slug: string | null;
-  primary_territory_name: string | null;
-  primary_territory_level: string | null;
   prediction_type: string | null;
   prediction_question_title: string | null;
   aggregate_payload: TopicAggregatePayload;
@@ -89,10 +84,6 @@ export type HomeFeedTopicView = {
   space_name: string | null;
   primary_taxonomy_slug: string | null;
   primary_taxonomy_label: string | null;
-  primary_territory_id: string | null;
-  primary_territory_slug: string | null;
-  primary_territory_name: string | null;
-  primary_territory_level: string | null;
   prediction_type: string | null;
   prediction_question_title: string | null;
   aggregate_payload: TopicAggregatePayload;
@@ -110,7 +101,6 @@ export type HomeFeedTopicView = {
   activity_score_raw: number;
   freshness_score_raw: number;
   participation_score_raw: number;
-  territorial_relevance_score_raw: number;
   resolution_proximity_score_raw: number;
   editorial_priority_score_raw: number;
   shift_score_raw: number;
@@ -129,7 +119,6 @@ export type TopicSummaryView = {
   description: string | null;
   topic_status: string;
   effective_visibility: string;
-  primary_territory_id: string | null;
   open_at: string;
   close_at: string;
   created_at: string;
@@ -183,6 +172,14 @@ export type MyPredictionHistoryView = {
   answer_option_id: string | null;
   answer_ordinal: number | null;
   recorded_at: string;
+};
+
+export type PrivateVoteHistoryView = {
+  id: string;
+  vote_round: number | null;
+  declared_option_label: string;
+  declared_candidate_name: string | null;
+  declared_at: string;
 };
 
 export type MyReputationSummaryView = {

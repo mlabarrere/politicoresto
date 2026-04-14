@@ -14,7 +14,7 @@ export default async function LeaderboardPage() {
             Analystes globaux
           </h1>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Score global + activité visible + justesse analytique.
+            Score global, activite visible et justesse analytique.
           </p>
         </section>
 

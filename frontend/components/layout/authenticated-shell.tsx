@@ -6,19 +6,20 @@ import { AuthNav } from "@/components/navigation/auth-nav";
 export function AuthenticatedShell({ children }: PropsWithChildren) {
   return (
     <PageContainer>
-      <div className="space-y-8">
-        <section className="soft-panel p-6">
-          <p className="eyebrow">Espace personnel</p>
-          <h1 className="editorial-title mt-3 text-4xl font-bold text-foreground">Mon espace</h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-            Une vue de retour sur vos predictions, vos cartes et la reputation accumulee dans
-            les sujets publics que vous suivez.
-          </p>
-          <div className="mt-6">
-            <AuthNav />
-          </div>
-        </section>
-        {children}
+      <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
+        <aside className="lg:sticky lg:top-24">
+          <section className="soft-panel border-border/60 p-5 shadow-sm">
+            <p className="eyebrow">Mon profil</p>
+            <h1 className="editorial-title mt-3 text-3xl font-bold text-foreground">Mon profil</h1>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Reputation, vault prive et parametres sensibles. Rien n'est public.
+            </p>
+            <div className="mt-6">
+              <AuthNav />
+            </div>
+          </section>
+        </aside>
+        <section className="min-w-0 space-y-8">{children}</section>
       </div>
     </PageContainer>
   );

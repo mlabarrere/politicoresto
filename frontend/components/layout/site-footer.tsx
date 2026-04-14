@@ -5,7 +5,7 @@ export function SiteFooter() {
         <div className="space-y-2">
           <p className="eyebrow">Politicoresto</p>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Des sujets publics, des discussions lisibles, des resultats et des reperes locaux.
+            Feed public presidentielle, discussions lisibles, sondages et vault prive separe.
           </p>
         </div>
         <p className="text-sm text-muted-foreground">

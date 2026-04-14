@@ -7,7 +7,7 @@ export default async function MeReputationPage() {
   const { data, error } = await getMyReputationSummary();
 
   return (
-    <SectionCard title="Reputation" eyebrow="Historique consolide">
+    <SectionCard title="Reputation" eyebrow="Mon profil">
       {error ? (
         <EmptyState
           title="Reputation indisponible"

@@ -1,9 +1,7 @@
 import type {
-  CardCatalogRow,
   CommentView,
   LeaderboardEntryView,
-  MyCardInventoryView,
-  MyPredictionHistoryView,
+  PrivateVoteHistoryView,
   MyReputationSummaryView,
   PollOptionRow,
   PollQuestionRow,
@@ -11,7 +9,6 @@ import type {
   PostRow,
   PredictionOptionRow,
   PredictionQuestionRow,
-  PublicCardShowcaseView,
   PublicPollResultsView,
   PublicProfileView,
   SpaceRow,
@@ -29,23 +26,12 @@ export type LoadState<T> = {
 
 export type HomeScreenData = {
   feed: ThreadFeedItemView[];
-  watchlist: ThreadFeedItemView[];
-  featuredSpaces: SpaceRow[];
   leaderboard: LeaderboardEntryView[];
-};
-
-export type SpacesScreenData = {
-  spaces: SpaceRow[];
-  highlightedThreads: ThreadSummaryView[];
+  selectedBloc: string | null;
 };
 
 export type ThreadsScreenData = {
   threads: Array<ThreadSummaryView & { aggregate?: ThreadPredictionAggregateView | null }>;
-};
-
-export type CardsScreenData = {
-  catalog: CardCatalogRow[];
-  showcase: PublicCardShowcaseView[];
 };
 
 export type PublicProfileScreenData = {
@@ -74,6 +60,5 @@ export type SpaceDetailScreenData = {
 
 export type MeDashboardScreenData = {
   reputation: MyReputationSummaryView | null;
-  cards: MyCardInventoryView[];
-  predictions: MyPredictionHistoryView[];
+  privateHistory: PrivateVoteHistoryView[];
 };
