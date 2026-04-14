@@ -10,6 +10,9 @@ export async function getGlobalLeaderboard(limit = 6) {
     .limit(limit);
 
   if (error) {
+    if ((error as { code?: string }).code === "PGRST205") {
+      return [];
+    }
     throw error;
   }
 
@@ -26,6 +29,9 @@ export async function getEntityLeaderboard(entityId: string, limit = 6) {
     .limit(limit);
 
   if (error) {
+    if ((error as { code?: string }).code === "PGRST205") {
+      return [];
+    }
     throw error;
   }
 

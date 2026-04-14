@@ -49,15 +49,7 @@ export async function SiteHeader() {
             <Link href="/" className="text-xl font-semibold tracking-tight text-foreground">
               {siteConfig.name}
             </Link>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Feed presidentiel
-            </p>
-          </div>
-        </div>
-
-        <div className="hidden min-w-[240px] max-w-sm flex-1 xl:block">
-          <div className="rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground">
-            Global · partis · threads
+            <p className="mt-1 text-sm text-muted-foreground">Feed presidentiel</p>
           </div>
         </div>
 
@@ -67,19 +59,14 @@ export async function SiteHeader() {
             <div className="flex items-center gap-3">
               <Link
                 href="/me"
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" })
-                )}
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
               >
-                Mon espace
+                Mon profil
               </Link>
               <SignOutButton />
             </div>
           ) : (
-            <Link
-              href="/auth/login"
-              className={cn(buttonVariants({ size: "sm" }))}
-            >
+            <Link href="/auth/login" className={cn(buttonVariants({ size: "sm" }))}>
               Participer
             </Link>
           )}

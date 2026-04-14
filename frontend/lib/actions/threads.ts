@@ -64,3 +64,49 @@ export async function createThreadPostAction(formData: FormData) {
   revalidatePath("/threads");
   revalidatePath(redirectPath);
 }
+
+export async function updateThreadPostAction(formData: FormData) {
+  const threadPostId = String(formData.get("thread_post_id") ?? "").trim();
+  const title = String(formData.get("title") ?? "").trim() || null;
+  const content = String(formData.get("content") ?? "").trim() || null;
+  const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
+
+  if (!threadPostId) {
+    throw new Error("Thread post required");
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.rpc("rpc_update_thread_post", {
+    p_thread_post_id: threadPostId,
+    p_title: title,
+    p_content: content
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath(redirectPath);
+  revalidatePath("/");
+}
+
+export async function deleteThreadPostAction(formData: FormData) {
+  const threadPostId = String(formData.get("thread_post_id") ?? "").trim();
+  const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
+
+  if (!threadPostId) {
+    throw new Error("Thread post required");
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.rpc("rpc_delete_thread_post", {
+    p_thread_post_id: threadPostId
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath(redirectPath);
+  revalidatePath("/");
+}

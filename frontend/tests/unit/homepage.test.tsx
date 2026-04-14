@@ -56,20 +56,8 @@ function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreen
 
   return {
     feed,
-    watchlist: [feed[1]],
-    featuredSpaces: [
-      {
-        id: "space-1",
-        slug: "rn",
-        name: "RN",
-        description: "Espace parti",
-        space_type: "party",
-        space_status: "active",
-        visibility: "public",
-        created_at: "2026-04-01T00:00:00Z"
-      }
-    ],
     leaderboard: [],
+    selectedBloc: null,
     ...overrides
   };
 }
@@ -93,27 +81,23 @@ describe("HomePage", () => {
       error: null
     });
 
-    render(await HomePage());
+    render(await HomePage({ searchParams: Promise.resolve({}) }));
 
-    expect(screen.getByText("Feed politique")).toBeInTheDocument();
-    expect(screen.getByText("Navigation")).toBeInTheDocument();
-    expect(screen.getByText("Analystes")).toBeInTheDocument();
-    expect(screen.getByText("Watchlist")).toBeInTheDocument();
-    expect(screen.getByText("RN")).toBeInTheDocument();
+    expect(screen.getByText("Feed presidentiel actif")).toBeInTheDocument();
+    expect(screen.getByText("Blocs")).toBeInTheDocument();
+    expect(screen.getByText("Gauche radicale a gauche")).toBeInTheDocument();
   });
 
   it("renders an empty state when the feed is empty", async () => {
     mockedGetHomeScreenData.mockResolvedValue({
       data: makeHomeScreenData({
         feed: [],
-        watchlist: [],
-        featuredSpaces: [],
         leaderboard: []
       }),
       error: null
     });
 
-    render(await HomePage());
+    render(await HomePage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByText("Aucun thread visible")).toBeInTheDocument();
   });
@@ -124,7 +108,7 @@ describe("HomePage", () => {
       error: "relation public.thread_feed_cache does not exist"
     });
 
-    render(await HomePage());
+    render(await HomePage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByText("Feed partiel")).toBeInTheDocument();
     expect(screen.getByText(/thread_feed_cache/)).toBeInTheDocument();

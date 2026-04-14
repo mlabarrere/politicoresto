@@ -256,7 +256,6 @@ export async function getThreadDetail(slug: string): Promise<ThreadDetailScreenD
         description: ((item as Record<string, unknown>).topic_description as string | null) ?? null,
         topic_status: String((item as Record<string, unknown>).topic_status),
         effective_visibility: String((item as Record<string, unknown>).visibility ?? "public"),
-        primary_territory_id: ((item as Record<string, unknown>).primary_territory_id as string | null) ?? null,
         open_at: String((item as Record<string, unknown>).open_at),
         close_at: String((item as Record<string, unknown>).close_at),
         created_at: String((item as Record<string, unknown>).created_at)

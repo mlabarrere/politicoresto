@@ -28,3 +28,47 @@ export async function createCommentAction(formData: FormData) {
   revalidatePath(redirectPath);
   revalidatePath("/");
 }
+
+export async function updateCommentAction(formData: FormData) {
+  const commentId = String(formData.get("comment_id") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
+
+  if (!commentId || !body) {
+    throw new Error("Comment invalid");
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.rpc("rpc_update_comment", {
+    p_comment_id: commentId,
+    p_body_markdown: body
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath(redirectPath);
+  revalidatePath("/");
+}
+
+export async function deleteCommentAction(formData: FormData) {
+  const commentId = String(formData.get("comment_id") ?? "").trim();
+  const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
+
+  if (!commentId) {
+    throw new Error("Comment invalid");
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.rpc("rpc_delete_comment", {
+    p_comment_id: commentId
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath(redirectPath);
+  revalidatePath("/");
+}

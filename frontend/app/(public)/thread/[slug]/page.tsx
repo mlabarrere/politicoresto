@@ -1,17 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Route } from "next";
 
-import { BetCard } from "@/components/feed/bet-card";
-import { PollCard } from "@/components/feed/poll-card";
-import { createThreadPostAction } from "@/lib/actions/threads";
 import { CommentList } from "@/components/comments/comment-list";
+import { PollCard } from "@/components/feed/poll-card";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
-import { LeaderboardCard } from "@/components/scores/leaderboard-card";
-import { ScoreBadge } from "@/components/scores/score-badge";
 import { ReactionBar } from "@/components/social/reaction-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { deleteThreadPostAction, updateThreadPostAction } from "@/lib/actions/threads";
+import { createThreadPostAction } from "@/lib/actions/threads";
 import { getThreadDetail } from "@/lib/data/public/threads";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { formatDate, formatNumber } from "@/lib/utils/format";
@@ -33,168 +30,154 @@ export default async function ThreadDetailPage({
   const {
     data: { session }
   } = await supabase.auth.getSession();
+  const currentUserId = session?.user?.id ?? null;
 
   const primaryThreadPost = detail.threadPosts[0] ?? null;
-  const marketThreadPost = detail.threadPosts.find((item) => item.type === "market") ?? primaryThreadPost;
 
   return (
     <PageContainer>
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <main className="space-y-5">
-          <section className="rounded-3xl border border-border bg-card p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge label={thread.topic_status} tone="default" />
-              {thread.visibility ? <StatusBadge label={thread.visibility} tone="muted" /> : null}
-              {detail.question?.prediction_type ? (
-                <StatusBadge label={detail.question.prediction_type} tone="accent" />
-              ) : null}
-            </div>
+      <div className="mx-auto max-w-4xl space-y-4">
+        <section className="rounded-2xl border border-border bg-card px-4 py-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge label={thread.topic_status} tone="default" />
+          </div>
+          <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-foreground">
+            {thread.title}
+          </h1>
+          {thread.description ? (
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground/90">
+              {thread.description}
+            </p>
+          ) : null}
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span>{formatNumber(detail.threadPosts.length)} posts</span>
+            <span>•</span>
+            <span>{formatNumber(detail.comments.length)} commentaires</span>
+            <span>•</span>
+            <span>Ouvert le {formatDate(thread.open_at)}</span>
+          </div>
+        </section>
 
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-foreground">
-              {thread.title}
-            </h1>
-            {thread.description ? (
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
-                {thread.description}
-              </p>
-            ) : null}
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              <ScoreBadge label="Paris" value={formatNumber(detail.aggregate?.submission_count ?? 0)} />
-              <ScoreBadge label="Blocs" value={formatNumber(detail.threadPosts.length)} />
-              <ScoreBadge label="Commentaires" value={formatNumber(detail.comments.length)} />
-            </div>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-border bg-background px-4 py-3">
-                <p className="eyebrow">Ouverture</p>
-                <p className="mt-1 text-sm font-medium text-foreground">{formatDate(thread.open_at)}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-background px-4 py-3">
-                <p className="eyebrow">Cloture</p>
-                <p className="mt-1 text-sm font-medium text-foreground">{formatDate(thread.close_at)}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-background px-4 py-3">
-                <p className="eyebrow">Activite</p>
-                <p className="mt-1 text-sm font-medium text-foreground">{formatNumber(detail.comments.length + detail.threadPosts.length)}</p>
-              </div>
-            </div>
-          </section>
-
-          {detail.threadPosts.length ? (
-            <section className="space-y-4">
-              {detail.threadPosts.map((post) => (
-                <article key={post.id} className="rounded-3xl border border-border bg-card p-5">
-                  <div className="flex items-center justify-between gap-3">
+        {detail.threadPosts.length ? (
+          <section className="space-y-3">
+            {detail.threadPosts.map((post) => (
+              <article key={post.id} className="rounded-2xl border border-border bg-card px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge label={post.type} tone="muted" />
                       {post.entity_name ? <StatusBadge label={post.entity_name} tone="info" /> : null}
                     </div>
-                    <ReactionBar
-                      targetType="thread_post"
-                      targetId={post.id}
-                      redirectPath={`/thread/${thread.slug}`}
-                      upvotes={post.upvote_weight ?? 0}
-                      downvotes={post.downvote_weight ?? 0}
-                    />
-                  </div>
-                  {post.title ? <h2 className="mt-3 text-lg font-semibold text-foreground">{post.title}</h2> : null}
-                  {post.content ? (
-                    <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">{post.content}</p>
-                  ) : null}
-                  <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{post.display_name ?? post.username ?? "Analyste"}</span>
-                    <span>{formatDate(post.created_at)}</span>
-                    <span>{formatNumber(post.comment_count ?? 0)} commentaires</span>
-                  </div>
-                </article>
-              ))}
-            </section>
-          ) : (
-            <EmptyState title="Aucun bloc visible" body="Le thread existe, mais aucun contenu feedable n'est encore attache." />
-          )}
-
-          {detail.polls.map((poll) => (
-            <PollCard key={poll.id} poll={poll} questions={poll.questions} redirectPath={`/thread/${thread.slug}`} />
-          ))}
-
-          {detail.question ? (
-            <BetCard
-              threadId={thread.id}
-              threadPost={marketThreadPost}
-              question={detail.question as Parameters<typeof BetCard>[0]["question"]}
-              options={detail.options}
-              redirectPath={`/thread/${thread.slug}`}
-            />
-          ) : null}
-
-          {session ? (
-            <form action={createThreadPostAction} className="rounded-3xl border border-border bg-card p-4">
-              <input type="hidden" name="thread_id" value={thread.id} />
-              <input type="hidden" name="type" value="article" />
-              <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
-              <p className="eyebrow">Ajouter un bloc</p>
-              <input
-                name="title"
-                placeholder="Titre"
-                className="mt-2 w-full rounded-2xl border border-border px-4 py-3 text-sm"
-              />
-              <textarea
-                name="content"
-                rows={4}
-                placeholder="Article court. Angle. Mise en contexte."
-                className="mt-3 w-full rounded-2xl border border-border px-4 py-3 text-sm"
-              />
-              <div className="mt-3 flex justify-end">
-                <button type="submit" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
-                  Publier un article
-                </button>
-              </div>
-            </form>
-          ) : null}
-
-          <section className="space-y-4">
-            <div>
-              <p className="eyebrow">Commentaires</p>
-              <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">Discussion</h2>
-            </div>
-            <CommentList
-              comments={detail.comments}
-              redirectPath={`/thread/${thread.slug}`}
-              defaultThreadPost={primaryThreadPost}
-            />
-          </section>
-        </main>
-
-        <aside className="space-y-4">
-          <LeaderboardCard
-            title="Classement local"
-            eyebrow="Analystes"
-            rows={detail.localLeaderboard}
-          />
-
-          <div className="rounded-3xl border border-border bg-card p-4">
-            <p className="eyebrow">Threads lies</p>
-            <div className="mt-3 space-y-3">
-              {detail.relatedThreads.length ? (
-                detail.relatedThreads.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/thread/${item.slug}` as Route}
-                    className="block rounded-2xl border border-border px-3 py-3 transition hover:bg-muted"
-                  >
-                    <p className="text-sm font-medium text-foreground">{item.title}</p>
+                    {post.title ? (
+                      <h2 className="mt-2 text-xl font-semibold leading-tight text-foreground">{post.title}</h2>
+                    ) : null}
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {item.description ?? "Thread visible dans le meme espace."}
+                      {post.display_name ?? post.username ?? "Analyste"} • {formatDate(post.created_at)}
                     </p>
+                  </div>
+                  <ReactionBar
+                    targetType="thread_post"
+                    targetId={post.id}
+                    redirectPath={`/thread/${thread.slug}`}
+                    upvotes={post.upvote_weight ?? 0}
+                    downvotes={post.downvote_weight ?? 0}
+                  />
+                </div>
+
+                {post.content ? (
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/95">{post.content}</p>
+                ) : null}
+
+                <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span>{formatNumber(post.comment_count ?? 0)} commentaires</span>
+                  <Link href="#reply-form" className="font-medium text-foreground hover:underline">
+                    Repondre
                   </Link>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Aucun thread lie visible.</p>
-              )}
+                </div>
+
+                {currentUserId && currentUserId === post.created_by ? (
+                  <div className="mt-3 space-y-2 rounded-xl border border-border bg-background p-3">
+                    <form action={updateThreadPostAction} className="space-y-2">
+                      <input type="hidden" name="thread_post_id" value={post.id} />
+                      <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
+                      <input
+                        name="title"
+                        defaultValue={post.title ?? ""}
+                        className="w-full rounded-xl border border-border px-3 py-2 text-sm"
+                      />
+                      <textarea
+                        name="content"
+                        defaultValue={post.content ?? ""}
+                        rows={3}
+                        className="w-full resize-y rounded-xl border border-border px-3 py-2 text-sm"
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background"
+                      >
+                        Modifier
+                      </button>
+                    </form>
+                    <form action={deleteThreadPostAction}>
+                      <input type="hidden" name="thread_post_id" value={post.id} />
+                      <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
+                      <button
+                        type="submit"
+                        className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
+                      >
+                        Supprimer
+                      </button>
+                    </form>
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </section>
+        ) : (
+          <EmptyState title="Aucun post visible" body="Le thread existe mais aucun post n'est encore publie." />
+        )}
+
+        {detail.polls.map((poll) => (
+          <PollCard key={poll.id} poll={poll} questions={poll.questions} redirectPath={`/thread/${thread.slug}`} />
+        ))}
+
+        {session ? (
+          <form action={createThreadPostAction} className="rounded-2xl border border-border bg-card p-4">
+            <input type="hidden" name="thread_id" value={thread.id} />
+            <input type="hidden" name="type" value="article" />
+            <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
+            <p className="text-sm font-medium text-foreground">Ajouter un post</p>
+            <input
+              name="title"
+              placeholder="Titre"
+              className="mt-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
+            />
+            <textarea
+              name="content"
+              rows={4}
+              placeholder="Votre analyse"
+              className="mt-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
+            />
+            <div className="mt-2 flex justify-end">
+              <button type="submit" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
+                Publier
+              </button>
             </div>
+          </form>
+        ) : null}
+
+        <section className="space-y-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Commentaires</p>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">Discussion</h2>
           </div>
-        </aside>
+          <CommentList
+            comments={detail.comments}
+            redirectPath={`/thread/${thread.slug}`}
+            defaultThreadPost={primaryThreadPost}
+            currentUserId={currentUserId}
+          />
+        </section>
       </div>
     </PageContainer>
   );

@@ -29,12 +29,6 @@ export default async function PublicProfilePage({
           </p>
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-semibold text-foreground">Territoire public</dt>
-              <dd className="mt-1 text-muted-foreground">
-                {profile.public_territory_id ?? "Non expose"}
-              </dd>
-            </div>
-            <div>
               <dt className="font-semibold text-foreground">Visible depuis</dt>
               <dd className="mt-1 text-muted-foreground">{formatDate(profile.created_at)}</dd>
             </div>

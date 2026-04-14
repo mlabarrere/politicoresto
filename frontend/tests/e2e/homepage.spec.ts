@@ -5,13 +5,13 @@ test("homepage renders on desktop and exposes the feed", async ({ page }, testIn
 
   await expect(
     page.getByRole("heading", {
-      name: "Feed politique"
+      name: "Feed presidentiel"
     })
   ).toBeVisible();
 
-  await expect(page.getByText("Navigation")).toBeVisible();
+  await expect(page.getByText("Blocs")).toBeVisible();
   await expect(page.getByText("Analystes")).toBeVisible();
-  await expect(page.getByText("Watchlist")).toBeVisible();
+  await expect(page.getByText("Vault prive")).toBeVisible();
 
   const cards = page.locator("article");
   const cardCount = await cards.count();
@@ -40,12 +40,12 @@ test("homepage stays readable on mobile", async ({ page }, testInfo) => {
 
   await expect(
     page.getByRole("heading", {
-      name: "Feed politique"
+      name: "Feed presidentiel"
     })
   ).toBeVisible();
 
   const cards = page.locator("article");
-  await expect(page.getByText("Watchlist")).toBeVisible();
+  await expect(page.getByText("Vault prive")).toBeVisible();
 
   const cardCount = await cards.count();
 

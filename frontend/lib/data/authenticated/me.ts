@@ -1,73 +1,41 @@
 import type { LoadState, MeDashboardScreenData } from "@/lib/types/screens";
-import type {
-  MyCardInventoryView,
-  MyPredictionHistoryView,
-  MyReputationSummaryView
-} from "@/lib/types/views";
+import type { MyReputationSummaryView, PrivateVoteHistoryView } from "@/lib/types/views";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function getMeDashboardData(): Promise<LoadState<MeDashboardScreenData>> {
   const supabase = await createServerSupabaseClient();
 
-  const [reputationResult, cardsResult, predictionsResult] = await Promise.all([
+  const [reputationResult, privateHistoryResult] = await Promise.all([
     supabase.from("v_my_reputation_summary").select("*").maybeSingle(),
-    supabase
-      .from("v_my_card_inventory")
-      .select("*")
-      .order("last_granted_at", { ascending: false }),
-    supabase
-      .from("v_my_prediction_history")
-      .select("*")
-      .order("recorded_at", { ascending: false })
-      .limit(10)
+    supabase.rpc("rpc_list_private_vote_history")
   ]);
 
-  const errors = [reputationResult.error, cardsResult.error, predictionsResult.error]
+  const errors = [reputationResult.error, privateHistoryResult.error]
     .filter(Boolean)
     .map((error) => error?.message);
 
   return {
     data: {
       reputation: (reputationResult.data ?? null) as MyReputationSummaryView | null,
-      cards: (cardsResult.data ?? []) as MyCardInventoryView[],
-      predictions: (predictionsResult.data ?? []) as MyPredictionHistoryView[]
+      privateHistory: ((privateHistoryResult.data ?? []) as PrivateVoteHistoryView[]).slice(0, 10)
     },
     error: errors.length ? errors.join(" | ") : null
   };
 }
 
-export async function getMyPredictionHistory() {
+export async function getMyPrivateHistory() {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("v_my_prediction_history")
-    .select("*")
-    .order("recorded_at", { ascending: false });
+  const { data, error } = await supabase.rpc("rpc_list_private_vote_history");
 
   return {
-    data: (data ?? []) as MyPredictionHistoryView[],
-    error: error?.message ?? null
-  };
-}
-
-export async function getMyCardInventory() {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("v_my_card_inventory")
-    .select("*")
-    .order("last_granted_at", { ascending: false });
-
-  return {
-    data: (data ?? []) as MyCardInventoryView[],
+    data: (data ?? []) as PrivateVoteHistoryView[],
     error: error?.message ?? null
   };
 }
 
 export async function getMyReputationSummary() {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("v_my_reputation_summary")
-    .select("*")
-    .maybeSingle();
+  const { data, error } = await supabase.from("v_my_reputation_summary").select("*").maybeSingle();
 
   return {
     data: (data ?? null) as MyReputationSummaryView | null,
