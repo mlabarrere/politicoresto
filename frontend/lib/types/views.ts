@@ -293,6 +293,7 @@ export type ThreadPostView = {
   type: string;
   title: string | null;
   content: string | null;
+  metadata: Record<string, unknown> | null;
   entity_slug: string | null;
   entity_name: string | null;
   created_by: string;

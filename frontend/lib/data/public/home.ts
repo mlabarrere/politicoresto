@@ -2,21 +2,17 @@ import type { HomeScreenData, LoadState } from "@/lib/types/screens";
 import { matchesPoliticalBloc } from "@/lib/data/political-taxonomy";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toHomeFeedTopic } from "./canonical";
-import { getGlobalLeaderboard } from "./leaderboards";
 
 export async function getHomeScreenData(blocSlug?: string | null): Promise<LoadState<HomeScreenData>> {
   const supabase = await createServerSupabaseClient();
 
-  const [{ data: feedRows, error }, leaderboardResult] = await Promise.all([
-    supabase
-      .from("v_feed_global")
-      .select("*")
-      .order("thread_score", { ascending: false })
-      .order("latest_thread_post_at", { ascending: false, nullsFirst: false })
-      .order("editorial_feed_rank", { ascending: true })
-      .limit(24),
-    getGlobalLeaderboard(6)
-  ]);
+  const { data: feedRows, error } = await supabase
+    .from("v_feed_global")
+    .select("*")
+    .order("thread_score", { ascending: false })
+    .order("latest_thread_post_at", { ascending: false, nullsFirst: false })
+    .order("editorial_feed_rank", { ascending: true })
+    .limit(24);
 
   const feed = (feedRows ?? [])
     .filter((row) => matchesPoliticalBloc(row as Record<string, unknown>, blocSlug ?? null))
@@ -25,7 +21,6 @@ export async function getHomeScreenData(blocSlug?: string | null): Promise<LoadS
   return {
     data: {
       feed,
-      leaderboard: leaderboardResult,
       selectedBloc: blocSlug ?? null
     },
     error: error?.message ?? null

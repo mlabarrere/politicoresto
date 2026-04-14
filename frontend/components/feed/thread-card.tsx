@@ -46,7 +46,7 @@ export function ThreadCard({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {item.space_name ? <StatusBadge label={item.space_name} tone="muted" /> : null}
         {item.primary_taxonomy_label ? <StatusBadge label={item.primary_taxonomy_label} tone="accent" /> : null}
-        {item.active_prediction_count ? <StatusBadge label="Sondage" tone="info" /> : <StatusBadge label="Discussion" tone="default" />}
+        <StatusBadge label="Discussion" tone="default" />
       </div>
 
       {item.discussion_payload.excerpt_text ? (
@@ -58,7 +58,6 @@ export function ThreadCard({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span>{formatNumber(item.visible_post_count ?? 0)} messages</span>
-          <span>{formatNumber(item.active_prediction_count ?? 0)} reponses sondage</span>
         </div>
         <div className="flex items-center gap-3 text-sm">
           <Link href={`/thread/${item.topic_slug}#reply-form` as Route} className="font-medium text-foreground hover:underline">

@@ -1,5 +1,6 @@
-import { createCommentAction } from "@/lib/actions/comments";
-import type { CommentView, ThreadPostView } from "@/lib/types/views";
+﻿import { createCommentAction } from "@/lib/actions/comments";
+import type { ThreadPostView, CommentView } from "@/lib/types/views";
+import { buildCommentTree } from "@/lib/forum/comments";
 
 import { CommentItem } from "@/components/comments/comment-item";
 
@@ -14,19 +15,24 @@ export function CommentList({
   defaultThreadPost: ThreadPostView | null;
   currentUserId: string | null;
 }) {
+  const tree = buildCommentTree(comments);
+
   return (
-    <div className="space-y-3">
-      {defaultThreadPost ? (
-        <form id="reply-form" action={createCommentAction} className="rounded-2xl border border-border bg-card p-3">
+    <div className="space-y-4">
+      {defaultThreadPost && currentUserId ? (
+        <form id="reply-form" action={createCommentAction} className="rounded-2xl border border-border bg-card p-4">
           <input type="hidden" name="thread_post_id" value={defaultThreadPost.id} />
           <input type="hidden" name="redirect_path" value={redirectPath} />
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reponse rapide</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Ajouter un commentaire
+            </span>
             <textarea
               name="body"
-              rows={3}
-              placeholder="Votre reponse"
-              className="mt-2 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-0 placeholder:text-muted-foreground"
+              rows={4}
+              required
+              placeholder="Votre commentaire..."
+              className="mt-2 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none ring-0 placeholder:text-muted-foreground"
             />
           </label>
           <div className="mt-2 flex justify-end">
@@ -39,15 +45,22 @@ export function CommentList({
           </div>
         </form>
       ) : null}
+      {!currentUserId ? (
+        <div className="rounded-xl border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+          Connectez-vous pour commenter ou repondre.
+        </div>
+      ) : null}
 
-      {comments.length ? (
+      {tree.length ? (
         <div className="space-y-3">
-          {comments.map((comment) => (
+          {tree.map((node) => (
             <CommentItem
-              key={comment.id}
-              comment={comment}
+              key={node.comment.id}
+              node={node}
+              depth={0}
               redirectPath={redirectPath}
-              canEdit={Boolean(currentUserId && currentUserId === comment.author_user_id)}
+              defaultThreadPostId={defaultThreadPost?.id ?? null}
+              currentUserId={currentUserId}
             />
           ))}
         </div>

@@ -7,18 +7,22 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 export async function reactAction(formData: FormData) {
   const targetType = String(formData.get("target_type") ?? "").trim();
   const targetId = String(formData.get("target_id") ?? "").trim();
-  const reactionType = String(formData.get("reaction_type") ?? "").trim();
+  const side = String(formData.get("reaction_side") ?? "").trim();
   const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
 
-  if (!targetType || !targetId || !reactionType) {
+  if (!targetType || !targetId || !side) {
     throw new Error("Reaction invalid");
+  }
+
+  if (side !== "gauche" && side !== "droite") {
+    throw new Error("Reaction side invalid");
   }
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("react_post", {
     p_target_type: targetType,
     p_target_id: targetId,
-    p_reaction_type: reactionType
+    p_reaction_type: side === "gauche" ? "upvote" : "downvote"
   });
 
   if (error) {

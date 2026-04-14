@@ -1,17 +1,49 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 
 import { CommentList } from "@/components/comments/comment-list";
-import { PollCard } from "@/components/feed/poll-card";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { ReactionBar } from "@/components/social/reaction-bar";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { deleteThreadPostAction, updateThreadPostAction } from "@/lib/actions/threads";
-import { createThreadPostAction } from "@/lib/actions/threads";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import {
+  deleteThreadPostAction,
+  updateThreadPostAction
+} from "@/lib/actions/threads";
 import { getThreadDetail } from "@/lib/data/public/threads";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { ThreadPostView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
+
+type LinkPreview = {
+  url?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+};
+
+function extractPreview(post: ThreadPostView | null) {
+  const metadata = (post?.metadata ?? null) as Record<string, unknown> | null;
+  if (!metadata) return { sourceUrl: null, preview: null as LinkPreview | null };
+
+  const sourceUrl = typeof metadata.source_url === "string" ? metadata.source_url : null;
+  const preview =
+    metadata.link_preview && typeof metadata.link_preview === "object"
+      ? (metadata.link_preview as LinkPreview)
+      : null;
+
+  return { sourceUrl, preview };
+}
+
+function sourceDomain(url: string) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+}
 
 export default async function ThreadDetailPage({
   params
@@ -24,7 +56,10 @@ export default async function ThreadDetailPage({
   if (!detail?.thread) {
     notFound();
   }
+
   const thread = detail.thread;
+  const op = detail.threadPosts[0] ?? null;
+  const { sourceUrl, preview } = extractPreview(op);
 
   const supabase = await createServerSupabaseClient();
   const {
@@ -32,151 +67,121 @@ export default async function ThreadDetailPage({
   } = await supabase.auth.getSession();
   const currentUserId = session?.user?.id ?? null;
 
-  const primaryThreadPost = detail.threadPosts[0] ?? null;
-
   return (
     <PageContainer>
-      <div className="mx-auto max-w-4xl space-y-4">
-        <section className="rounded-2xl border border-border bg-card px-4 py-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge label={thread.topic_status} tone="default" />
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight text-foreground">
-            {thread.title}
-          </h1>
-          {thread.description ? (
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground/90">
-              {thread.description}
-            </p>
-          ) : null}
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span>{formatNumber(detail.threadPosts.length)} posts</span>
-            <span>•</span>
-            <span>{formatNumber(detail.comments.length)} commentaires</span>
-            <span>•</span>
-            <span>Ouvert le {formatDate(thread.open_at)}</span>
-          </div>
-        </section>
-
-        {detail.threadPosts.length ? (
-          <section className="space-y-3">
-            {detail.threadPosts.map((post) => (
-              <article key={post.id} className="rounded-2xl border border-border bg-card px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge label={post.type} tone="muted" />
-                      {post.entity_name ? <StatusBadge label={post.entity_name} tone="info" /> : null}
-                    </div>
-                    {post.title ? (
-                      <h2 className="mt-2 text-xl font-semibold leading-tight text-foreground">{post.title}</h2>
-                    ) : null}
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {post.display_name ?? post.username ?? "Analyste"} • {formatDate(post.created_at)}
-                    </p>
-                  </div>
-                  <ReactionBar
-                    targetType="thread_post"
-                    targetId={post.id}
-                    redirectPath={`/thread/${thread.slug}`}
-                    upvotes={post.upvote_weight ?? 0}
-                    downvotes={post.downvote_weight ?? 0}
-                  />
-                </div>
-
-                {post.content ? (
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/95">{post.content}</p>
-                ) : null}
-
-                <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                  <span>{formatNumber(post.comment_count ?? 0)} commentaires</span>
-                  <Link href="#reply-form" className="font-medium text-foreground hover:underline">
-                    Repondre
-                  </Link>
-                </div>
-
-                {currentUserId && currentUserId === post.created_by ? (
-                  <div className="mt-3 space-y-2 rounded-xl border border-border bg-background p-3">
-                    <form action={updateThreadPostAction} className="space-y-2">
-                      <input type="hidden" name="thread_post_id" value={post.id} />
-                      <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
-                      <input
-                        name="title"
-                        defaultValue={post.title ?? ""}
-                        className="w-full rounded-xl border border-border px-3 py-2 text-sm"
-                      />
-                      <textarea
-                        name="content"
-                        defaultValue={post.content ?? ""}
-                        rows={3}
-                        className="w-full resize-y rounded-xl border border-border px-3 py-2 text-sm"
-                      />
-                      <button
-                        type="submit"
-                        className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background"
-                      >
-                        Modifier
-                      </button>
-                    </form>
-                    <form action={deleteThreadPostAction}>
-                      <input type="hidden" name="thread_post_id" value={post.id} />
-                      <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
-                      <button
-                        type="submit"
-                        className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
-                      >
-                        Supprimer
-                      </button>
-                    </form>
-                  </div>
-                ) : null}
-              </article>
-            ))}
-          </section>
-        ) : (
-          <EmptyState title="Aucun post visible" body="Le thread existe mais aucun post n'est encore publie." />
-        )}
-
-        {detail.polls.map((poll) => (
-          <PollCard key={poll.id} poll={poll} questions={poll.questions} redirectPath={`/thread/${thread.slug}`} />
-        ))}
-
-        {session ? (
-          <form action={createThreadPostAction} className="rounded-2xl border border-border bg-card p-4">
-            <input type="hidden" name="thread_id" value={thread.id} />
-            <input type="hidden" name="type" value="article" />
-            <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
-            <p className="text-sm font-medium text-foreground">Ajouter un post</p>
-            <input
-              name="title"
-              placeholder="Titre"
-              className="mt-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
-            />
-            <textarea
-              name="content"
-              rows={4}
-              placeholder="Votre analyse"
-              className="mt-2 w-full rounded-xl border border-border px-3 py-2 text-sm"
-            />
-            <div className="mt-2 flex justify-end">
-              <button type="submit" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
-                Publier
-              </button>
+      <div className="mx-auto max-w-4xl space-y-5">
+        <Card className="border-amber-200/80 bg-gradient-to-br from-amber-50/80 to-white">
+          <CardHeader>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">Thread</Badge>
+              <Badge variant="outline">{thread.topic_status}</Badge>
             </div>
-          </form>
-        ) : null}
+            <CardTitle className="mt-2 text-3xl leading-tight">{thread.title}</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              {op?.display_name ?? op?.username ?? "Auteur"} • {formatDate(op?.created_at ?? thread.open_at)}
+            </p>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {op?.content ? (
+              <div className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">{op.content}</div>
+            ) : thread.description ? (
+              <div className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">{thread.description}</div>
+            ) : null}
+
+            {sourceUrl ? (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-xl border border-sky-300/70 bg-sky-50/70 p-3 transition hover:bg-sky-100/70"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">Lien partage</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {preview?.title || sourceUrl}
+                </p>
+                {preview?.description ? (
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{preview.description}</p>
+                ) : null}
+                <p className="mt-2 text-xs text-sky-700">{preview?.siteName ?? sourceDomain(sourceUrl)}</p>
+              </a>
+            ) : null}
+
+            {op ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 px-3 py-2">
+                <p className="text-xs text-muted-foreground">
+                  {formatNumber(op.comment_count ?? 0)} commentaires sur ce thread
+                </p>
+                <ReactionBar
+                  targetType="thread_post"
+                  targetId={op.id}
+                  redirectPath={`/thread/${thread.slug}`}
+                  leftVotes={op.upvote_weight ?? 0}
+                  rightVotes={op.downvote_weight ?? 0}
+                />
+              </div>
+            ) : null}
+
+            {op && currentUserId && currentUserId === op.created_by ? (
+              <div className="space-y-2 rounded-xl border border-border bg-background p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Modifier mon post d'origine</p>
+                <form action={updateThreadPostAction} className="space-y-2">
+                  <input type="hidden" name="thread_post_id" value={op.id} />
+                  <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
+                  <input
+                    name="title"
+                    defaultValue={op.title ?? thread.title}
+                    className="w-full rounded-xl border border-border px-3 py-2 text-sm"
+                  />
+                  <textarea
+                    name="content"
+                    defaultValue={op.content ?? ""}
+                    rows={5}
+                    className="w-full resize-y rounded-xl border border-border px-3 py-2 text-sm leading-6"
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background"
+                  >
+                    Enregistrer
+                  </button>
+                </form>
+                <form action={deleteThreadPostAction}>
+                  <input type="hidden" name="thread_post_id" value={op.id} />
+                  <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
+                  >
+                    Supprimer le post d'origine
+                  </button>
+                </form>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Separator />
 
         <section className="space-y-3">
           <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Commentaires</p>
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">Discussion</h2>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Discussion</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Commentaires</h2>
           </div>
-          <CommentList
-            comments={detail.comments}
-            redirectPath={`/thread/${thread.slug}`}
-            defaultThreadPost={primaryThreadPost}
-            currentUserId={currentUserId}
-          />
+
+          {op ? (
+            <CommentList
+              comments={detail.comments}
+              redirectPath={`/thread/${thread.slug}`}
+              defaultThreadPost={op}
+              currentUserId={currentUserId}
+            />
+          ) : (
+            <EmptyState
+              title="Post d'origine introuvable"
+              body="Impossible de lancer la discussion sans message initial."
+            />
+          )}
         </section>
       </div>
     </PageContainer>

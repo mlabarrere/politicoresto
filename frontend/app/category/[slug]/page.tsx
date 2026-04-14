@@ -3,11 +3,18 @@ import { FeedList } from "@/components/feed/feed-list";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { PoliticalBlocSidebar } from "@/components/navigation/political-bloc-sidebar";
+import { getPoliticalBloc } from "@/lib/data/political-taxonomy";
 import { getHomeScreenData } from "@/lib/data/public/home";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export default async function HomePage() {
-  const { data, error } = await getHomeScreenData(null);
+export default async function CategoryPage({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const bloc = getPoliticalBloc(slug);
+  const { data, error } = await getHomeScreenData(bloc?.slug ?? slug);
   const supabase = await createServerSupabaseClient();
   const {
     data: { session }
@@ -17,18 +24,22 @@ export default async function HomePage() {
     <PageContainer>
       <div className="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="space-y-3">
-          <PoliticalBlocSidebar selectedBloc={null} />
+          <PoliticalBlocSidebar selectedBloc={bloc?.slug ?? slug} />
         </aside>
 
         <main className="space-y-4">
           <section className="rounded-2xl border border-border bg-card px-4 py-3">
-            <p className="text-sm font-medium text-foreground">Forum politique</p>
+            <p className="text-sm font-medium text-foreground">
+              Categorie: {bloc?.label ?? slug}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Fil public des discussions. Ouvrez un thread, commentez, et repondez clairement.
+              Threads filtres par categorie politique.
             </p>
           </section>
 
-          {session ? <Composer redirectPath="/" title="Nouveau thread" /> : null}
+          {session ? (
+            <Composer redirectPath={`/category/${bloc?.slug ?? slug}`} title="Nouveau thread" />
+          ) : null}
 
           {error ? <EmptyState title="Feed partiel" body={`Lecture incomplete: ${error}`} /> : null}
 
@@ -36,8 +47,8 @@ export default async function HomePage() {
             <FeedList items={data.feed} featuredCount={0} />
           ) : (
             <EmptyState
-              title="Aucun thread visible"
-              body="Le feed apparaitra ici des que les premiers threads publics seront publies."
+              title="Aucun thread dans cette categorie"
+              body="Revenez plus tard ou ouvrez un nouveau thread dans cette categorie."
             />
           )}
         </main>

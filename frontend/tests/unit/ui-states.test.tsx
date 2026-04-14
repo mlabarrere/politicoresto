@@ -12,14 +12,14 @@ describe("Editorial UI states", () => {
       <EmptyState
         title="Aucun thread visible pour le moment"
         body="Revenez plus tard ou explorez un autre bloc."
-        actionHref={"/threads" as Route}
-        actionLabel="Voir les threads"
+        actionHref={"/" as Route}
+        actionLabel="Voir le feed"
       />
     );
 
     expect(screen.getByText("Aucun thread visible pour le moment")).toBeInTheDocument();
     expect(screen.getByText("Revenez plus tard ou explorez un autre bloc.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Voir les threads" })).toHaveAttribute("href", "/threads");
+    expect(screen.getByRole("link", { name: "Voir le feed" })).toHaveAttribute("href", "/");
   });
 
   it("renders a screen state with navigation and retry affordances", () => {
@@ -29,15 +29,15 @@ describe("Editorial UI states", () => {
       <ScreenState
         title="Le feed demande une nouvelle verification"
         body="Les donnees reviennent, mais pas encore de facon stable."
-        actionHref={"/threads" as Route}
-        actionLabel="Voir les threads"
+        actionHref={"/" as Route}
+        actionLabel="Voir le feed"
         retryLabel="Recharger"
         onRetry={onRetry}
       />
     );
 
     expect(screen.getByText("Infos utiles")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Voir les threads" })).toHaveAttribute("href", "/threads");
+    expect(screen.getByRole("link", { name: "Voir le feed" })).toHaveAttribute("href", "/");
 
     fireEvent.click(screen.getByRole("button", { name: "Recharger" }));
     expect(onRetry).toHaveBeenCalledTimes(1);

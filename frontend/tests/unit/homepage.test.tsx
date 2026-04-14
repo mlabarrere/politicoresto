@@ -56,7 +56,6 @@ function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreen
 
   return {
     feed,
-    leaderboard: [],
     selectedBloc: null,
     ...overrides
   };
@@ -81,23 +80,22 @@ describe("HomePage", () => {
       error: null
     });
 
-    render(await HomePage({ searchParams: Promise.resolve({}) }));
+    render(await HomePage());
 
-    expect(screen.getByText("Feed presidentiel actif")).toBeInTheDocument();
-    expect(screen.getByText("Blocs")).toBeInTheDocument();
+    expect(screen.getByText("Forum politique")).toBeInTheDocument();
+    expect(screen.getByText("Categories")).toBeInTheDocument();
     expect(screen.getByText("Gauche radicale a gauche")).toBeInTheDocument();
   });
 
   it("renders an empty state when the feed is empty", async () => {
     mockedGetHomeScreenData.mockResolvedValue({
       data: makeHomeScreenData({
-        feed: [],
-        leaderboard: []
+        feed: []
       }),
       error: null
     });
 
-    render(await HomePage({ searchParams: Promise.resolve({}) }));
+    render(await HomePage());
 
     expect(screen.getByText("Aucun thread visible")).toBeInTheDocument();
   });
@@ -108,7 +106,7 @@ describe("HomePage", () => {
       error: "relation public.thread_feed_cache does not exist"
     });
 
-    render(await HomePage({ searchParams: Promise.resolve({}) }));
+    render(await HomePage());
 
     expect(screen.getByText("Feed partiel")).toBeInTheDocument();
     expect(screen.getByText(/thread_feed_cache/)).toBeInTheDocument();

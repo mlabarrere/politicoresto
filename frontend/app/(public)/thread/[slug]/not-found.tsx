@@ -8,8 +8,8 @@ export default function ThreadNotFound() {
       <ScreenState
         title="Thread introuvable"
         body="Ce thread n'est pas expose publiquement, ou son slug ne correspond a aucune entree visible."
-        actionHref={"/threads" as Route}
-        actionLabel="Voir tous les threads"
+        actionHref={"/" as Route}
+        actionLabel="Voir le feed"
       />
     </PageContainer>
   );

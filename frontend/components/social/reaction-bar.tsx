@@ -1,37 +1,58 @@
-import { reactAction } from "@/lib/actions/reactions";
+﻿import { reactAction } from "@/lib/actions/reactions";
 import { formatNumber } from "@/lib/utils/format";
+
+const REACTIONS = [
+  {
+    side: "gauche",
+    arrow: "←",
+    tooltip: "C'est de gauche !",
+    buttonClass:
+      "border-rose-300/70 bg-rose-50/80 text-rose-700 hover:bg-rose-100 hover:text-rose-800"
+  },
+  {
+    side: "droite",
+    arrow: "→",
+    tooltip: "C'est de droite !",
+    buttonClass:
+      "border-sky-300/70 bg-sky-50/80 text-sky-700 hover:bg-sky-100 hover:text-sky-800"
+  }
+] as const;
 
 export function ReactionBar({
   targetType,
   targetId,
   redirectPath,
-  upvotes = 0,
-  downvotes = 0,
+  leftVotes = 0,
+  rightVotes = 0,
   compact = false
 }: {
   targetType: "thread_post" | "comment";
   targetId: string;
   redirectPath: string;
-  upvotes?: number | null;
-  downvotes?: number | null;
+  leftVotes?: number | null;
+  rightVotes?: number | null;
   compact?: boolean;
 }) {
   return (
     <div className="flex items-center gap-2">
-      {(["upvote", "downvote"] as const).map((reactionType) => (
-        <form key={reactionType} action={reactAction}>
+      {REACTIONS.map((reaction) => (
+        <form key={reaction.side} action={reactAction}>
           <input type="hidden" name="target_type" value={targetType} />
           <input type="hidden" name="target_id" value={targetId} />
-          <input type="hidden" name="reaction_type" value={reactionType} />
+          <input type="hidden" name="reaction_side" value={reaction.side} />
           <input type="hidden" name="redirect_path" value={redirectPath} />
           <button
             type="submit"
-            className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            aria-label={reaction.tooltip}
+            className={`group relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${reaction.buttonClass}`}
           >
-            <span>{reactionType === "upvote" ? "↑" : "↓"}</span>
+            <span>{reaction.arrow}</span>
             {!compact ? (
-              <span>{formatNumber(reactionType === "upvote" ? upvotes : downvotes)}</span>
+              <span>{formatNumber(reaction.side === "gauche" ? leftVotes : rightVotes)}</span>
             ) : null}
+            <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded-md bg-foreground px-2 py-1 text-[10px] whitespace-nowrap text-background opacity-0 transition group-hover:opacity-100">
+              {reaction.tooltip}
+            </span>
           </button>
         </form>
       ))}
