@@ -302,8 +302,8 @@ export type ThreadPostView = {
   created_at: string;
   updated_at: string;
   status: string;
-  upvote_weight: number | null;
-  downvote_weight: number | null;
+  gauche_count: number | null;
+  droite_count: number | null;
   weighted_votes: number | null;
   comment_count: number | null;
 };
@@ -322,8 +322,8 @@ export type CommentView = {
   created_at: string;
   updated_at: string;
   post_status: string;
-  upvote_weight: number | null;
-  downvote_weight: number | null;
+  gauche_count: number | null;
+  droite_count: number | null;
   comment_score: number | null;
 };
 

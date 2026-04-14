@@ -23,7 +23,7 @@ export async function getThreadDetail(slug: string): Promise<ThreadDetailScreenD
     await Promise.all([
       supabase
         .from("v_thread_posts")
-        .select("id, thread_id, type, title, content, created_by, username, display_name, created_at, updated_at, status, upvote_weight, downvote_weight, weighted_votes, comment_count")
+        .select("id, thread_id, type, title, content, created_by, username, display_name, created_at, updated_at, status, gauche_count, droite_count, weighted_votes, comment_count")
         .eq("thread_id", topic.id)
         .order("created_at", { ascending: true }),
       supabase

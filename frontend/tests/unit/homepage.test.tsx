@@ -24,30 +24,28 @@ function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreen
     buildHomeFeedTopic(),
     buildHomeFeedTopic({
       topic_id: "topic-2",
-      topic_slug: "declaration-programmatique",
-      topic_title: "A quelle date la declaration commune sera-t-elle publiee ?",
-      derived_lifecycle_state: "pending_resolution",
-      feed_reason_code: "pending_resolution",
-      feed_reason_label: "Remonte car la resolution est attendue",
+      topic_slug: "reforme-transport-region",
+      topic_title: "La region doit accelerer la modernisation des transports",
+      feed_reason_code: "high_activity",
+      feed_reason_label: "Remonte car l'activite se concentre ici",
       topic_card_payload: {
         topic_id: "topic-2",
-        topic_slug: "declaration-programmatique",
-        topic_title: "A quelle date la declaration commune sera-t-elle publiee ?",
-        derived_lifecycle_state: "pending_resolution",
-        feed_reason_code: "pending_resolution",
-        feed_reason_label: "Remonte car la resolution est attendue"
+        topic_slug: "reforme-transport-region",
+        topic_title: "La region doit accelerer la modernisation des transports",
+        feed_reason_code: "high_activity",
+        feed_reason_label: "Remonte car l'activite se concentre ici"
       }
     }),
     buildHomeFeedTopic({
       topic_id: "topic-3",
-      topic_slug: "motion-censure",
-      topic_title: "Une motion de censure aboutira-t-elle ?",
+      topic_slug: "justice-proximite-prioritaire",
+      topic_title: "La justice de proximite doit redevenir prioritaire",
       feed_reason_code: "high_activity",
       feed_reason_label: "Remonte car l'activite se concentre ici",
       topic_card_payload: {
         topic_id: "topic-3",
-        topic_slug: "motion-censure",
-        topic_title: "Une motion de censure aboutira-t-elle ?",
+        topic_slug: "justice-proximite-prioritaire",
+        topic_title: "La justice de proximite doit redevenir prioritaire",
         feed_reason_code: "high_activity",
         feed_reason_label: "Remonte car l'activite se concentre ici"
       }
@@ -84,7 +82,7 @@ describe("HomePage", () => {
 
     expect(screen.getByText("Forum politique")).toBeInTheDocument();
     expect(screen.getByText("Categories")).toBeInTheDocument();
-    expect(screen.getByText("Gauche radicale a gauche")).toBeInTheDocument();
+    expect(screen.getAllByText("Gauche radicale a gauche").length).toBeGreaterThan(0);
   });
 
   it("renders an empty state when the feed is empty", async () => {
@@ -103,12 +101,12 @@ describe("HomePage", () => {
   it("renders an unavailable state when the feed query fails", async () => {
     mockedGetHomeScreenData.mockResolvedValue({
       data: makeHomeScreenData(),
-      error: "relation public.thread_feed_cache does not exist"
+      error: "relation public.v_feed_global does not exist"
     });
 
     render(await HomePage());
 
     expect(screen.getByText("Feed partiel")).toBeInTheDocument();
-    expect(screen.getByText(/thread_feed_cache/)).toBeInTheDocument();
+    expect(screen.getByText(/v_feed_global/)).toBeInTheDocument();
   });
 });

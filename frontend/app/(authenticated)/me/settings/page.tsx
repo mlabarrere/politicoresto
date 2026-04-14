@@ -1,11 +1,9 @@
-﻿import { SectionCard } from "@/components/layout/section-card";
+import { SectionCard } from "@/components/layout/section-card";
 import {
   clearPrivateProfileAction,
-  upsertPrivateProfileAction,
-  upsertSensitiveConsentAction
+  upsertPrivateProfileAction
 } from "@/lib/actions/vault";
 import { getVaultSettingsData } from "@/lib/data/authenticated/vault";
-import { formatDate } from "@/lib/utils/format";
 
 export default async function MeSettingsPage() {
   const data = await getVaultSettingsData();
@@ -48,22 +46,9 @@ export default async function MeSettingsPage() {
       </SectionCard>
 
       <SectionCard title="Confidentialite" eyebrow="Prive">
-        <div className="space-y-4 text-sm leading-7 text-muted-foreground">
-          <p>
-            Vos donnees restent privees. Le MVP se concentre sur le forum public, avec un espace perso discret.
-          </p>
+        <div className="space-y-2 text-sm leading-7 text-muted-foreground">
+          <p>Vos donnees restent privees. Le MVP se concentre sur le forum public.</p>
           <p>Une couche de sondages plus avancee pourra etre ajoutee plus tard.</p>
-          <form action={upsertSensitiveConsentAction}>
-            <input type="hidden" name="redirect_path" value="/me/settings" />
-            <button type="submit" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
-              Enregistrer mon consentement
-            </button>
-          </form>
-          {data.consents.length ? (
-            <p className="text-xs text-muted-foreground">
-              Dernier consentement: {formatDate(data.consents[0].captured_at)} ({data.consents[0].policy_version})
-            </p>
-          ) : null}
         </div>
       </SectionCard>
 

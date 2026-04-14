@@ -43,8 +43,8 @@ export function CommentItem({
             targetType="comment"
             targetId={comment.id}
             redirectPath={redirectPath}
-            leftVotes={comment.upvote_weight ?? 0}
-            rightVotes={comment.downvote_weight ?? 0}
+            leftVotes={comment.gauche_count ?? 0}
+            rightVotes={comment.droite_count ?? 0}
             compact
           />
         </div>

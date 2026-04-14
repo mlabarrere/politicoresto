@@ -65,8 +65,8 @@ describe("thread page forum UX", () => {
           created_at: "2026-04-14T00:00:00.000Z",
           updated_at: "2026-04-14T00:00:00.000Z",
           status: "published",
-          upvote_weight: 2,
-          downvote_weight: 1,
+          gauche_count: 2,
+          droite_count: 1,
           weighted_votes: 1,
           comment_count: 2
         }
@@ -86,8 +86,8 @@ describe("thread page forum UX", () => {
           created_at: "2026-04-14T01:00:00.000Z",
           updated_at: "2026-04-14T01:00:00.000Z",
           post_status: "visible",
-          upvote_weight: 1,
-          downvote_weight: 2,
+          gauche_count: 1,
+          droite_count: 2,
           comment_score: 0
         },
         {
@@ -104,8 +104,8 @@ describe("thread page forum UX", () => {
           created_at: "2026-04-14T02:00:00.000Z",
           updated_at: "2026-04-14T02:00:00.000Z",
           post_status: "visible",
-          upvote_weight: 3,
-          downvote_weight: 0,
+          gauche_count: 3,
+          droite_count: 0,
           comment_score: 0
         }
       ]

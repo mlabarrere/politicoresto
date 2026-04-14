@@ -116,8 +116,8 @@ export default async function ThreadDetailPage({
                   targetType="thread_post"
                   targetId={op.id}
                   redirectPath={`/thread/${thread.slug}`}
-                  leftVotes={op.upvote_weight ?? 0}
-                  rightVotes={op.downvote_weight ?? 0}
+                  leftVotes={op.gauche_count ?? 0}
+                  rightVotes={op.droite_count ?? 0}
                 />
               </div>
             ) : null}

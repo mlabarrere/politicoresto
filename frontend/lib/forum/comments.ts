@@ -7,7 +7,7 @@ export type CommentNode = {
 };
 
 function reactionTotal(comment: CommentView) {
-  return Number(comment.upvote_weight ?? 0) + Number(comment.downvote_weight ?? 0);
+  return Number(comment.gauche_count ?? 0) + Number(comment.droite_count ?? 0);
 }
 
 function sortSiblingComments(list: CommentView[]) {
