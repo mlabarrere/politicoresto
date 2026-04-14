@@ -41,19 +41,19 @@ export default async function LoginPage({
   return (
     <PageContainer>
       <div className="mx-auto max-w-4xl">
-        <SectionCard title="Se connecter" eyebrow="Vault prive">
+        <SectionCard title="Se connecter" eyebrow="Forum">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(260px,0.7fr)]">
             <div className="space-y-4">
               <p className="text-base leading-7 text-muted-foreground">
-                Connectez-vous pour ecrire, commenter et gerer votre vault prive. Le feed public
-                reste lisible sans exposition de donnees sensibles.
+                Connectez-vous pour ecrire, commenter et gerer votre profil prive. Le feed public
+                reste lisible sans connexion.
               </p>
               <div className="grid gap-3 text-sm text-muted-foreground">
                 <div className="rounded-lg border border-border bg-background p-4">
-                  Votre espace prive garde l'historique sensible hors du public.
+                  Votre espace personnel reste prive.
                 </div>
                 <div className="rounded-lg border border-border bg-background p-4">
-                  Les consentements et le profil servent a la ponderation future des sondages.
+                  Les options avancees de sondage pourront arriver plus tard.
                 </div>
               </div>
             </div>

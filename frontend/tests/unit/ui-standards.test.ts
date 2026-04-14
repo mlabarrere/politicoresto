@@ -18,11 +18,11 @@ const bannedClassPatterns = [
 
 const sourceFiles = [
   "app/page.tsx",
+  "app/category/[slug]/page.tsx",
   "app/auth/login/page.tsx",
-  "app/(public)/threads/page.tsx",
   "app/(public)/thread/[slug]/page.tsx",
-  "app/(public)/leaderboard/page.tsx",
-  "app/(public)/profile/[username]/page.tsx",
+  "app/(authenticated)/me/page.tsx",
+  "app/(authenticated)/me/settings/page.tsx",
   "components/layout/app-shell.tsx",
   "components/layout/site-header.tsx",
   "components/layout/site-footer.tsx",

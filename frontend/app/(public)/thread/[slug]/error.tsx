@@ -22,8 +22,8 @@ export default function ThreadError({
       <ScreenState
         title="Le thread n'a pas pu etre charge"
         body="La page publique du thread reste momentanement indisponible. Vous pouvez relancer la lecture ou revenir vers l'index."
-        actionHref={"/threads" as Route}
-        actionLabel="Retour aux threads"
+        actionHref={"/" as Route}
+        actionLabel="Retour au feed"
         retryLabel="Reessayer"
         onRetry={reset}
       />

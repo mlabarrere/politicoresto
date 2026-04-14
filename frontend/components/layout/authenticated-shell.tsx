@@ -12,7 +12,7 @@ export function AuthenticatedShell({ children }: PropsWithChildren) {
             <p className="eyebrow">Mon profil</p>
             <h1 className="editorial-title mt-3 text-3xl font-bold text-foreground">Mon profil</h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Reputation, vault prive et parametres sensibles. Rien n'est public.
+              Votre espace personnel reste prive. Les sondages avances pourront arriver plus tard.
             </p>
             <div className="mt-6">
               <AuthNav />

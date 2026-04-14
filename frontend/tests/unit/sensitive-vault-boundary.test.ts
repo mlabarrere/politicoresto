@@ -7,7 +7,6 @@ const root = path.resolve(__dirname, "../..");
 
 const serverActionFiles = [
   "lib/actions/comments.ts",
-  "lib/actions/polls.ts",
   "lib/actions/reactions.ts",
   "lib/actions/threads.ts",
   "lib/actions/vault.ts"
@@ -37,7 +36,6 @@ describe("sensitive vault boundary", () => {
 
     expect(source).toContain('upsertSensitiveConsentAction');
     expect(source).toContain('upsertPrivateProfileAction');
-    expect(source).toContain('upsertVoteHistoryAction');
     expect(source).not.toContain('createBrowserSupabaseClient');
   });
 });

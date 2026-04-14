@@ -1,4 +1,5 @@
-import { createThreadAction } from "@/lib/actions/threads";
+﻿import { createThreadAction } from "@/lib/actions/threads";
+import { Button } from "@/components/ui/button";
 
 export function Composer({
   title = "Lancer un thread",
@@ -22,20 +23,30 @@ export function Composer({
           <p className="eyebrow">{title}</p>
           <input
             name="title"
+            required
             placeholder="Titre du thread"
-            className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none"
+            className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none"
           />
         </div>
-        <textarea
-          name="description"
-          rows={4}
-          placeholder="Contexte court. Angle. Ce qu'il faut suivre."
-          className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none"
+
+        <input
+          name="source_url"
+          placeholder="Lien (optionnel)"
+          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none"
         />
+
+        <textarea
+          name="body"
+          rows={6}
+          required
+          placeholder="Expliquez votre point de vue. Les retours a la ligne seront conserves."
+          className="w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-sm leading-6 outline-none"
+        />
+
         <div className="flex justify-end">
-          <button type="submit" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
-            Publier
-          </button>
+          <Button type="submit" size="sm">
+            Publier le thread
+          </Button>
         </div>
       </div>
     </form>

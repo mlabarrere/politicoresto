@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,7 @@ export function PoliticalBlocSidebar({
 }) {
   return (
     <section className="rounded-3xl border border-border bg-card p-4">
-      <p className="eyebrow">Blocs</p>
+      <p className="eyebrow">Categories</p>
       <div className="mt-3 space-y-2">
         <Link
           href="/"
@@ -19,7 +20,7 @@ export function PoliticalBlocSidebar({
             !selectedBloc ? "bg-muted font-medium text-foreground" : "text-muted-foreground"
           )}
         >
-          Tous les threads
+          Tous les sujets
         </Link>
         {politicalBlocs.map((bloc) => {
           const active = selectedBloc === bloc.slug;
@@ -27,7 +28,7 @@ export function PoliticalBlocSidebar({
           return (
             <Link
               key={bloc.slug}
-              href={`/?bloc=${encodeURIComponent(bloc.slug)}`}
+              href={`/category/${encodeURIComponent(bloc.slug)}` as Route}
               className={cn(
                 "block rounded-2xl px-3 py-2 text-sm transition hover:bg-muted hover:text-foreground",
                 active ? "bg-muted font-medium text-foreground" : "text-muted-foreground"

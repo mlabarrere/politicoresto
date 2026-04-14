@@ -86,7 +86,6 @@ describe("mutation actions", () => {
       p_metadata: {}
     });
     expect(mocks.revalidatePathMock).toHaveBeenCalledWith("/");
-    expect(mocks.revalidatePathMock).toHaveBeenCalledWith("/threads");
     expect(mocks.revalidatePathMock).toHaveBeenCalledWith("/thread/thread-2");
   });
 
@@ -119,7 +118,7 @@ describe("mutation actions", () => {
       makeFormData({
         target_type: "thread_post",
         target_id: "thread-post-1",
-        reaction_type: "upvote",
+        reaction_side: "gauche",
         redirect_path: "/thread/thread-1"
       })
     );
@@ -131,5 +130,20 @@ describe("mutation actions", () => {
     });
     expect(mocks.revalidatePathMock).toHaveBeenCalledWith("/thread/thread-1");
     expect(mocks.revalidatePathMock).toHaveBeenCalledWith("/");
+  });
+
+  it("rejects unknown political reaction side", async () => {
+    await expect(
+      reactAction(
+        makeFormData({
+          target_type: "thread_post",
+          target_id: "thread-post-1",
+          reaction_side: "center",
+          redirect_path: "/thread/thread-1"
+        })
+      )
+    ).rejects.toThrow("Reaction side invalid");
+
+    expect(mocks.rpcMock).not.toHaveBeenCalled();
   });
 });

@@ -49,7 +49,7 @@ export async function SiteHeader() {
             <Link href="/" className="text-xl font-semibold tracking-tight text-foreground">
               {siteConfig.name}
             </Link>
-            <p className="mt-1 text-sm text-muted-foreground">Feed presidentiel</p>
+            <p className="mt-1 text-sm text-muted-foreground">Forum politique</p>
           </div>
         </div>
 
