@@ -170,6 +170,22 @@ describe("createPostAction", () => {
     );
     expect(mocks.rpcMock).toHaveBeenNthCalledWith(4, "rpc_update_thread_post", expect.any(Object));
   });
+
+  it("rejects poll create when options are insufficient", async () => {
+    await expect(
+      createPostAction(
+        makeFormData({
+          title: "Budget 2026",
+          body: "Contexte politique",
+          post_mode: "poll",
+          poll_question: "Quelle priorite?",
+          poll_deadline_hours: "24",
+          poll_options: ["Sante"],
+          redirect_path: "/"
+        })
+      )
+    ).rejects.toThrow(/At least two poll options required/i);
+  });
 });
 
 

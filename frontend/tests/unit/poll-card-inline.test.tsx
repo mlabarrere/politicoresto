@@ -47,4 +47,39 @@ describe("poll card inline", () => {
     render(<PollCardInline poll={buildPollSummary()} isAuthenticated={false} />);
     expect(screen.getByText(/Connectez-vous/i)).toBeInTheDocument();
   });
+
+  it("renders closed state with results and no vote buttons", () => {
+    render(
+      <PollCardInline
+        poll={buildPollSummary({
+          poll_status: "closed",
+          selected_option_id: "o1"
+        })}
+        isAuthenticated={true}
+      />
+    );
+
+    expect(screen.getByText(/Sondage clos/i)).toBeInTheDocument();
+    expect(screen.getByText(/Resultat brut/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sante" })).not.toBeInTheDocument();
+  });
+
+  it("updates stale state after server response", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        poll: buildPollSummary({
+          selected_option_id: "o2",
+          representativity_score: 71.2
+        })
+      })
+    });
+
+    render(<PollCardInline poll={buildPollSummary()} isAuthenticated={true} />);
+    fireEvent.click(screen.getByRole("button", { name: "Sante" }));
+
+    await waitFor(() =>
+      expect(screen.getByText(/71.2 \/ 100/i)).toBeInTheDocument()
+    );
+  });
 });
