@@ -132,6 +132,25 @@ describe("mutation actions", () => {
     expect(mocks.revalidatePathMock).toHaveBeenCalledWith("/");
   });
 
+  it("maps droite reaction to downvote", async () => {
+    mocks.rpcMock.mockResolvedValue({ error: null });
+
+    await reactAction(
+      makeFormData({
+        target_type: "comment",
+        target_id: "comment-1",
+        reaction_side: "droite",
+        redirect_path: "/thread/thread-1"
+      })
+    );
+
+    expect(mocks.rpcMock).toHaveBeenCalledWith("react_post", {
+      p_target_type: "comment",
+      p_target_id: "comment-1",
+      p_reaction_type: "downvote"
+    });
+  });
+
   it("rejects unknown political reaction side", async () => {
     await expect(
       reactAction(

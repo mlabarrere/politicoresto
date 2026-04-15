@@ -6,8 +6,10 @@ import {
   deleteCommentAction,
   updateCommentAction
 } from "@/lib/actions/comments";
+import { AuthRequiredSheet } from "@/components/auth/auth-required-sheet";
 import { ReactionBar } from "@/components/social/reaction-bar";
 import { Separator } from "@/components/ui/separator";
+import { normalizeMultilineText } from "@/lib/utils/multiline";
 
 export function CommentItem({
   node,
@@ -46,11 +48,12 @@ export function CommentItem({
             leftVotes={comment.gauche_count ?? 0}
             rightVotes={comment.droite_count ?? 0}
             compact
+            isAuthenticated={Boolean(currentUserId)}
           />
         </div>
 
         <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground/95">
-          {comment.body_markdown}
+          {normalizeMultilineText(comment.body_markdown)}
         </p>
 
         <div className="mt-3 space-y-2 rounded-xl border border-border/70 bg-background/70 p-3">
@@ -86,7 +89,7 @@ export function CommentItem({
                 <input type="hidden" name="redirect_path" value={redirectPath} />
                 <textarea
                   name="body"
-                  defaultValue={comment.body_markdown}
+                  defaultValue={normalizeMultilineText(comment.body_markdown)}
                   rows={3}
                   className="w-full resize-y rounded-xl border border-border px-3 py-2 text-sm"
                 />
@@ -102,6 +105,20 @@ export function CommentItem({
                 </button>
               </form>
             </>
+          ) : null}
+
+          {!currentUserId && threadPostId ? (
+            <AuthRequiredSheet
+              nextPath={redirectPath}
+              trigger={
+                <button
+                  type="button"
+                  className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
+                >
+                  Repondre
+                </button>
+              }
+            />
           ) : null}
         </div>
       </article>

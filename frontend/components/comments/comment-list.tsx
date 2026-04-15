@@ -2,6 +2,7 @@
 import type { ThreadPostView, CommentView } from "@/lib/types/views";
 import { buildCommentTree } from "@/lib/forum/comments";
 
+import { AuthRequiredSheet } from "@/components/auth/auth-required-sheet";
 import { CommentItem } from "@/components/comments/comment-item";
 
 export function CommentList({
@@ -46,8 +47,21 @@ export function CommentList({
         </form>
       ) : null}
       {!currentUserId ? (
-        <div className="rounded-xl border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-          Connectez-vous pour commenter ou repondre.
+        <div className="rounded-xl border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
+          <p>Connectez-vous pour commenter ou repondre.</p>
+          <div className="mt-2">
+            <AuthRequiredSheet
+              nextPath={redirectPath}
+              trigger={
+                <button
+                  type="button"
+                  className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90"
+                >
+                  Commenter
+                </button>
+              }
+            />
+          </div>
         </div>
       ) : null}
 

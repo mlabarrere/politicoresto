@@ -1,4 +1,4 @@
-﻿import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ThreadDetailPage from "@/app/(public)/thread/[slug]/page";
@@ -28,7 +28,7 @@ describe("thread page forum UX", () => {
     } as never);
   });
 
-  it("renders OP body with line breaks and URL preview", async () => {
+  it("renders OP and comments with normalized line breaks and URL preview", async () => {
     mockedGetThreadDetail.mockResolvedValue({
       thread: {
         id: "t1",
@@ -48,7 +48,7 @@ describe("thread page forum UX", () => {
           thread_id: "t1",
           type: "article",
           title: "Thread test",
-          content: "Ligne 1\nLigne 2",
+          content: "Ligne 1\\n\\nLigne 2",
           metadata: {
             source_url: "https://example.com/article",
             link_preview: {
@@ -82,7 +82,7 @@ describe("thread page forum UX", () => {
           username: "bob",
           display_name: "Bob",
           title: null,
-          body_markdown: "Commentaire parent",
+          body_markdown: "Commentaire parent\\navec retour",
           created_at: "2026-04-14T01:00:00.000Z",
           updated_at: "2026-04-14T01:00:00.000Z",
           post_status: "visible",
@@ -113,12 +113,65 @@ describe("thread page forum UX", () => {
 
     render(await ThreadDetailPage({ params: Promise.resolve({ slug: "thread-1" }) }));
 
-    expect(screen.getByText((content) => content.includes("Ligne 1") && content.includes("Ligne 2"))).toBeInTheDocument();
+    expect(
+      screen.getByText((content) => content.includes("Ligne 1") && content.includes("Ligne 2"))
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/\\n/)).not.toBeInTheDocument();
     expect(screen.getByText("Titre article")).toBeInTheDocument();
     expect(screen.getByText("Description article")).toBeInTheDocument();
     expect(screen.getAllByLabelText("C'est de gauche !").length).toBeGreaterThan(0);
     expect(screen.getAllByLabelText("C'est de droite !").length).toBeGreaterThan(0);
-    expect(screen.getByText("Commentaire parent")).toBeInTheDocument();
+    expect(
+      screen.getByText((content) => content.includes("Commentaire parent") && content.includes("avec retour"))
+    ).toBeInTheDocument();
     expect(screen.getByText("Sous-commentaire")).toBeInTheDocument();
+  });
+
+  it("opens auth sheet for logged-out reactions without thread load error", async () => {
+    mockedGetThreadDetail.mockResolvedValue({
+      thread: {
+        id: "t1",
+        space_id: null,
+        slug: "thread-1",
+        title: "Thread test",
+        description: null,
+        topic_status: "open",
+        visibility: "public",
+        open_at: "2026-04-14T00:00:00.000Z",
+        close_at: "2026-04-21T00:00:00.000Z",
+        created_at: "2026-04-14T00:00:00.000Z"
+      },
+      threadPosts: [
+        {
+          id: "op1",
+          thread_id: "t1",
+          type: "article",
+          title: "Thread test",
+          content: "Contenu",
+          metadata: {},
+          entity_slug: null,
+          entity_name: null,
+          created_by: "u1",
+          username: "alice",
+          display_name: "Alice",
+          created_at: "2026-04-14T00:00:00.000Z",
+          updated_at: "2026-04-14T00:00:00.000Z",
+          status: "published",
+          gauche_count: 0,
+          droite_count: 0,
+          weighted_votes: 0,
+          comment_count: 0
+        }
+      ],
+      comments: []
+    });
+
+    render(await ThreadDetailPage({ params: Promise.resolve({ slug: "thread-1" }) }));
+
+    fireEvent.click(screen.getAllByLabelText("C'est de gauche !")[0]);
+
+    expect(screen.getByText("Se connecter")).toBeInTheDocument();
+    expect(screen.getByText("Creer un compte")).toBeInTheDocument();
+    expect(screen.queryByText("Le thread n'a pas pu etre charge")).not.toBeInTheDocument();
   });
 });

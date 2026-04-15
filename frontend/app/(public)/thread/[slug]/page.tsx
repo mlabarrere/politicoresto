@@ -15,6 +15,7 @@ import { getThreadDetail } from "@/lib/data/public/threads";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ThreadPostView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
+import { normalizeMultilineText } from "@/lib/utils/multiline";
 
 type LinkPreview = {
   url?: string;
@@ -84,9 +85,13 @@ export default async function ThreadDetailPage({
 
           <CardContent className="space-y-4">
             {op?.content ? (
-              <div className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">{op.content}</div>
+              <div className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">
+                {normalizeMultilineText(op.content)}
+              </div>
             ) : thread.description ? (
-              <div className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">{thread.description}</div>
+              <div className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">
+                {normalizeMultilineText(thread.description)}
+              </div>
             ) : null}
 
             {sourceUrl ? (
@@ -118,6 +123,7 @@ export default async function ThreadDetailPage({
                   redirectPath={`/thread/${thread.slug}`}
                   leftVotes={op.gauche_count ?? 0}
                   rightVotes={op.droite_count ?? 0}
+                  isAuthenticated={Boolean(currentUserId)}
                 />
               </div>
             ) : null}
