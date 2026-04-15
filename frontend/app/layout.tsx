@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Source_Sans_3 } from "next/font/google";
 import type { PropsWithChildren } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { siteConfig } from "@/lib/config/site";
@@ -25,6 +26,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
     <html lang="fr" className={cn("font-sans", sans.variable)}>
       <body className="page-shell">
         <AppShell>{children}</AppShell>
+        <SpeedInsights />
       </body>
     </html>
   );
