@@ -23,7 +23,8 @@ export function mapPostViewToForumPost(
     leftCount: Number(post.gauche_count ?? 0),
     rightCount: Number(post.droite_count ?? 0),
     commentCount: Number(post.comment_count ?? 0),
-    currentUserVote: fromBackendVoteSide(post.user_reaction_side ?? null)
+    currentUserVote: fromBackendVoteSide(post.user_reaction_side ?? null),
+    pollSummary: post.poll_summary ?? null
   };
 }
 

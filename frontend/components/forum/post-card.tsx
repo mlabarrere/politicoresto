@@ -3,13 +3,18 @@
 import { useMemo, useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
+import { PollDetailBlock } from "@/components/poll/poll-detail-block";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { PostCardProps } from "@/lib/types/forum-components";
 import { formatDate } from "@/lib/utils/format";
 
 const COLLAPSE_LIMIT = 480;
 
-export function PostCard({ post, initialExpanded = false }: PostCardProps) {
+export function PostCard({
+  post,
+  initialExpanded = false,
+  isAuthenticated = false
+}: PostCardProps & { isAuthenticated?: boolean }) {
   const initials = post.author.username.slice(0, 2).toUpperCase();
   const [expanded, setExpanded] = useState(initialExpanded);
   const isLong = post.body.length > COLLAPSE_LIMIT;
@@ -48,6 +53,8 @@ export function PostCard({ post, initialExpanded = false }: PostCardProps) {
           </AppButton>
         ) : null}
       </div>
+
+      {post.pollSummary ? <PollDetailBlock poll={post.pollSummary} isAuthenticated={isAuthenticated} /> : null}
     </article>
   );
 }

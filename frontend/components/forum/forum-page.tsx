@@ -297,7 +297,7 @@ export function ForumPage({ post, comments, currentUserId, postSlug }: ForumPage
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]" role="feed" aria-busy={state.commentsStatus === "loading"}>
       <section className="space-y-4" id="post-main">
-        <PostCard post={postView} />
+        <PostCard post={postView} isAuthenticated={Boolean(currentUserId)} />
 
         <PostActionsBar
           postId={post.id}

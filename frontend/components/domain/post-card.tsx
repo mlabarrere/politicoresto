@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { CornerDownLeft, MessageSquare, Share2 } from "lucide-react";
 
 import { ReactionBar } from "@/components/social/reaction-bar";
+import { PollCardInline } from "@/components/poll/poll-card-inline";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { PostFeedItemView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
@@ -134,6 +135,12 @@ export const PostCard = memo(function PostCard({
       </div>
 
       {previewText ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/90">{previewText}</p> : null}
+
+      {item.feed_poll_summary ? (
+        <div className="mt-3" onClick={stopCardNavigation}>
+          <PollCardInline poll={item.feed_poll_summary} isAuthenticated={isAuthenticated} />
+        </div>
+      ) : null}
 
       <div
         className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3"
