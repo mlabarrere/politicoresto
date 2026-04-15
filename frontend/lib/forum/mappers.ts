@@ -27,6 +27,27 @@ export function mapThreadPostToForumPost(
   };
 }
 
+export function mapCommentViewToForumNode(comment: CommentView): CommentTreeNode {
+  return {
+    id: comment.id,
+    author: {
+      id: comment.author_user_id,
+      username: toUsername(comment.username, comment.display_name)
+    },
+    createdAt: comment.created_at,
+    updatedAt: comment.updated_at,
+    body: normalizeMultilineText(comment.body_markdown),
+    depth: comment.depth,
+    parentCommentId: comment.parent_post_id,
+    leftCount: Number(comment.gauche_count ?? 0),
+    rightCount: Number(comment.droite_count ?? 0),
+    currentUserVote: fromBackendVoteSide(comment.user_reaction_side ?? null),
+    replyCount: 0,
+    isEdited: comment.updated_at !== comment.created_at,
+    children: []
+  };
+}
+
 function toReactionTotal(comment: CommentView) {
   return Number(comment.gauche_count ?? 0) + Number(comment.droite_count ?? 0);
 }
