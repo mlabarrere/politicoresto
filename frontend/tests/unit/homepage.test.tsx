@@ -87,7 +87,7 @@ describe("HomePage", () => {
     render(await HomePage());
 
     expect(screen.getByText("Forum politique")).toBeInTheDocument();
-    expect(screen.getByText("Categories")).toBeInTheDocument();
+    expect(screen.getAllByText("Categories").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Gauche radicale a gauche").length).toBeGreaterThan(0);
   });
 
