@@ -1,5 +1,20 @@
 begin;
 
+drop function if exists public.create_thread(text, text, uuid, uuid, timestamptz);
+drop function if exists public.create_post(uuid, public.thread_post_type, text, text, jsonb);
+drop function if exists public.create_comment(uuid, uuid, text);
+drop function if exists public.react_post(public.reaction_target_type, uuid, public.reaction_type);
+drop function if exists public.rpc_update_thread_post(uuid, text, text, jsonb);
+drop function if exists public.rpc_delete_thread_post(uuid);
+drop function if exists public.rpc_update_comment(uuid, text);
+drop function if exists public.rpc_delete_comment(uuid);
+
+drop view if exists public.v_feed_global cascade;
+drop view if exists public.v_thread_detail cascade;
+drop view if exists public.v_thread_posts cascade;
+drop view if exists public.v_post_comments cascade;
+drop view if exists public.v_public_profiles cascade;
+
 create or replace function public.log_audit_event(
   p_entity_type public.audit_entity_type,
   p_entity_id uuid,
@@ -338,11 +353,165 @@ select
   td.thread_score
 from public.v_thread_detail td;
 
+create or replace function public.rpc_update_thread_post(
+  p_thread_post_id uuid,
+  p_title text default null,
+  p_content text default null,
+  p_metadata jsonb default null
+)
+returns public.thread_post
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_row public.thread_post%rowtype;
+  result_row public.thread_post%rowtype;
+begin
+  if public.current_user_id() is null then
+    raise exception 'Authentication required';
+  end if;
+
+  select * into current_row from public.thread_post where id = p_thread_post_id;
+  if current_row.id is null then
+    raise exception 'Thread post not found';
+  end if;
+  if current_row.created_by <> public.current_user_id() then
+    raise exception 'Thread post not owned by current user';
+  end if;
+
+  update public.thread_post
+  set title = coalesce(p_title, title),
+      content = coalesce(p_content, content),
+      metadata = case when p_metadata is null then metadata else p_metadata end
+  where id = p_thread_post_id
+  returning * into result_row;
+
+  return result_row;
+end;
+$$;
+
+create or replace function public.rpc_delete_thread_post(
+  p_thread_post_id uuid
+)
+returns public.thread_post
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_row public.thread_post%rowtype;
+  result_row public.thread_post%rowtype;
+begin
+  if public.current_user_id() is null then
+    raise exception 'Authentication required';
+  end if;
+
+  select * into current_row from public.thread_post where id = p_thread_post_id;
+  if current_row.id is null then
+    raise exception 'Thread post not found';
+  end if;
+  if current_row.created_by <> public.current_user_id() then
+    raise exception 'Thread post not owned by current user';
+  end if;
+
+  update public.thread_post
+  set status = 'archived',
+      metadata = coalesce(metadata, '{}'::jsonb) || jsonb_build_object('archived_at', timezone('utc', now()))
+  where id = p_thread_post_id
+  returning * into result_row;
+
+  return result_row;
+end;
+$$;
+
+create or replace function public.rpc_update_comment(
+  p_comment_id uuid,
+  p_body_markdown text
+)
+returns public.post
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_row public.post%rowtype;
+  result_row public.post%rowtype;
+begin
+  if public.current_user_id() is null then
+    raise exception 'Authentication required';
+  end if;
+
+  if nullif(btrim(coalesce(p_body_markdown, '')), '') is null then
+    raise exception 'Comment body is required';
+  end if;
+
+  select * into current_row from public.post where id = p_comment_id;
+  if current_row.id is null or current_row.thread_post_id is null then
+    raise exception 'Comment not found';
+  end if;
+  if current_row.author_user_id <> public.current_user_id() then
+    raise exception 'Comment not owned by current user';
+  end if;
+
+  update public.post
+  set body_markdown = p_body_markdown,
+      body_plaintext = p_body_markdown,
+      edited_at = timezone('utc', now())
+  where id = p_comment_id
+  returning * into result_row;
+
+  return result_row;
+end;
+$$;
+
+create or replace function public.rpc_delete_comment(
+  p_comment_id uuid
+)
+returns public.post
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_row public.post%rowtype;
+  result_row public.post%rowtype;
+begin
+  if public.current_user_id() is null then
+    raise exception 'Authentication required';
+  end if;
+
+  select * into current_row from public.post where id = p_comment_id;
+  if current_row.id is null or current_row.thread_post_id is null then
+    raise exception 'Comment not found';
+  end if;
+  if current_row.author_user_id <> public.current_user_id() then
+    raise exception 'Comment not owned by current user';
+  end if;
+
+  update public.post
+  set post_status = 'removed',
+      title = null,
+      body_markdown = '',
+      body_plaintext = '',
+      removed_at = timezone('utc', now()),
+      edited_at = timezone('utc', now())
+  where id = p_comment_id
+  returning * into result_row;
+
+  return result_row;
+end;
+$$;
+
 grant select on public.v_public_profiles to anon, authenticated;
 grant select on public.v_thread_posts, public.v_post_comments, public.v_thread_detail, public.v_feed_global to anon, authenticated;
 grant execute on function public.create_thread(text, text, uuid, uuid, timestamptz) to authenticated;
 grant execute on function public.create_post(uuid, public.thread_post_type, text, text, jsonb) to authenticated;
 grant execute on function public.create_comment(uuid, uuid, text) to authenticated;
 grant execute on function public.react_post(public.reaction_target_type, uuid, public.reaction_type) to authenticated;
+grant execute on function public.rpc_update_thread_post(uuid, text, text, jsonb) to authenticated;
+grant execute on function public.rpc_delete_thread_post(uuid) to authenticated;
+grant execute on function public.rpc_update_comment(uuid, text) to authenticated;
+grant execute on function public.rpc_delete_comment(uuid) to authenticated;
 
 commit;
