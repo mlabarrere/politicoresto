@@ -1,8 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
-
-import { Button } from "@/components/ui/button";
+import { CommentComposerShell } from "@/components/forms/comment-composer-shell";
 import type { ReplyComposerProps } from "@/lib/types/forum-components";
 
 export function ReplyComposer({
@@ -15,63 +13,28 @@ export function ReplyComposer({
   onSubmit,
   onCancel
 }: ReplyComposerProps) {
-  const [body, setBody] = useState(`${mentionPrefix ?? ""}${initialValue}`.trimStart());
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  useEffect(() => {
-    const textArea = textareaRef.current;
-    if (!textArea) return;
-
-    const end = textArea.value.length;
-    textArea.focus();
-    textArea.setSelectionRange(end, end);
-  }, []);
-
-  async function handleSubmit() {
-    if (!body.trim()) {
-      setError("Contenu requis.");
-      return;
-    }
-
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      await onSubmit({
-        targetType,
-        targetId,
-        parentCommentId,
-        body: body.trim()
-      });
-    } catch {
-      setError("Échec d'enregistrement.");
-      setIsSubmitting(false);
-    }
-  }
+  const initialBody = `${mentionPrefix ?? ""}${initialValue}`.trimStart();
 
   return (
-    <div className="space-y-2 rounded-xl border border-border/70 bg-background/80 p-3" data-testid="reply-composer">
-      <textarea
-        ref={textareaRef}
-        autoFocus={autoFocus}
-        rows={3}
-        value={body}
-        onChange={(event) => setBody(event.target.value)}
-        placeholder="Votre réponse"
-        className="w-full resize-y rounded-xl border border-border px-3 py-2 text-sm"
-      />
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
-      <div className="flex items-center justify-end gap-2">
-        <Button type="button" variant="outline" size="sm" disabled={isSubmitting} onClick={onCancel}>
-          Annuler
-        </Button>
-        <Button type="button" size="sm" disabled={isSubmitting} onClick={() => void handleSubmit()}>
-          {isSubmitting ? "Publication..." : "Publier"}
-        </Button>
-      </div>
-    </div>
+    <CommentComposerShell
+      initialValue={initialBody}
+      placeholder="Votre réponse"
+      submitLabel="Publier"
+      submittingLabel="Publication..."
+      submitErrorLabel="Echec d'enregistrement."
+      onCancel={onCancel}
+      autoFocus={autoFocus}
+      testId="reply-composer"
+      onSubmit={async (body) => {
+        await onSubmit({
+          targetType,
+          targetId,
+          parentCommentId,
+          body
+        });
+      }}
+    />
   );
 }
+
 

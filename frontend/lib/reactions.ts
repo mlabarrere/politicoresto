@@ -1,4 +1,6 @@
-export type ReactionSide = "gauche" | "droite";
+﻿import type { ReactionSide } from "@/lib/types/domain";
+
+export type { ReactionSide };
 
 export const REACTION_SIDE_TO_TYPE: Record<ReactionSide, "upvote" | "downvote"> = {
   gauche: "upvote",
@@ -66,3 +68,5 @@ export function applyReactionTransition(
     currentVote: "gauche"
   };
 }
+
+

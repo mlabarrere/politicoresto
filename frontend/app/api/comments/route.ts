@@ -1,12 +1,9 @@
 ﻿import { NextResponse } from "next/server";
 
+import { parseNonEmptyString } from "@/lib/domain/comments/validation";
 import { mapCommentViewToForumNode } from "@/lib/forum/mappers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CommentView } from "@/lib/types/views";
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
-}
 
 function checkRateLimit() {
   return true;
@@ -94,16 +91,19 @@ export async function POST(request: Request) {
     parentCommentId?: string | null;
   } | null;
 
-  if (!body || !isNonEmptyString(body.threadSlug) || !isNonEmptyString(body.body)) {
+  const threadSlug = parseNonEmptyString(body?.threadSlug);
+  const commentBody = parseNonEmptyString(body?.body);
+
+  if (!body || threadSlug === null || commentBody === null) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
   try {
-    const threadPostId = await getThreadPostIdBySlug(supabase, body.threadSlug);
+    const threadPostId = await getThreadPostIdBySlug(supabase, threadSlug);
     const { data: inserted, error } = await supabase.rpc("create_comment", {
       p_thread_post_id: threadPostId,
       p_parent_post_id: body.parentCommentId ?? null,
-      p_body_markdown: body.body.trim()
+      p_body_markdown: commentBody
     });
 
     if (error) {
@@ -142,14 +142,16 @@ export async function PATCH(request: Request) {
   }
 
   const body = (await request.json().catch(() => null)) as { commentId?: string; body?: string } | null;
+  const commentId = parseNonEmptyString(body?.commentId);
+  const commentBody = parseNonEmptyString(body?.body);
 
-  if (!body || !isNonEmptyString(body.commentId) || !isNonEmptyString(body.body)) {
+  if (!body || commentId === null || commentBody === null) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
   const { error } = await supabase.rpc("rpc_update_comment", {
-    p_comment_id: body.commentId,
-    p_body_markdown: body.body.trim()
+    p_comment_id: commentId,
+    p_body_markdown: commentBody
   });
 
   if (error) {
@@ -174,13 +176,14 @@ export async function DELETE(request: Request) {
   }
 
   const body = (await request.json().catch(() => null)) as { commentId?: string } | null;
+  const commentId = parseNonEmptyString(body?.commentId);
 
-  if (!body || !isNonEmptyString(body.commentId)) {
+  if (!body || commentId === null) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
   const { error } = await supabase.rpc("rpc_delete_comment", {
-    p_comment_id: body.commentId
+    p_comment_id: commentId
   });
 
   if (error) {
@@ -189,3 +192,5 @@ export async function DELETE(request: Request) {
 
   return NextResponse.json({ ok: true });
 }
+
+

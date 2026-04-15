@@ -5,7 +5,7 @@ test.setTimeout(60_000);
 test("mvp public smoke", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.getByRole("link", { name: "Politicoresto" })).toBeVisible();
-  await expect(page.getByText("Categories", { exact: true })).toBeVisible();
+  await expect(page.getByText("Forum politique", { exact: true }).first()).toBeVisible();
 
   await page.goto("/category/gauche-radicale");
   await expect(page.getByText("Categorie:")).toBeVisible();

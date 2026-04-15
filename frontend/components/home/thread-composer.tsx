@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import type { Route } from "next";
@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
 import { cn } from "@/lib/utils";
 
@@ -75,7 +77,7 @@ export function ThreadComposer({
   }, [draft.body, draft.title, lastSavedAt]);
 
   return (
-    <section className="mx-auto w-full max-w-4xl space-y-4 rounded-2xl border border-border bg-card p-4">
+    <section className="app-card mx-auto w-full max-w-4xl space-y-4 p-4">
       <header className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Thread Composer</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Nouveau thread</h1>
@@ -113,24 +115,23 @@ export function ThreadComposer({
 
         <label className="block space-y-2">
           <span className="text-xs font-medium text-muted-foreground">Corps</span>
-          <textarea
+          <Textarea
             name="body"
             required
             rows={9}
             value={draft.body}
             onChange={(event) => setDraft((prev) => ({ ...prev, body: event.target.value }))}
             placeholder="Expliquez votre point de vue"
-            className="w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-sm leading-6 outline-none"
+            className="resize-y px-4 py-3"
           />
         </label>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-xs font-medium text-muted-foreground">Categorie</span>
-            <select
+            <Select
               value={draft.category}
               onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
             >
               <option value="">Selectionner</option>
               {politicalBlocs.map((bloc) => (
@@ -138,7 +139,7 @@ export function ThreadComposer({
                   {bloc.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
 
           <label className="space-y-2">
@@ -193,7 +194,7 @@ export function ThreadComposer({
             <div className="mt-3 space-y-2">
               <h2 className="text-lg font-semibold text-foreground">{draft.title || "Sans titre"}</h2>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{draft.body || "Aucun contenu"}</p>
-              <p className="text-xs text-muted-foreground">Categorie: {draft.category || "Aucune"} • Tags: {draft.tags.join(", ") || "Aucun"}</p>
+              <p className="text-xs text-muted-foreground">Categorie: {draft.category || "Aucune"} â€¢ Tags: {draft.tags.join(", ") || "Aucun"}</p>
               {draft.mediaNames.length ? (
                 <p className="text-xs text-muted-foreground">Media: {draft.mediaNames.join(", ")}</p>
               ) : null}
@@ -214,3 +215,5 @@ export function ThreadComposer({
     </section>
   );
 }
+
+

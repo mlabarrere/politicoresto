@@ -1,13 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 
+import { REACTION_SIDE_TO_TYPE, type ReactionSide } from "@/lib/reactions";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-
-const REACTION_SIDE_TO_TYPE = {
-  gauche: "upvote",
-  droite: "downvote"
-} as const;
 
 export async function reactAction(formData: FormData) {
   const targetType = String(formData.get("target_type") ?? "").trim();
@@ -31,7 +27,7 @@ export async function reactAction(formData: FormData) {
   const { error } = await supabase.rpc("react_post", {
     p_target_type: targetType,
     p_target_id: targetId,
-    p_reaction_type: REACTION_SIDE_TO_TYPE[side]
+    p_reaction_type: REACTION_SIDE_TO_TYPE[side as ReactionSide]
   });
 
   if (error) {
@@ -41,3 +37,5 @@ export async function reactAction(formData: FormData) {
   revalidatePath(redirectPath);
   revalidatePath("/");
 }
+
+
