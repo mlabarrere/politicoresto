@@ -95,14 +95,24 @@ export const ReactionBar = memo(function ReactionBar({
           throw new Error("reaction mutation failed");
         }
 
-        const payload = (await response.json()) as Partial<ReactionCountsState>;
+        const payload = (await response.json()) as {
+          leftVotes?: number;
+          rightVotes?: number;
+          currentVote?: ReactionSide | "left" | "right" | null;
+        };
         if (!isMountedRef.current || currentRequestId !== requestIdRef.current) return;
+
+        const normalizedVote =
+          payload.currentVote === "gauche" || payload.currentVote === "left"
+            ? "gauche"
+            : payload.currentVote === "droite" || payload.currentVote === "right"
+              ? "droite"
+              : null;
 
         setState({
           leftVotes: Number(payload.leftVotes ?? optimisticState.leftVotes),
           rightVotes: Number(payload.rightVotes ?? optimisticState.rightVotes),
-          currentVote:
-            payload.currentVote === "gauche" || payload.currentVote === "droite" ? payload.currentVote : null
+          currentVote: normalizedVote
         });
       } catch {
         if (!isMountedRef.current || currentRequestId !== requestIdRef.current) return;
