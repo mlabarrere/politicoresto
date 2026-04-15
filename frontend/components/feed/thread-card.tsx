@@ -1,27 +1,99 @@
-import Link from "next/link";
-import type { Route } from "next";
+"use client";
 
+import { useCallback, useMemo, useState, type MouseEvent } from "react";
+import { useRouter } from "next/navigation";
+import type { Route } from "next";
+import { CornerDownLeft, MessageSquare, Share2 } from "lucide-react";
+
+import { ReactionBar } from "@/components/social/reaction-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { ThreadFeedItemView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
+import { normalizeMultilineText } from "@/lib/utils/multiline";
+
+const PREVIEW_LIMIT = 500;
+
+function truncatePreview(value: string) {
+  const text = normalizeMultilineText(value).trim();
+  if (!text) return "";
+  if (text.length <= PREVIEW_LIMIT) return text;
+  return `${text.slice(0, PREVIEW_LIMIT).trimEnd()}...`;
+}
 
 export function ThreadCard({
   item,
-  featured = false
+  featured = false,
+  isAuthenticated = false
 }: {
   item: ThreadFeedItemView;
   featured?: boolean;
+  isAuthenticated?: boolean;
 }) {
+  const router = useRouter();
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+
   const authorLabel =
     (item as unknown as { author_display_name?: string | null }).author_display_name ??
     (item as unknown as { author_username?: string | null }).author_username ??
     "Pseudo indisponible";
 
+  const threadHref = `/thread/${item.topic_slug}` as Route;
+  const replyHref = `/thread/${item.topic_slug}#reply-form` as Route;
+  const targetPostId = item.feed_thread_post_id ?? null;
+  const commentCount = item.feed_comment_count ?? item.visible_post_count ?? 0;
+
+  const previewText = useMemo(() => {
+    const source = item.feed_thread_post_content ?? item.discussion_payload.excerpt_text ?? item.topic_description ?? "";
+    return truncatePreview(source);
+  }, [item.feed_thread_post_content, item.discussion_payload.excerpt_text, item.topic_description]);
+
+  const openThread = useCallback(() => {
+    router.push(threadHref);
+  }, [router, threadHref]);
+
+  const stopCardNavigation = (event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+  };
+
+  const onShare = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const shareUrl =
+      typeof window !== "undefined" ? `${window.location.origin}/thread/${item.topic_slug}` : `/thread/${item.topic_slug}`;
+
+    try {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        await navigator.share({ title: item.topic_title, url: shareUrl });
+        setShareFeedback("Partage lance");
+      } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareFeedback("Lien copie");
+      } else {
+        setShareFeedback("Partage indisponible");
+      }
+    } catch {
+      setShareFeedback("Partage annule");
+    }
+
+    setTimeout(() => setShareFeedback(null), 1800);
+  };
+
   return (
     <article
       className={
-        featured ? "rounded-2xl border border-border bg-card px-5 py-4" : "rounded-2xl border border-border bg-card px-4 py-3"
+        featured ? "cursor-pointer rounded-2xl border border-border bg-card px-5 py-4" : "cursor-pointer rounded-2xl border border-border bg-card px-4 py-3"
       }
+      onClick={openThread}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openThread();
+        }
+      }}
+      role="link"
+      tabIndex={0}
+      aria-label={`Ouvrir le thread ${item.topic_title}`}
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>{authorLabel}</span>
@@ -32,40 +104,54 @@ export function ThreadCard({
       </div>
 
       <div className="mt-2">
-        <Link
-          href={`/thread/${item.topic_slug}` as Route}
-          className="block text-balance text-xl font-semibold leading-tight tracking-tight text-foreground hover:underline"
-        >
+        <h3 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground">
           {item.topic_title}
-        </Link>
-        {item.topic_description ? (
-          <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">{item.topic_description}</p>
-        ) : null}
+        </h3>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {item.space_name ? <StatusBadge label={item.space_name} tone="muted" /> : null}
         {item.primary_taxonomy_label ? <StatusBadge label={item.primary_taxonomy_label} tone="accent" /> : null}
-        <StatusBadge label="Discussion" tone="default" />
+        <StatusBadge label={item.topic_status} tone="muted" />
       </div>
 
-      {item.discussion_payload.excerpt_text ? (
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-foreground/90">
-          {item.discussion_payload.excerpt_text}
-        </p>
-      ) : null}
+      {previewText ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/90">{previewText}</p> : null}
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span>{formatNumber(item.visible_post_count ?? 0)} messages</span>
+      <div
+        className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3"
+        onClick={stopCardNavigation}
+      >
+        <div className="flex items-center gap-3">
+          {targetPostId ? (
+            <ReactionBar
+              targetType="thread_post"
+              targetId={targetPostId}
+              redirectPath={threadHref}
+              leftVotes={item.feed_gauche_count ?? 0}
+              rightVotes={item.feed_droite_count ?? 0}
+              isAuthenticated={isAuthenticated}
+            />
+          ) : null}
         </div>
-        <div className="flex items-center gap-3 text-sm">
-          <Link href={`/thread/${item.topic_slug}#reply-form` as Route} className="font-medium text-foreground hover:underline">
-            Repondre vite
-          </Link>
-          <Link href={`/thread/${item.topic_slug}` as Route} className="font-medium text-muted-foreground hover:text-foreground">
-            Ouvrir thread
-          </Link>
+
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <a href={replyHref} className="inline-flex items-center gap-1 font-medium text-foreground hover:underline">
+            <CornerDownLeft className="size-3.5" />
+            <span>Repondre direct</span>
+          </a>
+
+          <span className="inline-flex items-center gap-1">
+            <MessageSquare className="size-3.5" />
+            <span>{formatNumber(commentCount)} commentaires</span>
+          </span>
+
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
+            onClick={onShare}
+          >
+            <Share2 className="size-3.5" />
+            <span>{shareFeedback ?? "Partager"}</span>
+          </button>
         </div>
       </div>
     </article>

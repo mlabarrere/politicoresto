@@ -165,4 +165,19 @@ describe("mutation actions", () => {
 
     expect(mocks.rpcMock).not.toHaveBeenCalled();
   });
+
+  it("rejects unknown reaction target type", async () => {
+    await expect(
+      reactAction(
+        makeFormData({
+          target_type: "topic",
+          target_id: "thread-post-1",
+          reaction_side: "gauche",
+          redirect_path: "/thread/thread-1"
+        })
+      )
+    ).rejects.toThrow("Reaction target invalid");
+
+    expect(mocks.rpcMock).not.toHaveBeenCalled();
+  });
 });

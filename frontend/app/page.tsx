@@ -33,7 +33,7 @@ export default async function HomePage() {
           {error ? <EmptyState title="Feed partiel" body={`Lecture incomplete: ${error}`} /> : null}
 
           {data.feed.length ? (
-            <FeedList items={data.feed} featuredCount={0} />
+            <FeedList items={data.feed} featuredCount={0} isAuthenticated={Boolean(session)} />
           ) : (
             <EmptyState
               title="Aucun thread visible"

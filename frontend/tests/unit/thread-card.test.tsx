@@ -1,0 +1,114 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { ThreadCard } from "@/components/feed/thread-card";
+import { buildHomeFeedTopic } from "../fixtures/home-feed-topic";
+
+const pushMock = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: pushMock
+  })
+}));
+
+describe("thread feed card", () => {
+  beforeEach(() => {
+    pushMock.mockReset();
+  });
+
+  it("truncates preview at 500 chars with ellipsis", () => {
+    const longBody = `${"A".repeat(520)} fin`;
+    render(
+      <ThreadCard
+        item={buildHomeFeedTopic({
+          feed_thread_post_id: "post-1",
+          feed_thread_post_content: longBody
+        })}
+        isAuthenticated={true}
+      />
+    );
+
+    const preview = screen.getByText((text) => text.startsWith("A"));
+    expect(preview.textContent?.length).toBe(503);
+    expect(preview.textContent?.endsWith("...")).toBe(true);
+  });
+
+  it("opens thread when card is clicked", () => {
+    render(
+      <ThreadCard
+        item={buildHomeFeedTopic({
+          topic_slug: "thread-x",
+          feed_thread_post_id: "post-1",
+          feed_thread_post_content: "Contenu court"
+        })}
+        isAuthenticated={true}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("link", { name: /ouvrir le thread/i }));
+    expect(pushMock).toHaveBeenCalledWith("/thread/thread-x");
+  });
+
+  it("does not trigger card navigation when action buttons are clicked", () => {
+    render(
+      <ThreadCard
+        item={buildHomeFeedTopic({
+          feed_thread_post_id: "post-1",
+          feed_thread_post_content: "Contenu court"
+        })}
+        isAuthenticated={true}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Partager" }));
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("shows comment count and political reactions, and no super like", () => {
+    render(
+      <ThreadCard
+        item={buildHomeFeedTopic({
+          feed_thread_post_id: "post-1",
+          feed_thread_post_content: "Contenu court",
+          feed_comment_count: 12
+        })}
+        isAuthenticated={true}
+      />
+    );
+
+    expect(screen.getByText(/12 commentaires/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("C'est de gauche !")).toBeInTheDocument();
+    expect(screen.getByLabelText("C'est de droite !")).toBeInTheDocument();
+    expect(screen.queryByText(/super like/i)).not.toBeInTheDocument();
+  });
+
+  it("shares by copying thread URL when navigator.share is unavailable", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true
+    });
+    Object.defineProperty(navigator, "share", {
+      value: undefined,
+      configurable: true
+    });
+
+    render(
+      <ThreadCard
+        item={buildHomeFeedTopic({
+          topic_slug: "share-thread",
+          feed_thread_post_id: "post-1",
+          feed_thread_post_content: "Contenu court"
+        })}
+        isAuthenticated={true}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Partager" }));
+
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/thread/share-thread"))
+    );
+  });
+});

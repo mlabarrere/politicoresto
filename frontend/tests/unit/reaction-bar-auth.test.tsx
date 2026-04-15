@@ -43,4 +43,49 @@ describe("reaction bar auth gate", () => {
     expect(screen.getByText("Creer un compte")).toBeInTheDocument();
     expect(screen.queryByText("Le thread n'a pas pu etre charge")).not.toBeInTheDocument();
   });
+
+  it("submits gauche and droite payloads for thread targets", () => {
+    const { container } = render(
+      <ReactionBar
+        targetType="thread_post"
+        targetId="thread-post-123"
+        redirectPath="/thread/demo"
+        leftVotes={4}
+        rightVotes={9}
+        isAuthenticated={true}
+      />
+    );
+
+    const forms = Array.from(container.querySelectorAll("form"));
+    expect(forms.length).toBe(2);
+
+    const leftForm = forms.find((form) => (form.querySelector('input[name="reaction_side"]') as HTMLInputElement)?.value === "gauche");
+    const rightForm = forms.find((form) => (form.querySelector('input[name="reaction_side"]') as HTMLInputElement)?.value === "droite");
+
+    expect(leftForm).toBeTruthy();
+    expect(rightForm).toBeTruthy();
+    expect((leftForm?.querySelector('input[name="target_type"]') as HTMLInputElement).value).toBe("thread_post");
+    expect((rightForm?.querySelector('input[name="target_type"]') as HTMLInputElement).value).toBe("thread_post");
+    expect(leftForm?.textContent).toContain("4");
+    expect(rightForm?.textContent).toContain("9");
+  });
+
+  it("submits gauche and droite payloads for comment targets", () => {
+    const { container } = render(
+      <ReactionBar
+        targetType="comment"
+        targetId="comment-456"
+        redirectPath="/thread/demo"
+        leftVotes={1}
+        rightVotes={2}
+        isAuthenticated={true}
+      />
+    );
+
+    const forms = Array.from(container.querySelectorAll("form"));
+    expect(forms.length).toBe(2);
+    expect(forms.every((form) => (form.querySelector('input[name="target_type"]') as HTMLInputElement).value === "comment")).toBe(true);
+    expect(forms.some((form) => (form.querySelector('input[name="reaction_side"]') as HTMLInputElement).value === "gauche")).toBe(true);
+    expect(forms.some((form) => (form.querySelector('input[name="reaction_side"]') as HTMLInputElement).value === "droite")).toBe(true);
+  });
 });
