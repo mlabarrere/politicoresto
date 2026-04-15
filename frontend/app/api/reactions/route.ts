@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 
 import { REACTION_SIDE_TO_TYPE, REACTION_TYPE_TO_SIDE, type ReactionSide } from "@/lib/reactions";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { fromBackendVoteSide } from "@/lib/forum/vote";
 
 type ReactionPayload = {
   targetType: "thread_post" | "comment";
   targetId: string;
-  side: ReactionSide;
+  side: ReactionSide | "left" | "right";
 };
 
 function isReactionPayload(value: unknown): value is ReactionPayload {
@@ -17,7 +18,10 @@ function isReactionPayload(value: unknown): value is ReactionPayload {
     (payload.targetType === "thread_post" || payload.targetType === "comment") &&
     typeof payload.targetId === "string" &&
     payload.targetId.trim().length > 0 &&
-    (payload.side === "gauche" || payload.side === "droite")
+    (payload.side === "gauche" ||
+      payload.side === "droite" ||
+      payload.side === "left" ||
+      payload.side === "right")
   );
 }
 
@@ -48,15 +52,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: existingReactionError.message }, { status: 400 });
   }
 
+  const side = body.side === "left" ? "gauche" : body.side === "right" ? "droite" : body.side;
   const existingReactionType = existingReaction?.reaction_type as "upvote" | "downvote" | null;
-  const requestedReactionType = REACTION_SIDE_TO_TYPE[body.side];
+  const requestedReactionType = REACTION_SIDE_TO_TYPE[side];
   const currentVote =
-    existingReactionType === requestedReactionType ? null : REACTION_TYPE_TO_SIDE[requestedReactionType];
+    existingReactionType === requestedReactionType
+      ? null
+      : fromBackendVoteSide(REACTION_TYPE_TO_SIDE[requestedReactionType]);
 
   const { error: rpcError } = await supabase.rpc("react_post", {
     p_target_type: body.targetType,
     p_target_id: body.targetId,
-    p_reaction_type: REACTION_SIDE_TO_TYPE[body.side]
+    p_reaction_type: REACTION_SIDE_TO_TYPE[side]
   });
 
   if (rpcError) {

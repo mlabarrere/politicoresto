@@ -114,13 +114,13 @@ describe("thread page forum UX", () => {
     render(await ThreadDetailPage({ params: Promise.resolve({ slug: "thread-1" }) }));
 
     expect(
-      screen.getByText((content) => content.includes("Ligne 1") && content.includes("Ligne 2"))
-    ).toBeInTheDocument();
+      screen.getAllByText((content) => content.includes("Ligne 1") && content.includes("Ligne 2")).length
+    ).toBeGreaterThan(0);
     expect(screen.queryByText(/\\n/)).not.toBeInTheDocument();
     expect(screen.getByText("Titre article")).toBeInTheDocument();
     expect(screen.getByText("Description article")).toBeInTheDocument();
-    expect(screen.getAllByLabelText("C'est de gauche !").length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText("C'est de droite !").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("Classer gauche").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("Classer droite").length).toBeGreaterThan(0);
     expect(
       screen.getByText((content) => content.includes("Commentaire parent") && content.includes("avec retour"))
     ).toBeInTheDocument();
@@ -168,7 +168,7 @@ describe("thread page forum UX", () => {
 
     render(await ThreadDetailPage({ params: Promise.resolve({ slug: "thread-1" }) }));
 
-    fireEvent.click(screen.getAllByLabelText("C'est de gauche !")[0]);
+    fireEvent.click(screen.getAllByLabelText("Classer gauche")[0]);
 
     expect(screen.getByText("Se connecter")).toBeInTheDocument();
     expect(screen.getByText("Creer un compte")).toBeInTheDocument();
