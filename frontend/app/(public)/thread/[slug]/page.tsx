@@ -12,6 +12,7 @@ import {
   updateThreadPostAction
 } from "@/lib/actions/threads";
 import { getThreadDetail } from "@/lib/data/public/threads";
+import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ThreadPostView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
@@ -52,7 +53,10 @@ export default async function ThreadDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const detail = await getThreadDetail(slug);
+  const supabase = await createServerSupabaseClient();
+  const user = await getCurrentUser(supabase);
+  const currentUserId = user?.id ?? null;
+  const detail = await getThreadDetail(slug, currentUserId);
 
   if (!detail?.thread) {
     notFound();
@@ -61,12 +65,6 @@ export default async function ThreadDetailPage({
   const thread = detail.thread;
   const op = detail.threadPosts[0] ?? null;
   const { sourceUrl, preview } = extractPreview(op);
-
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
-  const currentUserId = session?.user?.id ?? null;
 
   return (
     <PageContainer>
@@ -123,6 +121,7 @@ export default async function ThreadDetailPage({
                   redirectPath={`/thread/${thread.slug}`}
                   leftVotes={op.gauche_count ?? 0}
                   rightVotes={op.droite_count ?? 0}
+                  currentVote={op.user_reaction_side ?? null}
                   isAuthenticated={Boolean(currentUserId)}
                 />
               </div>
