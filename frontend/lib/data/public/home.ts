@@ -1,9 +1,14 @@
 import type { HomeScreenData, LoadState } from "@/lib/types/screens";
 import { matchesPoliticalBloc } from "@/lib/data/political-taxonomy";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/auth-user";
+import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { toHomeFeedTopic } from "./canonical";
 
-export async function getHomeScreenData(blocSlug?: string | null): Promise<LoadState<HomeScreenData>> {
+export async function getHomeScreenData(
+  blocSlug?: string | null,
+  currentUserId?: string | null
+): Promise<LoadState<HomeScreenData>> {
   const supabase = await createServerSupabaseClient();
 
   const { data: feedRows, error } = await supabase
@@ -53,6 +58,26 @@ export async function getHomeScreenData(blocSlug?: string | null): Promise<LoadS
     }
   }
 
+  const resolvedCurrentUserId =
+    currentUserId !== undefined ? currentUserId : (await getCurrentUser(supabase))?.id ?? null;
+
+  const reactionByTarget = new Map<string, "gauche" | "droite">();
+  const threadPostIds = Array.from(postByThreadId.values()).map((post) => post.id);
+
+  if (resolvedCurrentUserId && threadPostIds.length > 0) {
+    const { data: ownReactions } = await supabase
+      .from("reaction")
+      .select("target_id, reaction_type")
+      .eq("target_type", "thread_post")
+      .eq("user_id", resolvedCurrentUserId)
+      .in("target_id", threadPostIds);
+
+    for (const reaction of ownReactions ?? []) {
+      const reactionType = reaction.reaction_type as "upvote" | "downvote";
+      reactionByTarget.set(String(reaction.target_id), REACTION_TYPE_TO_SIDE[reactionType]);
+    }
+  }
+
   const enrichedFeed = feed.map((item) => {
     const post = postByThreadId.get(item.topic_id);
     if (!post) return item;
@@ -63,7 +88,8 @@ export async function getHomeScreenData(blocSlug?: string | null): Promise<LoadS
       feed_thread_post_content: post.content,
       feed_gauche_count: post.gauche_count,
       feed_droite_count: post.droite_count,
-      feed_comment_count: post.comment_count
+      feed_comment_count: post.comment_count,
+      feed_user_reaction_side: reactionByTarget.get(post.id) ?? null
     };
   });
 

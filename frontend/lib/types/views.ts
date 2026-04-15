@@ -114,6 +114,7 @@ export type HomeFeedTopicView = {
   feed_gauche_count?: number | null;
   feed_droite_count?: number | null;
   feed_comment_count?: number | null;
+  feed_user_reaction_side?: "gauche" | "droite" | null;
 };
 
 export type TopicSummaryView = {
@@ -309,6 +310,7 @@ export type ThreadPostView = {
   status: string;
   gauche_count: number | null;
   droite_count: number | null;
+  user_reaction_side?: "gauche" | "droite" | null;
   weighted_votes: number | null;
   comment_count: number | null;
 };
@@ -329,6 +331,7 @@ export type CommentView = {
   post_status: string;
   gauche_count: number | null;
   droite_count: number | null;
+  user_reaction_side?: "gauche" | "droite" | null;
   comment_score: number | null;
 };
 

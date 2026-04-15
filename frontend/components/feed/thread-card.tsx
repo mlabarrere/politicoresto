@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, type MouseEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { CornerDownLeft, MessageSquare, Share2 } from "lucide-react";
@@ -20,7 +20,7 @@ function truncatePreview(value: string) {
   return `${text.slice(0, PREVIEW_LIMIT).trimEnd()}...`;
 }
 
-export function ThreadCard({
+export const ThreadCard = memo(function ThreadCard({
   item,
   featured = false,
   isAuthenticated = false
@@ -31,6 +31,7 @@ export function ThreadCard({
 }) {
   const router = useRouter();
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const shareFeedbackTimeoutRef = useRef<number | null>(null);
 
   const authorLabel =
     (item as unknown as { author_display_name?: string | null }).author_display_name ??
@@ -51,33 +52,51 @@ export function ThreadCard({
     router.push(threadHref);
   }, [router, threadHref]);
 
-  const stopCardNavigation = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-  };
-
-  const onShare = async (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const shareUrl =
-      typeof window !== "undefined" ? `${window.location.origin}/thread/${item.topic_slug}` : `/thread/${item.topic_slug}`;
-
-    try {
-      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        await navigator.share({ title: item.topic_title, url: shareUrl });
-        setShareFeedback("Partage lance");
-      } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareFeedback("Lien copie");
-      } else {
-        setShareFeedback("Partage indisponible");
+  useEffect(() => {
+    return () => {
+      if (shareFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(shareFeedbackTimeoutRef.current);
       }
-    } catch {
-      setShareFeedback("Partage annule");
-    }
+    };
+  }, []);
 
-    setTimeout(() => setShareFeedback(null), 1800);
-  };
+  const stopCardNavigation = useCallback((event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+  }, []);
+
+  const onShare = useCallback(
+    async (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const shareUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/thread/${item.topic_slug}`
+          : `/thread/${item.topic_slug}`;
+
+      try {
+        if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+          await navigator.share({ title: item.topic_title, url: shareUrl });
+          setShareFeedback("Partage lance");
+        } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+          setShareFeedback("Lien copie");
+        } else {
+          setShareFeedback("Partage indisponible");
+        }
+      } catch {
+        setShareFeedback("Partage annule");
+      }
+
+      if (shareFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(shareFeedbackTimeoutRef.current);
+      }
+      shareFeedbackTimeoutRef.current = window.setTimeout(() => {
+        setShareFeedback(null);
+      }, 1800);
+    },
+    [item.topic_slug, item.topic_title]
+  );
 
   return (
     <article
@@ -128,6 +147,7 @@ export function ThreadCard({
               redirectPath={threadHref}
               leftVotes={item.feed_gauche_count ?? 0}
               rightVotes={item.feed_droite_count ?? 0}
+              currentVote={item.feed_user_reaction_side ?? null}
               isAuthenticated={isAuthenticated}
             />
           ) : null}
@@ -156,4 +176,4 @@ export function ThreadCard({
       </div>
     </article>
   );
-}
+});

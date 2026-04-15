@@ -47,6 +47,7 @@ export function CommentItem({
             redirectPath={redirectPath}
             leftVotes={comment.gauche_count ?? 0}
             rightVotes={comment.droite_count ?? 0}
+            currentVote={comment.user_reaction_side ?? null}
             compact
             isAuthenticated={Boolean(currentUserId)}
           />

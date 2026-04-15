@@ -4,14 +4,14 @@ import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { PoliticalBlocSidebar } from "@/components/navigation/political-bloc-sidebar";
 import { getHomeScreenData } from "@/lib/data/public/home";
+import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function HomePage() {
-  const { data, error } = await getHomeScreenData(null);
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
+  const user = await getCurrentUser(supabase);
+  const currentUserId = user?.id ?? null;
+  const { data, error } = await getHomeScreenData(null, currentUserId);
 
   return (
     <PageContainer>
@@ -28,12 +28,12 @@ export default async function HomePage() {
             </p>
           </section>
 
-          {session ? <Composer redirectPath="/" title="Nouveau thread" /> : null}
+          {currentUserId ? <Composer redirectPath="/" title="Nouveau thread" /> : null}
 
           {error ? <EmptyState title="Feed partiel" body={`Lecture incomplete: ${error}`} /> : null}
 
           {data.feed.length ? (
-            <FeedList items={data.feed} featuredCount={0} isAuthenticated={Boolean(session)} />
+            <FeedList items={data.feed} featuredCount={0} isAuthenticated={Boolean(currentUserId)} />
           ) : (
             <EmptyState
               title="Aucun thread visible"
