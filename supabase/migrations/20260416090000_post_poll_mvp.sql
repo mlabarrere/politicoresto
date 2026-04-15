@@ -101,14 +101,13 @@ language sql
 stable
 as $$
   select case
-    when p_dimension_key = 'ideology' then coalesce(tt.slug::text, 'unknown')
-    when p_dimension_key = 'territory_region' then coalesce(tr.region_code, 'unknown')
+    when p_dimension_key = 'ideology_declared' then
+      case when upp.declared_ideology_term_id is null then 'undeclared' else 'declared' end
+    when p_dimension_key = 'profile_status' then coalesce(ap.profile_status::text, 'active')
     else 'unknown'
   end
   from public.app_profile ap
   left join public.user_private_political_profile upp on upp.user_id = ap.user_id
-  left join public.taxonomy_term tt on tt.id = upp.declared_ideology_term_id
-  left join public.territory_reference tr on tr.id = ap.public_territory_id
   where ap.user_id = p_user_id;
 $$;
 
@@ -609,19 +608,11 @@ grant select on public.v_post_poll_summary to anon, authenticated;
 
 insert into public.post_poll_target_distribution(model_version, dimension_key, bucket_key, target_share, is_active)
 values
-  ('fr_v1', 'ideology', 'unknown', 0.30, true),
-  ('fr_v1', 'ideology', 'gauche', 0.24, true),
-  ('fr_v1', 'ideology', 'centre', 0.28, true),
-  ('fr_v1', 'ideology', 'droite', 0.18, true),
-  ('fr_v1', 'territory_region', 'unknown', 0.20, true),
-  ('fr_v1', 'territory_region', 'idf', 0.19, true),
-  ('fr_v1', 'territory_region', 'ara', 0.12, true),
-  ('fr_v1', 'territory_region', 'occ', 0.09, true),
-  ('fr_v1', 'territory_region', 'hdf', 0.09, true),
-  ('fr_v1', 'territory_region', 'paca', 0.08, true),
-  ('fr_v1', 'territory_region', 'naq', 0.09, true),
-  ('fr_v1', 'territory_region', 'ges', 0.08, true),
-  ('fr_v1', 'territory_region', 'other', 0.06, true)
+  ('fr_v1', 'ideology_declared', 'declared', 0.55, true),
+  ('fr_v1', 'ideology_declared', 'undeclared', 0.45, true),
+  ('fr_v1', 'profile_status', 'active', 0.97, true),
+  ('fr_v1', 'profile_status', 'suspended', 0.02, true),
+  ('fr_v1', 'profile_status', 'deleted', 0.01, true)
 on conflict (model_version, dimension_key, bucket_key) do update
 set target_share = excluded.target_share,
     is_active = excluded.is_active;
