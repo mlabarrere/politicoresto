@@ -4,8 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Plus } from "lucide-react";
 
-import { buttonVariants } from "@/components/ui/button-variants";
-import { cn } from "@/lib/utils";
+import { AppButton } from "@/components/app/app-button";
 
 export function CreatePostCTA({
   href = "/post/new",
@@ -19,22 +18,11 @@ export function CreatePostCTA({
     : "w-full";
 
   return (
-    <Link
-      href={href as Route}
-      className={cn(
-        buttonVariants({ size: "sm" }),
-        "inline-flex items-center justify-center gap-2",
-        baseClass
-      )}
-    >
+    <AppButton variant="primary" size="sm" className={baseClass} render={<Link href={href as Route} />}>
       <Plus className="size-4" />
       Nouveau post
-    </Link>
+    </AppButton>
   );
 }
 
-
-
-
-export const CreateThreadCTA = CreatePostCTA;
 

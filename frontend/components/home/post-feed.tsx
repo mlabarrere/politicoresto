@@ -1,9 +1,9 @@
 import { EmptyState } from "@/components/layout/empty-state";
-import { ThreadCard } from "@/components/domain/thread-card";
+import { PostCard } from "@/components/domain/post-card";
 import type { FeedSortMode } from "@/lib/types/homepage";
-import type { ThreadFeedItemView } from "@/lib/types/views";
+import type { PostFeedItemView } from "@/lib/types/views";
 
-function sortItems(items: ThreadFeedItemView[], sortMode: FeedSortMode) {
+function sortItems(items: PostFeedItemView[], sortMode: FeedSortMode) {
   const sorted = [...items];
   sorted.sort((a, b) => {
     if (sortMode === "recent") {
@@ -20,12 +20,12 @@ function sortItems(items: ThreadFeedItemView[], sortMode: FeedSortMode) {
   return sorted;
 }
 
-export function ThreadFeed({
+export function PostFeed({
   items,
   isAuthenticated,
   sortMode
 }: {
-  items: ThreadFeedItemView[];
+  items: PostFeedItemView[];
   isAuthenticated: boolean;
   sortMode: FeedSortMode;
 }) {
@@ -43,10 +43,11 @@ export function ThreadFeed({
   return (
     <div className="space-y-3">
       {sortedItems.map((item) => (
-        <ThreadCard key={item.topic_id} item={item} isAuthenticated={isAuthenticated} />
+        <PostCard key={item.topic_id} item={item} isAuthenticated={isAuthenticated} />
       ))}
     </div>
   );
 }
+
 
 

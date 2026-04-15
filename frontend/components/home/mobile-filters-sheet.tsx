@@ -2,7 +2,8 @@
 
 import { SlidersHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/app/app-button";
+import { AppFilter } from "@/components/app/app-filter";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import type { FeedSortMode } from "@/lib/types/homepage";
 
@@ -21,26 +22,19 @@ export function MobileFiltersSheet({
 }) {
   return (
     <Sheet>
-      <SheetTrigger render={<Button variant="outline" size="sm" aria-label="Ouvrir les filtres" />}>
+      <SheetTrigger render={<AppButton variant="secondary" size="sm" aria-label="Ouvrir les filtres" />}>
         <SlidersHorizontal className="size-4" />
         Filtres
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-2xl bg-card">
         <SheetTitle className="text-lg font-semibold tracking-tight">Filtres du feed</SheetTitle>
-        <div className="mt-4 grid gap-2">
-          {SORTS.map((sort) => (
-            <Button
-              key={sort.value}
-              type="button"
-              variant={sortMode === sort.value ? "default" : "outline"}
-              onClick={() => onSortChange(sort.value)}
-            >
-              {sort.label}
-            </Button>
-          ))}
-        </div>
+        <AppFilter
+          className="mt-4 grid gap-2"
+          options={SORTS}
+          value={sortMode}
+          onChange={onSortChange}
+        />
       </SheetContent>
     </Sheet>
   );
 }
-

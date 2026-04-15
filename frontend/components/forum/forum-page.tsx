@@ -1,13 +1,13 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 
 import { CommentThread } from "@/components/forum/comment-thread";
 import { PostActionsBar } from "@/components/forum/post-actions-bar";
 import { PostCard } from "@/components/forum/post-card";
+import { PostToolbar } from "@/components/forum/post-toolbar";
 import { ReplyComposer } from "@/components/forum/reply-composer";
 import { RightSidebar } from "@/components/forum/right-sidebar";
-import { ThreadToolbar } from "@/components/forum/thread-toolbar";
 import { applyVoteTransition, computeNextVote } from "@/lib/forum/vote";
 import type { CommentTreeNode, VoteSide } from "@/lib/types/forum";
 import type { ForumPageProps, ForumPageState } from "@/lib/types/forum-components";
@@ -90,7 +90,7 @@ function countComments(tree: CommentTreeNode[]): number {
 }
 
 async function mutateVote(params: {
-  targetType: "thread_post" | "comment";
+  targetType: "post" | "comment";
   targetId: string;
   side: Exclude<VoteSide, null>;
 }): Promise<{ leftVotes: number; rightVotes: number; currentVote: VoteSide }> {
@@ -185,7 +185,7 @@ export function ForumPage({ post, comments, currentUserId, postSlug }: ForumPage
 
       try {
         const payload = await mutateVote({
-          targetType: "thread_post",
+          targetType: "post",
           targetId: entityId,
           side: sideForServer
         });
@@ -296,7 +296,7 @@ export function ForumPage({ post, comments, currentUserId, postSlug }: ForumPage
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]" role="feed" aria-busy={state.commentsStatus === "loading"}>
-      <section className="space-y-4" id="thread-main">
+      <section className="space-y-4" id="post-main">
         <PostCard post={postView} />
 
         <PostActionsBar
@@ -310,7 +310,7 @@ export function ForumPage({ post, comments, currentUserId, postSlug }: ForumPage
           onReplyClick={() => setShowRootComposer(true)}
         />
 
-        <ThreadToolbar
+        <PostToolbar
           sortMode={state.sortMode}
           collapsedAll={state.collapsedAll}
           compactMode={compactMode}
@@ -367,4 +367,5 @@ function findCommentNode(tree: CommentTreeNode[], commentId: string): CommentTre
 
   return null;
 }
+
 

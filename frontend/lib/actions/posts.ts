@@ -12,9 +12,6 @@ export async function createPostAction(formData: FormData) {
   const body = String(formData.get("body") ?? "").trim();
   const sourceUrl = normalizeSourceUrl(String(formData.get("source_url") ?? "").trim());
   const description = body ? body.slice(0, 280) : null;
-  const entityId = String(formData.get("entity_id") ?? "").trim() || null;
-  const spaceId = String(formData.get("space_id") ?? "").trim() || null;
-  const closeAt = String(formData.get("close_at") ?? "").trim() || null;
   const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
 
   if (!title) {
@@ -22,27 +19,27 @@ export async function createPostAction(formData: FormData) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const { data: threadData, error } = await supabase.rpc("create_thread", {
+  const { data: postData, error } = await supabase.rpc("create_post_topic", {
     p_title: title,
     p_description: description,
-    p_entity_id: entityId,
-    p_space_id: spaceId,
-    p_close_at: closeAt
+    p_entity_id: null,
+    p_space_id: null,
+    p_close_at: null
   });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  const threadId = Array.isArray(threadData)
-    ? (threadData[0] as { id?: string } | null)?.id ?? null
-    : ((threadData as { id?: string } | null)?.id ?? null);
+  const postId = Array.isArray(postData)
+    ? (postData[0] as { id?: string } | null)?.id ?? null
+    : ((postData as { id?: string } | null)?.id ?? null);
 
-  if (threadId) {
+  if (postId) {
     const preview = sourceUrl ? await fetchUrlPreview(sourceUrl) : null;
 
-    const { error: opError } = await supabase.rpc("create_post", {
-      p_thread_id: threadId,
+    const { error: opError } = await supabase.rpc("create_post_item", {
+      p_post_id: postId,
       p_type: "article",
       p_title: title,
       p_content: body || null,
@@ -66,4 +63,4 @@ export async function createPostAction(formData: FormData) {
   redirect(redirectPath as Route);
 }
 
-export const createThreadAction = createPostAction;
+

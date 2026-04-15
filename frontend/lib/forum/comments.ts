@@ -1,4 +1,4 @@
-﻿import type { CommentView } from "@/lib/types/views";
+import type { CommentView } from "@/lib/types/views";
 import type { CommentTreeNode } from "@/lib/types/forum";
 import { buildForumCommentTree } from "@/lib/forum/mappers";
 
@@ -16,8 +16,8 @@ function buildLegacyNodes(tree: CommentTreeNode[]): CommentNode[] {
   return tree.map((node) => ({
     comment: {
       id: node.id,
-      thread_id: "",
-      thread_post_id: null,
+      post_id: "",
+      post_item_id: null,
       parent_post_id: node.parentCommentId ?? null,
       depth: node.depth,
       author_user_id: node.author.id,
@@ -52,3 +52,5 @@ export function getIndentPx(depth: number, maxInlineDepth: number, compactMode: 
   const level = Math.min(depth, hardCap);
   return level * (compactMode ? 10 : 14);
 }
+
+

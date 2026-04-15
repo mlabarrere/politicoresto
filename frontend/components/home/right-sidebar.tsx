@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { CreateThreadCTA } from "@/components/home/create-thread-cta";
+import { CreatePostCTA } from "@/components/home/create-post-cta";
 import type { FeedSortMode } from "@/lib/types/homepage";
 
 export function RightSidebar({
@@ -14,7 +14,7 @@ export function RightSidebar({
     <aside className="hidden lg:block">
       <div className="sticky top-24 space-y-3">
         <section className="app-card p-3">
-          <CreateThreadCTA />
+          <CreatePostCTA />
         </section>
 
         <section className="app-card p-3">
@@ -41,6 +41,7 @@ export function RightSidebar({
     </aside>
   );
 }
+
 
 
 

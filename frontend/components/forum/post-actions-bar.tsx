@@ -3,8 +3,8 @@
 import { Flag, MessageSquare, Share2 } from "lucide-react";
 import { useState } from "react";
 
+import { AppButton } from "@/components/app/app-button";
 import { VoteBinaryLR } from "@/components/forum/vote-binary-lr";
-import { Button } from "@/components/ui/button";
 import type { PostActionsBarProps } from "@/lib/types/forum-components";
 
 export function PostActionsBar({
@@ -24,23 +24,23 @@ export function PostActionsBar({
 
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        await navigator.share({ title: "Thread", url });
-        setFeedback("Partage lancé");
+        await navigator.share({ title: "Post", url });
+        setFeedback("Partage lance");
       } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
-        setFeedback("Lien copié");
+        setFeedback("Lien copie");
       } else {
         setFeedback("Partage indisponible");
       }
     } catch {
-      setFeedback("Partage annulé");
+      setFeedback("Partage annule");
     }
 
     window.setTimeout(() => setFeedback(null), 1800);
   }
 
   function onReport() {
-    setFeedback("Signalement enregistré");
+    setFeedback("Signalement enregistre");
     window.setTimeout(() => setFeedback(null), 1800);
   }
 
@@ -58,15 +58,15 @@ export function PostActionsBar({
         />
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onReplyClick}>
+          <AppButton type="button" variant="secondary" onClick={onReplyClick}>
             <MessageSquare className="size-3.5" /> Commenter
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void onShare()}>
+          </AppButton>
+          <AppButton type="button" variant="secondary" onClick={() => void onShare()}>
             <Share2 className="size-3.5" /> Partager
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onReport}>
+          </AppButton>
+          <AppButton type="button" variant="secondary" onClick={onReport}>
             <Flag className="size-3.5" /> Signaler
-          </Button>
+          </AppButton>
         </div>
       </div>
 
@@ -74,7 +74,3 @@ export function PostActionsBar({
     </div>
   );
 }
-
-
-
-

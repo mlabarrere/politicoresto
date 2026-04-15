@@ -1,4 +1,4 @@
-import type { CommentView, ThreadPostView } from "@/lib/types/views";
+import type { CommentView, PostView } from "@/lib/types/views";
 import type { CommentTreeNode, ForumPost } from "@/lib/types/forum";
 import { fromBackendVoteSide } from "@/lib/forum/vote";
 import { normalizeMultilineText } from "@/lib/utils/multiline";
@@ -7,8 +7,8 @@ function toUsername(username: string | null, displayName: string | null) {
   return displayName ?? username ?? "Membre";
 }
 
-export function mapThreadPostToForumPost(
-  post: ThreadPostView,
+export function mapPostViewToForumPost(
+  post: PostView,
   fallbackTitle?: string | null
 ): ForumPost {
   return {
@@ -120,6 +120,4 @@ export function buildForumCommentTree(
   return roots.map((root) => buildNode(root, byParent, sortMode));
 }
 
-
-export const mapPostToForumPost = mapThreadPostToForumPost;
 

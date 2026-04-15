@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { AppButton } from "@/components/app/app-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { PostCardProps } from "@/lib/types/forum-components";
 import { formatDate } from "@/lib/utils/format";
@@ -36,14 +37,15 @@ export function PostCard({ post, initialExpanded = false }: PostCardProps) {
       <div className="space-y-2">
         <p className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">{visibleBody}</p>
         {isLong ? (
-          <button
+          <AppButton
             type="button"
-            className="text-xs font-medium text-foreground underline-offset-2 hover:underline"
+            variant="ghost"
+            className="h-auto px-0 py-0 text-xs underline-offset-2 hover:underline"
             onClick={() => setExpanded((previous) => !previous)}
             aria-expanded={expanded}
           >
             {expanded ? "Réduire" : "Lire plus"}
-          </button>
+          </AppButton>
         ) : null}
       </div>
     </article>

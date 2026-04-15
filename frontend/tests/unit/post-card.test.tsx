@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ThreadCard } from "@/components/domain/thread-card";
+import { PostCard } from "@/components/domain/post-card";
 import { buildHomeFeedTopic } from "../fixtures/home-feed-topic";
 
 const pushMock = vi.fn();
@@ -20,10 +20,10 @@ describe("post feed card", () => {
   it("truncates preview at 500 chars with ellipsis", () => {
     const longBody = `${"A".repeat(520)} fin`;
     render(
-      <ThreadCard
+      <PostCard
         item={buildHomeFeedTopic({
-          feed_thread_post_id: "post-1",
-          feed_thread_post_content: longBody
+          feed_post_id: "post-1",
+          feed_post_content: longBody
         })}
         isAuthenticated={true}
       />
@@ -36,11 +36,11 @@ describe("post feed card", () => {
 
   it("opens post when card is clicked", () => {
     render(
-      <ThreadCard
+      <PostCard
         item={buildHomeFeedTopic({
           topic_slug: "thread-x",
-          feed_thread_post_id: "post-1",
-          feed_thread_post_content: "Contenu court"
+          feed_post_id: "post-1",
+          feed_post_content: "Contenu court"
         })}
         isAuthenticated={true}
       />
@@ -52,10 +52,10 @@ describe("post feed card", () => {
 
   it("does not trigger card navigation when action buttons are clicked", () => {
     render(
-      <ThreadCard
+      <PostCard
         item={buildHomeFeedTopic({
-          feed_thread_post_id: "post-1",
-          feed_thread_post_content: "Contenu court"
+          feed_post_id: "post-1",
+          feed_post_content: "Contenu court"
         })}
         isAuthenticated={true}
       />
@@ -67,10 +67,10 @@ describe("post feed card", () => {
 
   it("shows comment count and political reactions, and no super like", () => {
     render(
-      <ThreadCard
+      <PostCard
         item={buildHomeFeedTopic({
-          feed_thread_post_id: "post-1",
-          feed_thread_post_content: "Contenu court",
+          feed_post_id: "post-1",
+          feed_post_content: "Contenu court",
           feed_comment_count: 12
         })}
         isAuthenticated={true}
@@ -95,11 +95,11 @@ describe("post feed card", () => {
     });
 
     render(
-      <ThreadCard
+      <PostCard
         item={buildHomeFeedTopic({
           topic_slug: "share-thread",
-          feed_thread_post_id: "post-1",
-          feed_thread_post_content: "Contenu court"
+          feed_post_id: "post-1",
+          feed_post_content: "Contenu court"
         })}
         isAuthenticated={true}
       />
@@ -112,5 +112,8 @@ describe("post feed card", () => {
     );
   });
 });
+
+
+
 
 

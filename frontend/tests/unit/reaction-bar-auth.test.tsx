@@ -36,7 +36,7 @@ describe("reaction bar auth gate and toggle flow", () => {
 
     render(
       <ReactionBar
-        targetType="thread_post"
+        targetType="post"
         targetId="post-1"
         redirectPath="/post/thread-1"
         leftVotes={2}
@@ -70,7 +70,7 @@ describe("reaction bar auth gate and toggle flow", () => {
 
     render(
       <ReactionBar
-        targetType="thread_post"
+        targetType="post"
         targetId="post-2"
         redirectPath="/post/thread-1"
         leftVotes={2}
@@ -155,7 +155,7 @@ describe("reaction bar auth gate and toggle flow", () => {
 
     render(
       <ReactionBar
-        targetType="thread_post"
+        targetType="post"
         targetId="post-3"
         redirectPath="/post/thread-1"
         leftVotes={7}
@@ -179,7 +179,7 @@ describe("reaction bar auth gate and toggle flow", () => {
 
     render(
       <ReactionBar
-        targetType="thread_post"
+        targetType="post"
         targetId="post-4"
         redirectPath="/post/thread-1"
         leftVotes={2}
@@ -195,6 +195,7 @@ describe("reaction bar auth gate and toggle flow", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
 
 
 

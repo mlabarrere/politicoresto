@@ -1,6 +1,6 @@
-﻿import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createThreadAction } from "@/lib/actions/threads";
+import { createPostAction } from "@/lib/actions/posts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fetchUrlPreview } from "@/lib/utils/url-preview";
 
@@ -40,7 +40,7 @@ function makeFormData(entries: Record<string, string>) {
   return formData;
 }
 
-describe("createThreadAction", () => {
+describe("createPostAction", () => {
   beforeEach(() => {
     mocks.revalidatePathMock.mockReset();
     mocks.redirectMock.mockReset();
@@ -62,7 +62,7 @@ describe("createThreadAction", () => {
       title: "Titre"
     });
 
-    await createThreadAction(
+    await createPostAction(
       makeFormData({
         title: "Thread",
         body: "Body",
@@ -71,9 +71,9 @@ describe("createThreadAction", () => {
       })
     );
 
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_thread", expect.any(Object));
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post", {
-      p_thread_id: "thread-1",
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_post_topic", expect.any(Object));
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post_item", {
+      p_post_id: "thread-1",
       p_type: "article",
       p_title: "Thread",
       p_content: "Body",
@@ -95,7 +95,7 @@ describe("createThreadAction", () => {
       .mockResolvedValueOnce({ error: null });
     mockedFetchUrlPreview.mockResolvedValue(null);
 
-    await createThreadAction(
+    await createPostAction(
       makeFormData({
         title: "Thread 2",
         body: "Body 2",
@@ -104,8 +104,8 @@ describe("createThreadAction", () => {
       })
     );
 
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post", {
-      p_thread_id: "thread-2",
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post_item", {
+      p_post_id: "thread-2",
       p_type: "article",
       p_title: "Thread 2",
       p_content: "Body 2",
@@ -118,5 +118,8 @@ describe("createThreadAction", () => {
     expect(mocks.redirectMock).toHaveBeenCalledWith("/");
   });
 });
+
+
+
 
 
