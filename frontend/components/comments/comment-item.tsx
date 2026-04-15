@@ -60,7 +60,7 @@ export function CommentItem({
         <div className="mt-3 space-y-2 rounded-xl border border-border/70 bg-background/70 p-3">
           {threadPostId && currentUserId ? (
             <details>
-              <summary className="cursor-pointer text-xs font-semibold text-foreground">Repondre</summary>
+              <summary className="cursor-pointer text-xs font-semibold text-foreground">Répondre</summary>
               <form action={createCommentAction} className="mt-2 space-y-2">
                 <input type="hidden" name="thread_post_id" value={threadPostId} />
                 <input type="hidden" name="parent_post_id" value={comment.id} />
@@ -69,14 +69,14 @@ export function CommentItem({
                   name="body"
                   required
                   rows={3}
-                  placeholder="Votre reponse"
+                  placeholder="Votre réponse"
                   className="w-full resize-y rounded-xl border border-border px-3 py-2 text-sm"
                 />
                 <button
                   type="submit"
                   className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background"
                 >
-                  Publier la reponse
+                  Publier la réponse
                 </button>
               </form>
             </details>
@@ -111,9 +111,9 @@ export function CommentItem({
           {!currentUserId && threadPostId ? (
             <AuthRequiredSheet
               nextPath={redirectPath}
-              triggerLabel="Repondre"
+              triggerLabel="Répondre"
               triggerClassName="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
-              triggerContent="Repondre"
+              triggerContent="Répondre"
             />
           ) : null}
         </div>

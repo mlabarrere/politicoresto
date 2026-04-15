@@ -50,7 +50,7 @@ export function AuthRequiredSheet({
             href={`/auth/login?mode=signup&next=${encodedNext}`}
             className="block rounded-xl border border-border px-3 py-2 text-center text-sm font-medium text-foreground"
           >
-            Creer un compte
+            Créer un compte
           </Link>
         </div>
       </SheetContent>

@@ -7,9 +7,13 @@ function toUsername(username: string | null, displayName: string | null) {
   return displayName ?? username ?? "Membre";
 }
 
-export function mapThreadPostToForumPost(post: ThreadPostView): ForumPost {
+export function mapThreadPostToForumPost(
+  post: ThreadPostView,
+  fallbackTitle?: string | null
+): ForumPost {
   return {
     id: post.id,
+    title: post.title ?? fallbackTitle ?? undefined,
     author: {
       id: post.created_by,
       username: toUsername(post.username, post.display_name)

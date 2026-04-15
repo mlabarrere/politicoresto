@@ -62,14 +62,14 @@ test.describe("forum lab critical flows", () => {
     await expect(page.getByRole("heading", { name: "Forum Lab" })).toBeVisible();
 
     await page.getByRole("button", { name: "Commenter" }).click();
-    await page.getByPlaceholder("Votre reponse").fill("Nouveau commentaire racine");
+    await page.getByPlaceholder("Votre réponse").fill("Nouveau commentaire racine");
     await page.getByRole("button", { name: "Publier" }).first().click();
     await expect(page.getByText("Nouveau commentaire racine")).toBeVisible();
 
-    await page.getByRole("button", { name: "Repondre" }).first().click();
-    await page.getByPlaceholder("Votre reponse").fill("Reponse test");
+    await page.getByRole("button", { name: "Répondre" }).first().click();
+    await page.getByPlaceholder("Votre réponse").fill("Réponse test");
     await page.getByRole("button", { name: "Publier" }).first().click();
-    await expect(page.getByText("Reponse test")).toBeVisible();
+    await expect(page.getByText("Réponse test")).toBeVisible();
 
     await page.getByRole("button", { name: "Actions commentaire" }).first().click();
     await page.getByText("Modifier").click();
@@ -83,7 +83,7 @@ test.describe("forum lab critical flows", () => {
     await expect(deepNode).toHaveAttribute("data-depth", "2");
 
     await page.getByRole("button", { name: "Tout replier" }).click();
-    await expect(page.getByRole("button", { name: /Tout deplier/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Tout déplier/ })).toBeVisible();
   });
 
   test("unauthenticated flow opens auth gate", async ({ page }) => {
@@ -92,6 +92,6 @@ test.describe("forum lab critical flows", () => {
     await page.getByLabel("Classer gauche").first().click();
     await expect(page.getByText("Se connecter")).toBeVisible();
 
-    await expect(page.getByText("Creer un compte")).toBeVisible();
+    await expect(page.getByText("Créer un compte")).toBeVisible();
   });
 });
