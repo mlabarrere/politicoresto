@@ -28,7 +28,7 @@ export function HomePageShell({ items, isAuthenticated, selectedBloc }: HomePage
 
       <ResponsiveLayoutGrid
         left={<LeftSidebar selectedBloc={selectedBloc} />}
-        right={<RightSidebar sortMode={sortMode} threadCount={items.length} />}
+        right={<RightSidebar sortMode={sortMode} postCount={items.length} />}
       >
         <CompactForumHeader />
         <FeedToolbar sortMode={sortMode} onSortChange={setSortMode} />

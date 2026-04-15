@@ -1,14 +1,14 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 import { CreateThreadCTA } from "@/components/home/create-thread-cta";
 import type { FeedSortMode } from "@/lib/types/homepage";
 
 export function RightSidebar({
   sortMode,
-  threadCount
+  postCount
 }: {
   sortMode: FeedSortMode;
-  threadCount: number;
+  postCount: number;
 }) {
   return (
     <aside className="hidden lg:block">
@@ -19,20 +19,20 @@ export function RightSidebar({
 
         <section className="app-card p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Etat du feed</p>
-          <p className="mt-2 text-sm text-foreground">{threadCount} threads visibles</p>
+          <p className="mt-2 text-sm text-foreground">{postCount} posts visibles</p>
           <p className="mt-1 text-xs text-muted-foreground">Tri actif: {sortMode}</p>
         </section>
 
         <section className="app-card p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Raccourcis</p>
           <div className="mt-2 space-y-2 text-sm">
-            <Link href="/thread/new" className="block text-foreground hover:underline">
-              Nouveau thread
+            <Link href="/post/new" className="block text-foreground hover:underline">
+              Nouveau post
             </Link>
             <Link href="/me" className="block text-foreground hover:underline">
               Mon profil
             </Link>
-            <Link href="/thread/new?draft=1" className="block text-foreground hover:underline">
+            <Link href="/post/new?draft=1" className="block text-foreground hover:underline">
               Brouillons
             </Link>
           </div>
@@ -41,6 +41,8 @@ export function RightSidebar({
     </aside>
   );
 }
+
+
 
 
 

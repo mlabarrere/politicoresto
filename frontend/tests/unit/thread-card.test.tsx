@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ThreadCard } from "@/components/feed/thread-card";
+import { ThreadCard } from "@/components/domain/thread-card";
 import { buildHomeFeedTopic } from "../fixtures/home-feed-topic";
 
 const pushMock = vi.fn();
@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
   })
 }));
 
-describe("thread feed card", () => {
+describe("post feed card", () => {
   beforeEach(() => {
     pushMock.mockReset();
   });
@@ -34,7 +34,7 @@ describe("thread feed card", () => {
     expect(preview.textContent?.endsWith("...")).toBe(true);
   });
 
-  it("opens thread when card is clicked", () => {
+  it("opens post when card is clicked", () => {
     render(
       <ThreadCard
         item={buildHomeFeedTopic({
@@ -46,8 +46,8 @@ describe("thread feed card", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("link", { name: /ouvrir le thread/i }));
-    expect(pushMock).toHaveBeenCalledWith("/thread/thread-x");
+    fireEvent.click(screen.getByRole("link", { name: /ouvrir le post/i }));
+    expect(pushMock).toHaveBeenCalledWith("/post/thread-x");
   });
 
   it("does not trigger card navigation when action buttons are clicked", () => {
@@ -108,7 +108,9 @@ describe("thread feed card", () => {
     fireEvent.click(screen.getByRole("button", { name: "Partager" }));
 
     await waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/thread/share-thread"))
+      expect(writeText).toHaveBeenCalledWith(expect.stringContaining("/post/share-thread"))
     );
   });
 });
+
+

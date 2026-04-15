@@ -1,5 +1,5 @@
 import { EmptyState } from "@/components/layout/empty-state";
-import { ThreadCard } from "@/components/home/thread-card";
+import { ThreadCard } from "@/components/domain/thread-card";
 import type { FeedSortMode } from "@/lib/types/homepage";
 import type { ThreadFeedItemView } from "@/lib/types/views";
 
@@ -34,8 +34,8 @@ export function ThreadFeed({
   if (!sortedItems.length) {
     return (
       <EmptyState
-        title="Aucun thread visible"
-        body="Le feed apparaitra ici quand les premiers threads publics seront publies."
+        title="Aucun post visible"
+        body="Le feed apparaitra ici quand les premiers posts publics seront publies."
       />
     );
   }
@@ -48,3 +48,5 @@ export function ThreadFeed({
     </div>
   );
 }
+
+

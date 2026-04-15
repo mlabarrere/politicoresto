@@ -1,4 +1,4 @@
-﻿import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReactionBar } from "@/components/social/reaction-bar";
@@ -38,7 +38,7 @@ describe("reaction bar auth gate and toggle flow", () => {
       <ReactionBar
         targetType="thread_post"
         targetId="post-1"
-        redirectPath="/thread/thread-1"
+        redirectPath="/post/thread-1"
         leftVotes={2}
         rightVotes={1}
         currentVote={null}
@@ -72,7 +72,7 @@ describe("reaction bar auth gate and toggle flow", () => {
       <ReactionBar
         targetType="thread_post"
         targetId="post-2"
-        redirectPath="/thread/thread-1"
+        redirectPath="/post/thread-1"
         leftVotes={2}
         rightVotes={1}
         currentVote={null}
@@ -103,7 +103,7 @@ describe("reaction bar auth gate and toggle flow", () => {
       <ReactionBar
         targetType="comment"
         targetId="comment-1"
-        redirectPath="/thread/thread-1"
+        redirectPath="/post/thread-1"
         leftVotes={3}
         rightVotes={3}
         currentVote="gauche"
@@ -130,7 +130,7 @@ describe("reaction bar auth gate and toggle flow", () => {
       <ReactionBar
         targetType="comment"
         targetId="comment-2"
-        redirectPath="/thread/thread-1"
+        redirectPath="/post/thread-1"
         leftVotes={4}
         rightVotes={1}
         currentVote="droite"
@@ -157,7 +157,7 @@ describe("reaction bar auth gate and toggle flow", () => {
       <ReactionBar
         targetType="thread_post"
         targetId="post-3"
-        redirectPath="/thread/thread-1"
+        redirectPath="/post/thread-1"
         leftVotes={7}
         rightVotes={3}
         currentVote="droite"
@@ -181,7 +181,7 @@ describe("reaction bar auth gate and toggle flow", () => {
       <ReactionBar
         targetType="thread_post"
         targetId="post-4"
-        redirectPath="/thread/thread-1"
+        redirectPath="/post/thread-1"
         leftVotes={2}
         rightVotes={1}
         isAuthenticated={false}
@@ -191,7 +191,10 @@ describe("reaction bar auth gate and toggle flow", () => {
     fireEvent.click(screen.getByLabelText("C'est de gauche !"));
 
     expect(screen.getByText("Se connecter")).toBeInTheDocument();
-    expect(screen.getByText("Créer un compte")).toBeInTheDocument();
+    expect(screen.getByText(/Cr.+er un compte/i)).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+
+

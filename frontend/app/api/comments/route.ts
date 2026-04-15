@@ -9,11 +9,11 @@ function checkRateLimit() {
   return true;
 }
 
-async function getThreadPostIdBySlug(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, threadSlug: string) {
+async function getThreadPostIdBySlug(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, postSlug: string) {
   const { data: thread, error: threadError } = await supabase
     .from("v_thread_detail")
     .select("id")
-    .eq("slug", threadSlug)
+    .eq("slug", postSlug)
     .maybeSingle();
 
   if (threadError || !thread) {
@@ -86,20 +86,20 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => null)) as {
-    threadSlug?: string;
+    postSlug?: string;
     body?: string;
     parentCommentId?: string | null;
   } | null;
 
-  const threadSlug = parseNonEmptyString(body?.threadSlug);
+  const postSlug = parseNonEmptyString(body?.postSlug);
   const commentBody = parseNonEmptyString(body?.body);
 
-  if (!body || threadSlug === null || commentBody === null) {
+  if (!body || postSlug === null || commentBody === null) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
   try {
-    const threadPostId = await getThreadPostIdBySlug(supabase, threadSlug);
+    const threadPostId = await getThreadPostIdBySlug(supabase, postSlug);
     const { data: inserted, error } = await supabase.rpc("create_comment", {
       p_thread_post_id: threadPostId,
       p_parent_post_id: body.parentCommentId ?? null,

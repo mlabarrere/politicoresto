@@ -1,4 +1,4 @@
-﻿import fs from "node:fs";
+import fs from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -20,7 +20,7 @@ const sourceFiles = [
   "app/page.tsx",
   "app/category/[slug]/page.tsx",
   "app/auth/login/page.tsx",
-  "app/(public)/thread/[slug]/page.tsx",
+  "app/(public)/post/[slug]/page.tsx",
   "app/(authenticated)/me/page.tsx",
   "app/(authenticated)/me/settings/page.tsx",
   "components/layout/app-shell.tsx",
@@ -30,10 +30,7 @@ const sourceFiles = [
   "components/layout/empty-state.tsx",
   "components/layout/screen-state.tsx",
   "app/not-found.tsx",
-  "components/domain/thread-card.tsx",
-  "components/home/thread-card.tsx",
-  "components/feed/thread-card.tsx",
-  "components/navigation/political-bloc-sidebar.tsx",
+  "components/domain/thread-card.tsx",  "components/navigation/political-bloc-sidebar.tsx",
   "components/navigation/main-nav.tsx",
   "components/navigation/auth-nav.tsx"
 ];
@@ -56,5 +53,7 @@ describe("UI standards", () => {
     expect(source).not.toContain(".page-shell::before");
   });
 });
+
+
 
 

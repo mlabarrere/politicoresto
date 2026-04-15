@@ -7,8 +7,8 @@ import { Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
-export function CreateThreadCTA({
-  href = "/thread/new",
+export function CreatePostCTA({
+  href = "/post/new",
   floating = false
 }: {
   href?: string;
@@ -28,7 +28,13 @@ export function CreateThreadCTA({
       )}
     >
       <Plus className="size-4" />
-      Nouveau thread
+      Nouveau post
     </Link>
   );
 }
+
+
+
+
+export const CreateThreadCTA = CreatePostCTA;
+

@@ -38,8 +38,8 @@ export const ThreadCard = memo(function ThreadCard({
     (item as unknown as { author_username?: string | null }).author_username ??
     "Pseudo indisponible";
 
-  const threadHref = `/thread/${item.topic_slug}` as Route;
-  const replyHref = `/thread/${item.topic_slug}#reply-form` as Route;
+  const postHref = `/post/${item.topic_slug}` as Route;
+  const replyHref = `/post/${item.topic_slug}#reply-form` as Route;
   const targetPostId = item.feed_thread_post_id ?? null;
   const commentCount = item.feed_comment_count ?? item.visible_post_count ?? 0;
 
@@ -48,9 +48,9 @@ export const ThreadCard = memo(function ThreadCard({
     return truncatePreview(source);
   }, [item.feed_thread_post_content, item.discussion_payload.excerpt_text, item.topic_description]);
 
-  const openThread = useCallback(() => {
-    router.push(threadHref);
-  }, [router, threadHref]);
+  const openPost = useCallback(() => {
+    router.push(postHref);
+  }, [router, postHref]);
 
   useEffect(() => {
     return () => {
@@ -71,8 +71,8 @@ export const ThreadCard = memo(function ThreadCard({
 
       const shareUrl =
         typeof window !== "undefined"
-          ? `${window.location.origin}/thread/${item.topic_slug}`
-          : `/thread/${item.topic_slug}`;
+          ? `${window.location.origin}/post/${item.topic_slug}`
+          : `/post/${item.topic_slug}`;
 
       try {
         if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
@@ -103,16 +103,16 @@ export const ThreadCard = memo(function ThreadCard({
       className={
         featured ? "app-card cursor-pointer px-5 py-4" : "app-card cursor-pointer px-4 py-3"
       }
-      onClick={openThread}
+      onClick={openPost}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          openThread();
+          openPost();
         }
       }}
       role="link"
       tabIndex={0}
-      aria-label={`Ouvrir le thread ${item.topic_title}`}
+      aria-label={`Ouvrir le post ${item.topic_title}`}
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>{authorLabel}</span>
@@ -144,7 +144,7 @@ export const ThreadCard = memo(function ThreadCard({
             <ReactionBar
               targetType="thread_post"
               targetId={targetPostId}
-              redirectPath={threadHref}
+              redirectPath={postHref}
               leftVotes={item.feed_gauche_count ?? 0}
               rightVotes={item.feed_droite_count ?? 0}
               currentVote={item.feed_user_reaction_side ?? null}
@@ -177,3 +177,5 @@ export const ThreadCard = memo(function ThreadCard({
     </article>
   );
 });
+
+
