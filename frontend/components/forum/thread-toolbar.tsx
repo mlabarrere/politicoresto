@@ -15,7 +15,7 @@ export function ThreadToolbar({
   onToggleComposer
 }: ThreadToolbarProps) {
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-card px-3 py-2" aria-label="Outils du thread">
+    <div className="space-y-2 app-card px-3 py-2" aria-label="Outils du thread">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1">
           {([
@@ -52,4 +52,7 @@ export function ThreadToolbar({
     </div>
   );
 }
+
+
+
 

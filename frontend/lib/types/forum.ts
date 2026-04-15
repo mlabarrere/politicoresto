@@ -1,10 +1,6 @@
-﻿export type VoteSide = "left" | "right" | null;
+﻿import type { UserSummary, VoteSide } from "@/lib/types/domain";
 
-export type UserSummary = {
-  id: string;
-  username: string;
-  avatarUrl?: string;
-};
+export type { UserSummary, VoteSide };
 
 export type ForumPost = {
   id: string;
@@ -45,4 +41,5 @@ export type EditDraft = {
   commentId: string;
   body: string;
 };
+
 

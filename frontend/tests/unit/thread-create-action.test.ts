@@ -6,6 +6,7 @@ import { fetchUrlPreview } from "@/lib/utils/url-preview";
 
 const mocks = vi.hoisted(() => ({
   revalidatePathMock: vi.fn(),
+  redirectMock: vi.fn(),
   createServerSupabaseClientMock: vi.fn(),
   rpcMock: vi.fn(),
   fetchUrlPreviewMock: vi.fn()
@@ -13,6 +14,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePathMock
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: mocks.redirectMock
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -38,6 +43,7 @@ function makeFormData(entries: Record<string, string>) {
 describe("createThreadAction", () => {
   beforeEach(() => {
     mocks.revalidatePathMock.mockReset();
+    mocks.redirectMock.mockReset();
     mocks.createServerSupabaseClientMock.mockReset();
     mocks.rpcMock.mockReset();
     mocks.fetchUrlPreviewMock.mockReset();
@@ -80,6 +86,7 @@ describe("createThreadAction", () => {
         }
       }
     });
+    expect(mocks.redirectMock).toHaveBeenCalledWith("/");
   });
 
   it("keeps raw URL when metadata fetch fails", async () => {
@@ -108,5 +115,8 @@ describe("createThreadAction", () => {
         link_preview: null
       }
     });
+    expect(mocks.redirectMock).toHaveBeenCalledWith("/");
   });
 });
+
+

@@ -82,7 +82,7 @@ function CommentNodeBase({
 
   return (
     <div style={{ marginLeft: indentPx }} className="space-y-2" id={`comment-${node.id}`} data-depth={depth} data-mode={modeLabel}>
-      <article className={cn("rounded-xl border border-border bg-card px-3 py-3 shadow-sm", showDepthBadge && "border-dashed")}>
+      <article className={cn("app-card px-3 py-3 shadow-sm", showDepthBadge && "border-dashed")}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
             <Avatar size="sm">
@@ -192,3 +192,6 @@ function CommentNodeBase({
 }
 
 export const CommentNode = memo(CommentNodeBase);
+
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import type { FeedSortMode, FeedToolbarProps } from "@/lib/types/homepage";
@@ -11,7 +11,7 @@ const SORTS: Array<{ value: FeedSortMode; label: string }> = [
 
 export function FeedToolbar({ sortMode, onSortChange }: FeedToolbarProps) {
   return (
-    <section className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-3 py-2">
+    <section className="flex flex-wrap items-center justify-between gap-2 app-card px-3 py-2">
       <div className="flex items-center gap-1">
         {SORTS.map((sort) => (
           <Button
@@ -28,3 +28,6 @@ export function FeedToolbar({ sortMode, onSortChange }: FeedToolbarProps) {
     </section>
   );
 }
+
+
+

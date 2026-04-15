@@ -45,7 +45,7 @@ export function PostActionsBar({
   }
 
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-card px-3 py-2" aria-label="Actions du post" data-post-id={postId}>
+    <div className="space-y-2 app-card px-3 py-2" aria-label="Actions du post" data-post-id={postId}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <VoteBinaryLR
           entityType="post"
@@ -74,4 +74,7 @@ export function PostActionsBar({
     </div>
   );
 }
+
+
+
 

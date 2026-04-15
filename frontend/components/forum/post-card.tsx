@@ -19,7 +19,7 @@ export function PostCard({ post, initialExpanded = false }: PostCardProps) {
   }, [expanded, isLong, post.body]);
 
   return (
-    <article className="space-y-4 rounded-2xl border border-border bg-card p-4" aria-label="Post principal">
+    <article className="space-y-4 app-card p-4" aria-label="Post principal">
       <header className="flex items-start gap-3">
         <Avatar size="sm">
           <AvatarImage src={post.author.avatarUrl} alt={post.author.username} />
@@ -49,4 +49,7 @@ export function PostCard({ post, initialExpanded = false }: PostCardProps) {
     </article>
   );
 }
+
+
+
 

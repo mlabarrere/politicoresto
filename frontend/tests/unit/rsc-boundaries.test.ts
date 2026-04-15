@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -10,8 +10,10 @@ describe("RSC boundaries", () => {
     const source = fs.readFileSync(path.join(root, "app/page.tsx"), "utf8");
 
     expect(source).toContain('createServerSupabaseClient');
-    expect(source).toContain('PoliticalBlocSidebar');
+    expect(source).toContain('HomePageShell');
     expect(source).not.toContain('@/components/ui/button');
     expect(source).not.toContain('createBrowserSupabaseClient');
   });
 });
+
+

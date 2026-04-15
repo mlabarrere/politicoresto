@@ -1,23 +1,24 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 
+import { parseNonEmptyString } from "@/lib/domain/comments/validation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function createCommentAction(formData: FormData) {
-  const threadPostId = String(formData.get("thread_post_id") ?? "").trim();
-  const parentPostId = String(formData.get("parent_post_id") ?? "").trim() || null;
-  const body = String(formData.get("body") ?? "").trim();
+  const threadPostId = parseNonEmptyString(formData.get("thread_post_id"));
+  const parentPostId = parseNonEmptyString(formData.get("parent_post_id"));
+  const body = parseNonEmptyString(formData.get("body"));
   const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
 
-  if (!threadPostId || !body) {
+  if (threadPostId === null || body === null) {
     throw new Error("Comment invalid");
   }
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("create_comment", {
     p_thread_post_id: threadPostId,
-    p_parent_post_id: parentPostId,
+    p_parent_post_id: parentPostId ?? null,
     p_body_markdown: body
   });
 
@@ -30,11 +31,11 @@ export async function createCommentAction(formData: FormData) {
 }
 
 export async function updateCommentAction(formData: FormData) {
-  const commentId = String(formData.get("comment_id") ?? "").trim();
-  const body = String(formData.get("body") ?? "").trim();
+  const commentId = parseNonEmptyString(formData.get("comment_id"));
+  const body = parseNonEmptyString(formData.get("body"));
   const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
 
-  if (!commentId || !body) {
+  if (commentId === null || body === null) {
     throw new Error("Comment invalid");
   }
 
@@ -53,10 +54,10 @@ export async function updateCommentAction(formData: FormData) {
 }
 
 export async function deleteCommentAction(formData: FormData) {
-  const commentId = String(formData.get("comment_id") ?? "").trim();
+  const commentId = parseNonEmptyString(formData.get("comment_id"));
   const redirectPath = String(formData.get("redirect_path") ?? "/").trim() || "/";
 
-  if (!commentId) {
+  if (commentId === null) {
     throw new Error("Comment invalid");
   }
 
@@ -72,3 +73,5 @@ export async function deleteCommentAction(formData: FormData) {
   revalidatePath(redirectPath);
   revalidatePath("/");
 }
+
+
