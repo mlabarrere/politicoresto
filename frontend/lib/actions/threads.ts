@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import type { Route } from "next";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fetchUrlPreview, normalizeSourceUrl } from "@/lib/utils/url-preview";
@@ -61,6 +63,7 @@ export async function createThreadAction(formData: FormData) {
   if (redirectPath !== "/") {
     revalidatePath(redirectPath);
   }
+  redirect(redirectPath as Route);
 }
 
 export async function createThreadPostAction(formData: FormData) {
