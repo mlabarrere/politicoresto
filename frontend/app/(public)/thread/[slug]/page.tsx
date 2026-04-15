@@ -1,21 +1,17 @@
 ﻿import { notFound } from "next/navigation";
 
-import { CommentList } from "@/components/comments/comment-list";
+import { ForumPage } from "@/components/forum/forum-page";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
-import { ReactionBar } from "@/components/social/reaction-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  deleteThreadPostAction,
-  updateThreadPostAction
-} from "@/lib/actions/threads";
 import { getThreadDetail } from "@/lib/data/public/threads";
+import { buildForumCommentTree, mapThreadPostToForumPost } from "@/lib/forum/mappers";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ThreadPostView } from "@/lib/types/views";
-import { formatDate, formatNumber } from "@/lib/utils/format";
+import { formatDate } from "@/lib/utils/format";
 import { normalizeMultilineText } from "@/lib/utils/multiline";
 
 type LinkPreview = {
@@ -110,59 +106,6 @@ export default async function ThreadDetailPage({
               </a>
             ) : null}
 
-            {op ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 px-3 py-2">
-                <p className="text-xs text-muted-foreground">
-                  {formatNumber(op.comment_count ?? 0)} commentaires sur ce thread
-                </p>
-                <ReactionBar
-                  targetType="thread_post"
-                  targetId={op.id}
-                  redirectPath={`/thread/${thread.slug}`}
-                  leftVotes={op.gauche_count ?? 0}
-                  rightVotes={op.droite_count ?? 0}
-                  currentVote={op.user_reaction_side ?? null}
-                  isAuthenticated={Boolean(currentUserId)}
-                />
-              </div>
-            ) : null}
-
-            {op && currentUserId && currentUserId === op.created_by ? (
-              <div className="space-y-2 rounded-xl border border-border bg-background p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Modifier mon post d'origine</p>
-                <form action={updateThreadPostAction} className="space-y-2">
-                  <input type="hidden" name="thread_post_id" value={op.id} />
-                  <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
-                  <input
-                    name="title"
-                    defaultValue={op.title ?? thread.title}
-                    className="w-full rounded-xl border border-border px-3 py-2 text-sm"
-                  />
-                  <textarea
-                    name="content"
-                    defaultValue={op.content ?? ""}
-                    rows={5}
-                    className="w-full resize-y rounded-xl border border-border px-3 py-2 text-sm leading-6"
-                  />
-                  <button
-                    type="submit"
-                    className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background"
-                  >
-                    Enregistrer
-                  </button>
-                </form>
-                <form action={deleteThreadPostAction}>
-                  <input type="hidden" name="thread_post_id" value={op.id} />
-                  <input type="hidden" name="redirect_path" value={`/thread/${thread.slug}`} />
-                  <button
-                    type="submit"
-                    className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
-                  >
-                    Supprimer le post d'origine
-                  </button>
-                </form>
-              </div>
-            ) : null}
           </CardContent>
         </Card>
 
@@ -175,11 +118,11 @@ export default async function ThreadDetailPage({
           </div>
 
           {op ? (
-            <CommentList
-              comments={detail.comments}
-              redirectPath={`/thread/${thread.slug}`}
-              defaultThreadPost={op}
+            <ForumPage
+              post={mapThreadPostToForumPost(op)}
+              comments={buildForumCommentTree(detail.comments, "top")}
               currentUserId={currentUserId}
+              threadSlug={thread.slug}
             />
           ) : (
             <EmptyState
