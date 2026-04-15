@@ -16,6 +16,12 @@ vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn()
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn()
+  })
+}));
+
 const mockedGetHomeScreenData = vi.mocked(getHomeScreenData);
 const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 

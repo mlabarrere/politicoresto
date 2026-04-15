@@ -109,6 +109,11 @@ export type HomeFeedTopicView = {
   feed_reason_label: string;
   editorial_feed_rank: number;
   topic_card_payload: TopicCardPayload;
+  feed_thread_post_id?: string | null;
+  feed_thread_post_content?: string | null;
+  feed_gauche_count?: number | null;
+  feed_droite_count?: number | null;
+  feed_comment_count?: number | null;
 };
 
 export type TopicSummaryView = {
