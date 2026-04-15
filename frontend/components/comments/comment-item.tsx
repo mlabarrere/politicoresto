@@ -110,14 +110,9 @@ export function CommentItem({
           {!currentUserId && threadPostId ? (
             <AuthRequiredSheet
               nextPath={redirectPath}
-              trigger={
-                <button
-                  type="button"
-                  className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
-                >
-                  Repondre
-                </button>
-              }
+              triggerLabel="Repondre"
+              triggerClassName="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground"
+              triggerContent="Repondre"
             />
           ) : null}
         </div>

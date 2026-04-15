@@ -1,0 +1,10 @@
+
+> politicoresto-frontend@0.1.0 start
+> next start -p 4010
+
+   ▲ Next.js 15.5.14
+   - Local:        http://localhost:4010
+   - Network:      http://192.168.1.10:4010
+
+ ✓ Starting...
+ ✓ Ready in 985ms
