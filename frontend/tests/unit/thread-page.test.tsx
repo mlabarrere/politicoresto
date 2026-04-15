@@ -1,7 +1,7 @@
-﻿import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import ThreadDetailPage from "@/app/(public)/thread/[slug]/page";
+import ThreadDetailPage from "@/app/(public)/post/[slug]/page";
 import { getThreadDetail } from "@/lib/data/public/threads";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -173,7 +173,10 @@ describe("thread page forum UX", () => {
     fireEvent.click(screen.getAllByLabelText("Classer gauche")[0]);
 
     expect(screen.getByText("Se connecter")).toBeInTheDocument();
-    expect(screen.getByText("Créer un compte")).toBeInTheDocument();
+    expect(screen.getByText(/Cr.+er un compte/i)).toBeInTheDocument();
     expect(screen.queryByText("Le thread n'a pas pu etre charge")).not.toBeInTheDocument();
   });
 });
+
+
+

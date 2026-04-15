@@ -101,7 +101,7 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(screen.getByText("Aucun thread visible")).toBeInTheDocument();
+    expect(screen.getByText("Aucun post visible")).toBeInTheDocument();
   });
 
   it("renders an unavailable state when the feed query fails", async () => {

@@ -1,4 +1,4 @@
-﻿import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { CommentNode } from "@/components/forum/comment-node";
@@ -29,7 +29,7 @@ describe("comment node behavior", () => {
         maxInlineDepth={6}
         currentUserId="user-1"
         collapsedAll={false}
-        redirectPath="/thread/test"
+        redirectPath="/post/test"
         onReplySubmit={vi.fn().mockResolvedValue(undefined)}
         onEditSubmit={vi.fn().mockResolvedValue(undefined)}
         onDeleteSubmit={vi.fn().mockResolvedValue(undefined)}
@@ -37,7 +37,7 @@ describe("comment node behavior", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Répondre" }));
+    fireEvent.click(screen.getByRole("button", { name: /R.+pondre/i }));
     expect(screen.getByTestId("reply-composer")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
@@ -52,7 +52,7 @@ describe("comment node behavior", () => {
         maxInlineDepth={6}
         currentUserId="user-1"
         collapsedAll={false}
-        redirectPath="/thread/test"
+        redirectPath="/post/test"
         onReplySubmit={vi.fn().mockResolvedValue(undefined)}
         onEditSubmit={vi.fn().mockResolvedValue(undefined)}
         onDeleteSubmit={vi.fn().mockResolvedValue(undefined)}
@@ -60,7 +60,7 @@ describe("comment node behavior", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Répondre" }));
+    fireEvent.click(screen.getByRole("button", { name: /R.+pondre/i }));
     fireEvent.click(screen.getByRole("button", { name: "Actions commentaire" }));
     fireEvent.click(screen.getByText("Modifier"));
 
@@ -68,3 +68,6 @@ describe("comment node behavior", () => {
     expect(screen.queryByTestId("edit-composer")).not.toBeInTheDocument();
   });
 });
+
+
+

@@ -1,4 +1,4 @@
-﻿import { expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.setTimeout(60_000);
 
@@ -17,11 +17,11 @@ test("mvp public smoke", async ({ page }, testInfo) => {
   await expect(page).toHaveURL(/\/auth\/login|\/me/);
 
   await page.goto("/");
-  const threadLinks = page.locator('a[href^="/thread/"]');
-  const threadCount = await threadLinks.count();
-  if (threadCount > 0) {
-    await threadLinks.first().click();
-    await expect(page).toHaveURL(/\/thread\//);
+  const postLinks = page.locator('a[href^="/post/"]');
+  const postCount = await postLinks.count();
+  if (postCount > 0) {
+    await postLinks.first().click();
+    await expect(page).toHaveURL(/\/post\//);
   }
 
   await page.screenshot({
@@ -29,3 +29,4 @@ test("mvp public smoke", async ({ page }, testInfo) => {
     fullPage: true
   });
 });
+

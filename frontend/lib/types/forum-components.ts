@@ -19,7 +19,7 @@ export type ForumPageProps = {
   post: ForumPost;
   comments: CommentTreeNode[];
   currentUserId?: string | null;
-  threadSlug: string;
+  postSlug: string;
 };
 
 export type PostCardProps = {

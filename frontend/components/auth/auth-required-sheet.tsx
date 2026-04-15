@@ -36,7 +36,7 @@ export function AuthRequiredSheet({
         <SheetHeader>
           <SheetTitle>Participation reservee aux membres</SheetTitle>
           <SheetDescription>
-            Connectez-vous pour reagir, commenter et repondre dans le thread.
+            Connectez-vous pour reagir, commenter et repondre dans le post.
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-2 px-4 pb-4">
@@ -57,3 +57,4 @@ export function AuthRequiredSheet({
     </Sheet>
   );
 }
+

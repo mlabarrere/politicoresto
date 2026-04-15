@@ -1,4 +1,4 @@
-﻿import { ForumPage } from "@/components/forum/forum-page";
+import { ForumPage } from "@/components/forum/forum-page";
 import { PageContainer } from "@/components/layout/page-container";
 import type { CommentTreeNode, ForumPost } from "@/lib/types/forum";
 
@@ -92,8 +92,9 @@ export default async function ForumLabPage({
     <PageContainer>
       <div className="mx-auto max-w-4xl space-y-4">
         <h1 className="text-2xl font-semibold">Forum Lab</h1>
-        <ForumPage post={POST} comments={seedComments()} currentUserId={auth} threadSlug="forum-lab" />
+        <ForumPage post={POST} comments={seedComments()} currentUserId={auth} postSlug="forum-lab" />
       </div>
     </PageContainer>
   );
 }
+

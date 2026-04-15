@@ -1,4 +1,4 @@
-﻿import { HomePageShell } from "@/components/home/homepage-shell";
+import { HomePageShell } from "@/components/home/homepage-shell";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { getPoliticalBloc } from "@/lib/data/political-taxonomy";
@@ -24,7 +24,7 @@ export default async function CategoryPage({
       <div className="space-y-4">
         <section className="app-card px-4 py-3">
           <p className="text-sm font-medium text-foreground">Categorie: {bloc?.label ?? slug}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Threads filtres par categorie politique.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Posts filtres par categorie politique.</p>
         </section>
 
         {error ? <EmptyState title="Feed partiel" body={`Lecture incomplete: ${error}`} /> : null}
@@ -38,4 +38,5 @@ export default async function CategoryPage({
     </PageContainer>
   );
 }
+
 

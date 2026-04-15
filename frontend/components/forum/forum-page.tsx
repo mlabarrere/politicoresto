@@ -138,7 +138,7 @@ async function mutateComment(
   return (await response.json()) as CommentMutationResponse;
 }
 
-export function ForumPage({ post, comments, currentUserId, threadSlug }: ForumPageProps) {
+export function ForumPage({ post, comments, currentUserId, postSlug }: ForumPageProps) {
   const [state, setState] = useState<ForumPageState>({
     postStatus: "ready",
     commentsStatus: "ready",
@@ -155,7 +155,7 @@ export function ForumPage({ post, comments, currentUserId, threadSlug }: ForumPa
   const [tree, setTree] = useState<CommentTreeNode[]>(comments);
   const [showRootComposer, setShowRootComposer] = useState(false);
 
-  const redirectPath = `/thread/${threadSlug}`;
+  const redirectPath = `/post/${postSlug}`;
   const maxInlineDepth = compactMode ? 3 : 6;
 
   const postView = useMemo(
@@ -250,7 +250,7 @@ export function ForumPage({ post, comments, currentUserId, threadSlug }: ForumPa
 
   async function handleRootReplySubmit(payload: { body: string }) {
     const result = await mutateComment("POST", {
-      threadSlug,
+      postSlug,
       body: payload.body,
       parentCommentId: null
     });
@@ -263,7 +263,7 @@ export function ForumPage({ post, comments, currentUserId, threadSlug }: ForumPa
 
   async function handleReplySubmit(payload: { targetId: string; body: string }) {
     const result = await mutateComment("POST", {
-      threadSlug,
+      postSlug,
       body: payload.body,
       parentCommentId: payload.targetId
     });
