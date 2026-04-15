@@ -91,7 +91,7 @@ function CommentNodeBase({
             <div>
               <p className="text-sm font-semibold text-foreground">{node.author.username}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {formatDate(node.createdAt)} {node.isEdited ? "• modifie" : ""}
+                {formatDate(node.createdAt)} {node.isEdited ? "• modifié" : ""}
               </p>
             </div>
           </div>
@@ -116,7 +116,7 @@ function CommentNodeBase({
             disabled={isSubmitting}
             onClick={() => setMode((previous) => transitionCommentNodeMode(previous, { type: "START_REPLY" }))}
           >
-            Repondre
+            Répondre
           </Button>
 
           <VoteBinaryLR

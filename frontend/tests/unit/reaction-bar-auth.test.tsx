@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+﻿import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReactionBar } from "@/components/social/reaction-bar";
@@ -191,7 +191,7 @@ describe("reaction bar auth gate and toggle flow", () => {
     fireEvent.click(screen.getByLabelText("C'est de gauche !"));
 
     expect(screen.getByText("Se connecter")).toBeInTheDocument();
-    expect(screen.getByText("Creer un compte")).toBeInTheDocument();
+    expect(screen.getByText("Créer un compte")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -37,7 +37,7 @@ describe("comment node behavior", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Repondre" }));
+    fireEvent.click(screen.getByRole("button", { name: "Répondre" }));
     expect(screen.getByTestId("reply-composer")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
@@ -60,7 +60,7 @@ describe("comment node behavior", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Repondre" }));
+    fireEvent.click(screen.getByRole("button", { name: "Répondre" }));
     fireEvent.click(screen.getByRole("button", { name: "Actions commentaire" }));
     fireEvent.click(screen.getByText("Modifier"));
 

@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 
 import { CommentThread } from "@/components/forum/comment-thread";
+import { PostActionsBar } from "@/components/forum/post-actions-bar";
 import { PostCard } from "@/components/forum/post-card";
 import { ReplyComposer } from "@/components/forum/reply-composer";
+import { RightSidebar } from "@/components/forum/right-sidebar";
 import { ThreadToolbar } from "@/components/forum/thread-toolbar";
 import { applyVoteTransition, computeNextVote } from "@/lib/forum/vote";
 import type { CommentTreeNode, VoteSide } from "@/lib/types/forum";
@@ -12,15 +14,27 @@ import type { ForumPageProps, ForumPageState } from "@/lib/types/forum-component
 
 type VoteEntity = "post" | "comment";
 
+type VoteApiSide = "left" | "right" | "gauche" | "droite" | null;
+
 type VoteResponse = {
   leftVotes: number;
   rightVotes: number;
-  currentVote: VoteSide;
+  currentVote: VoteApiSide;
 };
 
 type CommentMutationResponse = {
   comment?: CommentTreeNode;
 };
+
+function normalizeVoteSide(value: VoteApiSide): VoteSide {
+  if (value === "left" || value === "gauche") return "left";
+  if (value === "right" || value === "droite") return "right";
+  return null;
+}
+
+function mapVoteSideToReaction(value: Exclude<VoteSide, null>): "gauche" | "droite" {
+  return value === "left" ? "gauche" : "droite";
+}
 
 function updateCommentNode(
   tree: CommentTreeNode[],
@@ -79,7 +93,7 @@ async function mutateVote(params: {
   targetType: "thread_post" | "comment";
   targetId: string;
   side: Exclude<VoteSide, null>;
-}): Promise<VoteResponse> {
+}): Promise<{ leftVotes: number; rightVotes: number; currentVote: VoteSide }> {
   const response = await fetch("/api/reactions", {
     method: "POST",
     headers: {
@@ -88,7 +102,7 @@ async function mutateVote(params: {
     body: JSON.stringify({
       targetType: params.targetType,
       targetId: params.targetId,
-      side: params.side
+      side: mapVoteSideToReaction(params.side)
     })
   });
 
@@ -96,7 +110,13 @@ async function mutateVote(params: {
     throw new Error("vote mutation failed");
   }
 
-  return (await response.json()) as VoteResponse;
+  const payload = (await response.json()) as VoteResponse;
+
+  return {
+    leftVotes: Number(payload.leftVotes ?? 0),
+    rightVotes: Number(payload.rightVotes ?? 0),
+    currentVote: normalizeVoteSide(payload.currentVote)
+  };
 }
 
 async function mutateComment(
@@ -275,46 +295,59 @@ export function ForumPage({ post, comments, currentUserId, threadSlug }: ForumPa
   }
 
   return (
-    <div className="space-y-4" role="feed" aria-busy={state.commentsStatus === "loading"}>
-      <PostCard
-        post={postView}
-        currentUserVote={postVote}
-        isAuthenticated={Boolean(currentUserId)}
-        redirectPath={redirectPath}
-        onVoteChange={(next) => handleVote("post", post.id, computeNextVote(postVote, next))}
-        onReplyClick={() => setShowRootComposer(true)}
-      />
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]" role="feed" aria-busy={state.commentsStatus === "loading"}>
+      <section className="space-y-4" id="thread-main">
+        <PostCard post={postView} />
 
-      {showRootComposer ? (
-        <ReplyComposer
-          targetType="post"
-          targetId={post.id}
-          onSubmit={(draft) => handleRootReplySubmit({ body: draft.body })}
-          onCancel={() => setShowRootComposer(false)}
-          autoFocus
+        <PostActionsBar
+          postId={post.id}
+          currentUserVote={postVote}
+          leftCount={postCounts.leftCount}
+          rightCount={postCounts.rightCount}
+          isAuthenticated={Boolean(currentUserId)}
+          redirectPath={redirectPath}
+          onVoteChange={(next) => handleVote("post", post.id, computeNextVote(postVote, next))}
+          onReplyClick={() => setShowRootComposer(true)}
         />
-      ) : null}
 
-      <ThreadToolbar
+        <ThreadToolbar
+          sortMode={state.sortMode}
+          collapsedAll={state.collapsedAll}
+          compactMode={compactMode}
+          showComposer={showRootComposer}
+          composerSlot={
+            <ReplyComposer
+              targetType="post"
+              targetId={post.id}
+              onSubmit={(draft) => handleRootReplySubmit({ body: draft.body })}
+              onCancel={() => setShowRootComposer(false)}
+              autoFocus
+            />
+          }
+          onSortChange={(next) => setState((previous) => ({ ...previous, sortMode: next }))}
+          onToggleCollapseAll={() => setState((previous) => ({ ...previous, collapsedAll: !previous.collapsedAll }))}
+          onToggleCompactMode={() => setCompactMode((previous) => !previous)}
+          onToggleComposer={() => setShowRootComposer((previous) => !previous)}
+        />
+
+        <CommentThread
+          comments={tree}
+          sortMode={state.sortMode}
+          currentUserId={currentUserId}
+          maxInlineDepth={maxInlineDepth}
+          collapsedAll={state.collapsedAll}
+          redirectPath={redirectPath}
+          onReplySubmit={(draft) => handleReplySubmit({ targetId: draft.targetId, body: draft.body })}
+          onEditSubmit={(draft) => handleEditSubmit({ commentId: draft.commentId, body: draft.body })}
+          onDeleteSubmit={handleDeleteSubmit}
+          onVoteChange={(commentId, next) => handleVote("comment", commentId, next)}
+        />
+      </section>
+
+      <RightSidebar
         sortMode={state.sortMode}
-        collapsedAll={state.collapsedAll}
-        compactMode={compactMode}
+        totalComments={postView.commentCount}
         onSortChange={(next) => setState((previous) => ({ ...previous, sortMode: next }))}
-        onToggleCollapseAll={() => setState((previous) => ({ ...previous, collapsedAll: !previous.collapsedAll }))}
-        onToggleCompactMode={() => setCompactMode((previous) => !previous)}
-      />
-
-      <CommentThread
-        comments={tree}
-        sortMode={state.sortMode}
-        currentUserId={currentUserId}
-        maxInlineDepth={maxInlineDepth}
-        collapsedAll={state.collapsedAll}
-        redirectPath={redirectPath}
-        onReplySubmit={(draft) => handleReplySubmit({ targetId: draft.targetId, body: draft.body })}
-        onEditSubmit={(draft) => handleEditSubmit({ commentId: draft.commentId, body: draft.body })}
-        onDeleteSubmit={handleDeleteSubmit}
-        onVoteChange={(commentId, next) => handleVote("comment", commentId, next)}
       />
     </div>
   );

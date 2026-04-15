@@ -8,6 +8,7 @@ export type UserSummary = {
 
 export type ForumPost = {
   id: string;
+  title?: string;
   author: UserSummary;
   createdAt: string;
   body: string;

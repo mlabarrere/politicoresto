@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+﻿import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ThreadDetailPage from "@/app/(public)/thread/[slug]/page";
@@ -28,7 +28,7 @@ describe("thread page forum UX", () => {
     } as never);
   });
 
-  it("renders OP and comments with normalized line breaks and URL preview", async () => {
+  it("renders OP and comments with normalized line breaks and strict forum order", async () => {
     mockedGetThreadDetail.mockResolvedValue({
       thread: {
         id: "t1",
@@ -117,8 +117,10 @@ describe("thread page forum UX", () => {
       screen.getAllByText((content) => content.includes("Ligne 1") && content.includes("Ligne 2")).length
     ).toBeGreaterThan(0);
     expect(screen.queryByText(/\\n/)).not.toBeInTheDocument();
-    expect(screen.getByText("Titre article")).toBeInTheDocument();
-    expect(screen.getByText("Description article")).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Post principal" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Actions du post")).toBeInTheDocument();
+    expect(screen.getByLabelText("Outils du thread")).toBeInTheDocument();
+    expect(screen.getByTestId("comment-thread")).toBeInTheDocument();
     expect(screen.getAllByLabelText("Classer gauche").length).toBeGreaterThan(0);
     expect(screen.getAllByLabelText("Classer droite").length).toBeGreaterThan(0);
     expect(
@@ -171,7 +173,7 @@ describe("thread page forum UX", () => {
     fireEvent.click(screen.getAllByLabelText("Classer gauche")[0]);
 
     expect(screen.getByText("Se connecter")).toBeInTheDocument();
-    expect(screen.getByText("Creer un compte")).toBeInTheDocument();
+    expect(screen.getByText("Créer un compte")).toBeInTheDocument();
     expect(screen.queryByText("Le thread n'a pas pu etre charge")).not.toBeInTheDocument();
   });
 });

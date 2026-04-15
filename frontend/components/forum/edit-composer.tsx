@@ -22,7 +22,7 @@ export function EditComposer({ commentId, initialValue, onSubmit, onCancel }: Ed
     try {
       await onSubmit({ commentId, body: body.trim() });
     } catch {
-      setError("Echec mise a jour.");
+      setError("Échec de mise à jour.");
       setIsSubmitting(false);
     }
   }
@@ -47,3 +47,4 @@ export function EditComposer({ commentId, initialValue, onSubmit, onCancel }: Ed
     </div>
   );
 }
+

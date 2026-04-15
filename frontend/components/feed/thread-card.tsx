@@ -156,7 +156,7 @@ export const ThreadCard = memo(function ThreadCard({
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <a href={replyHref} className="inline-flex items-center gap-1 font-medium text-foreground hover:underline">
             <CornerDownLeft className="size-3.5" />
-            <span>Repondre direct</span>
+            <span>Répondre direct</span>
           </a>
 
           <span className="inline-flex items-center gap-1">

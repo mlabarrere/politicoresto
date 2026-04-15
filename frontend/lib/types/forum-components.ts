@@ -5,6 +5,7 @@
   ReplyDraft,
   VoteSide
 } from "@/lib/types/forum";
+import type { ReactNode } from "react";
 
 export type ForumPageState = {
   postStatus: "loading" | "ready" | "error";
@@ -23,7 +24,14 @@ export type ForumPageProps = {
 
 export type PostCardProps = {
   post: ForumPost;
+  initialExpanded?: boolean;
+};
+
+export type PostActionsBarProps = {
+  postId: string;
   currentUserVote: VoteSide;
+  leftCount: number;
+  rightCount: number;
   isAuthenticated: boolean;
   redirectPath: string;
   onVoteChange: (next: VoteSide) => Promise<void>;
@@ -99,8 +107,17 @@ export type ThreadToolbarProps = {
   sortMode: "top" | "recent" | "oldest";
   collapsedAll: boolean;
   compactMode: boolean;
+  showComposer: boolean;
+  composerSlot?: ReactNode;
   onSortChange: (next: "top" | "recent" | "oldest") => void;
   onToggleCollapseAll: () => void;
   onToggleCompactMode: () => void;
+  onToggleComposer: () => void;
+};
+
+export type RightSidebarProps = {
+  sortMode: "top" | "recent" | "oldest";
+  totalComments: number;
+  onSortChange: (next: "top" | "recent" | "oldest") => void;
 };
 

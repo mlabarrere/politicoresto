@@ -1,56 +1,51 @@
 ﻿"use client";
 
-import { MessageSquare } from "lucide-react";
+import { useMemo, useState } from "react";
 
-import { VoteBinaryLR } from "@/components/forum/vote-binary-lr";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import type { PostCardProps } from "@/lib/types/forum-components";
-import { formatDate, formatNumber } from "@/lib/utils/format";
+import { formatDate } from "@/lib/utils/format";
 
-export function PostCard({
-  post,
-  currentUserVote,
-  isAuthenticated,
-  redirectPath,
-  onVoteChange,
-  onReplyClick
-}: PostCardProps) {
+const COLLAPSE_LIMIT = 480;
+
+export function PostCard({ post, initialExpanded = false }: PostCardProps) {
   const initials = post.author.username.slice(0, 2).toUpperCase();
+  const [expanded, setExpanded] = useState(initialExpanded);
+  const isLong = post.body.length > COLLAPSE_LIMIT;
+
+  const visibleBody = useMemo(() => {
+    if (!isLong || expanded) return post.body;
+    return `${post.body.slice(0, COLLAPSE_LIMIT).trimEnd()}…`;
+  }, [expanded, isLong, post.body]);
 
   return (
     <article className="space-y-4 rounded-2xl border border-border bg-card p-4" aria-label="Post principal">
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Avatar size="sm">
-            <AvatarImage src={post.author.avatarUrl} alt={post.author.username} />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="text-sm font-semibold text-foreground">{post.author.username}</p>
-            <p className="text-xs text-muted-foreground">{formatDate(post.createdAt)}</p>
-          </div>
+      <header className="flex items-start gap-3">
+        <Avatar size="sm">
+          <AvatarImage src={post.author.avatarUrl} alt={post.author.username} />
+          <AvatarFallback>{initials}</AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-sm font-semibold text-foreground">{post.author.username}</p>
+          <p className="text-xs text-muted-foreground">{formatDate(post.createdAt)}</p>
         </div>
-
-        <VoteBinaryLR
-          entityType="post"
-          value={currentUserVote}
-          leftCount={post.leftCount}
-          rightCount={post.rightCount}
-          onChange={(next) => void onVoteChange(next)}
-          isAuthenticated={isAuthenticated}
-          redirectPath={redirectPath}
-        />
       </header>
 
-      <p className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">{post.body}</p>
+      {post.title ? <h1 className="text-2xl font-semibold tracking-tight text-foreground">{post.title}</h1> : null}
 
-      <footer className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-        <span>{formatNumber(post.commentCount)} commentaires</span>
-        <Button type="button" variant="outline" size="sm" onClick={onReplyClick}>
-          <MessageSquare className="size-3.5" /> Commenter
-        </Button>
-      </footer>
+      <div className="space-y-2">
+        <p className="whitespace-pre-wrap text-sm leading-7 text-foreground/95">{visibleBody}</p>
+        {isLong ? (
+          <button
+            type="button"
+            className="text-xs font-medium text-foreground underline-offset-2 hover:underline"
+            onClick={() => setExpanded((previous) => !previous)}
+            aria-expanded={expanded}
+          >
+            {expanded ? "Réduire" : "Lire plus"}
+          </button>
+        ) : null}
+      </div>
     </article>
   );
 }
