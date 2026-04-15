@@ -8,6 +8,23 @@ vi.mock("@/lib/actions/reactions", () => ({
 }));
 
 describe("reaction bar auth gate", () => {
+  it("renders icon-based arrows (no ASCII fallback)", () => {
+    const { container } = render(
+      <ReactionBar
+        targetType="thread_post"
+        targetId="post-1"
+        redirectPath="/thread/thread-1"
+        leftVotes={2}
+        rightVotes={1}
+        isAuthenticated={true}
+      />
+    );
+
+    expect(container.querySelectorAll("svg").length).toBeGreaterThan(1);
+    expect(container.textContent?.includes("<-")).toBe(false);
+    expect(container.textContent?.includes("->")).toBe(false);
+  });
+
   it("opens auth sheet for logged-out reaction", () => {
     render(
       <ReactionBar

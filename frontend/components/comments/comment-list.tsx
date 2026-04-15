@@ -52,14 +52,9 @@ export function CommentList({
           <div className="mt-2">
             <AuthRequiredSheet
               nextPath={redirectPath}
-              trigger={
-                <button
-                  type="button"
-                  className="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90"
-                >
-                  Commenter
-                </button>
-              }
+              triggerLabel="Commenter"
+              triggerClassName="rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90"
+              triggerContent="Commenter"
             />
           </div>
         </div>

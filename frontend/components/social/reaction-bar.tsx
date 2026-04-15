@@ -3,18 +3,19 @@
 import { AuthRequiredSheet } from "@/components/auth/auth-required-sheet";
 import { reactAction } from "@/lib/actions/reactions";
 import { formatNumber } from "@/lib/utils/format";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const REACTIONS = [
   {
     side: "gauche",
-    arrow: "<-",
+    icon: ArrowLeft,
     tooltip: "C'est de gauche !",
     buttonClass:
       "border-rose-300/70 bg-rose-50/80 text-rose-700 hover:bg-rose-100 hover:text-rose-800"
   },
   {
     side: "droite",
-    arrow: "->",
+    icon: ArrowRight,
     tooltip: "C'est de droite !",
     buttonClass:
       "border-sky-300/70 bg-sky-50/80 text-sky-700 hover:bg-sky-100 hover:text-sky-800"
@@ -41,24 +42,30 @@ export function ReactionBar({
   return (
     <div className="flex items-center gap-2">
       {REACTIONS.map((reaction) => {
-        const button = (
-          <button
-            type={isAuthenticated ? "submit" : "button"}
-            aria-label={reaction.tooltip}
-            className={`group relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${reaction.buttonClass}`}
-          >
-            <span>{reaction.arrow}</span>
+        const Icon = reaction.icon;
+        const buttonClassName = `group relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${reaction.buttonClass}`;
+        const content = (
+          <>
+            <Icon className="size-3.5" />
             {!compact ? (
               <span>{formatNumber(reaction.side === "gauche" ? leftVotes : rightVotes)}</span>
             ) : null}
             <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded-md bg-foreground px-2 py-1 text-[10px] whitespace-nowrap text-background opacity-0 transition group-hover:opacity-100">
               {reaction.tooltip}
             </span>
-          </button>
+          </>
         );
 
         if (!isAuthenticated) {
-          return <AuthRequiredSheet key={reaction.side} nextPath={redirectPath} trigger={button} />;
+          return (
+            <AuthRequiredSheet
+              key={reaction.side}
+              nextPath={redirectPath}
+              triggerLabel={reaction.tooltip}
+              triggerClassName={buttonClassName}
+              triggerContent={content}
+            />
+          );
         }
 
         return (
@@ -67,7 +74,13 @@ export function ReactionBar({
             <input type="hidden" name="target_id" value={targetId} />
             <input type="hidden" name="reaction_side" value={reaction.side} />
             <input type="hidden" name="redirect_path" value={redirectPath} />
-            {button}
+            <button
+              type="submit"
+              aria-label={reaction.tooltip}
+              className={buttonClassName}
+            >
+              {content}
+            </button>
           </form>
         );
       })}

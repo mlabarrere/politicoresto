@@ -51,11 +51,21 @@ export async function getThreadDetail(slug: string): Promise<ThreadDetailScreenD
       .in("id", threadPostIds);
 
     if (rawPostsError) {
-      throw rawPostsError;
-    }
+      const code = String((rawPostsError as { code?: string }).code ?? "");
+      const message = String((rawPostsError as { message?: string }).message ?? "").toLowerCase();
+      const isOptionalMetadataFailure =
+        code === "42501" ||
+        code === "42p01" ||
+        message.includes("permission") ||
+        message.includes("not found");
 
-    for (const row of rawPosts ?? []) {
-      metadataById.set(String(row.id), (row.metadata as Record<string, unknown> | null) ?? null);
+      if (!isOptionalMetadataFailure) {
+        throw rawPostsError;
+      }
+    } else {
+      for (const row of rawPosts ?? []) {
+        metadataById.set(String(row.id), (row.metadata as Record<string, unknown> | null) ?? null);
+      }
     }
   }
 

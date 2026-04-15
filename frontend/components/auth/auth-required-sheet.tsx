@@ -13,17 +13,25 @@ import {
 } from "@/components/ui/sheet";
 
 export function AuthRequiredSheet({
-  trigger,
+  triggerContent,
+  triggerLabel,
+  triggerClassName,
   nextPath
 }: {
-  trigger: ReactNode;
+  triggerContent: ReactNode;
+  triggerLabel: string;
+  triggerClassName: string;
   nextPath: string;
 }) {
   const encodedNext = encodeURIComponent(nextPath || "/");
 
   return (
     <Sheet>
-      <SheetTrigger render={<button type="button" />}>{trigger}</SheetTrigger>
+      <SheetTrigger
+        render={<button type="button" aria-label={triggerLabel} className={triggerClassName} />}
+      >
+        {triggerContent}
+      </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-2xl border-x border-t border-border bg-card">
         <SheetHeader>
           <SheetTitle>Participation reservee aux membres</SheetTitle>
