@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { buildCommentTree } from "@/lib/forum/comments";
 import type { CommentView } from "@/lib/types/views";
@@ -47,3 +47,6 @@ describe("comment tree sorting", () => {
     expect(tree[0].children.map((node) => node.comment.id)).toEqual(["r2", "r3", "r1"]);
   });
 });
+
+
+

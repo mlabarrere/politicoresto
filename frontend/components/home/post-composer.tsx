@@ -4,14 +4,12 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button-variants";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { AppButton } from "@/components/app/app-button";
+import { AppInput } from "@/components/app/app-input";
+import { AppSelect } from "@/components/app/app-select";
+import { AppTextarea } from "@/components/app/app-textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
-import { cn } from "@/lib/utils";
 
 const DRAFT_KEY = "politicoresto.post.draft.v1";
 
@@ -87,14 +85,11 @@ export function PostComposer({
 
       <form action={action} className="space-y-4">
         <input type="hidden" name="redirect_path" value={redirectPath} />
-        <input type="hidden" name="entity_id" value="" />
-        <input type="hidden" name="space_id" value="" />
-        <input type="hidden" name="close_at" value="" />
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-xs font-medium text-muted-foreground">Titre</span>
-            <Input
+            <AppInput
               name="title"
               required
               value={draft.title}
@@ -105,7 +100,7 @@ export function PostComposer({
 
           <label className="space-y-2">
             <span className="text-xs font-medium text-muted-foreground">Lien source (optionnel)</span>
-            <Input
+            <AppInput
               name="source_url"
               value={draft.source_url}
               onChange={(event) => setDraft((prev) => ({ ...prev, source_url: event.target.value }))}
@@ -116,7 +111,7 @@ export function PostComposer({
 
         <label className="block space-y-2">
           <span className="text-xs font-medium text-muted-foreground">Corps</span>
-          <Textarea
+          <AppTextarea
             name="body"
             required
             rows={9}
@@ -129,7 +124,7 @@ export function PostComposer({
 
         <label className="space-y-2 block">
           <span className="text-xs font-medium text-muted-foreground">Categorie</span>
-          <Select
+          <AppSelect
             value={draft.category}
             onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))}
           >
@@ -139,18 +134,17 @@ export function PostComposer({
                 {bloc.label}
               </option>
             ))}
-          </Select>
+          </AppSelect>
         </label>
 
         <footer className="flex flex-wrap items-center justify-end gap-2">
-          <Link href={redirectPath as Route} className={cn(buttonVariants({ variant: "outline" }))}>
+          <AppButton variant="secondary" render={<Link href={redirectPath as Route} />}>
             Annuler
-          </Link>
-          <Button type="submit">Publier le post</Button>
+          </AppButton>
+          <AppButton type="submit">Publier le post</AppButton>
         </footer>
       </form>
     </section>
   );
 }
 
-export const ThreadComposer = PostComposer;

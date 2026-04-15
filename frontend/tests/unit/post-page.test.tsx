@@ -1,24 +1,24 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import ThreadDetailPage from "@/app/(public)/post/[slug]/page";
-import { getThreadDetail } from "@/lib/data/public/threads";
+import PostDetailPage from "@/app/(public)/post/[slug]/page";
+import { getPostDetail } from "@/lib/data/public/posts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-vi.mock("@/lib/data/public/threads", () => ({
-  getThreadDetail: vi.fn()
+vi.mock("@/lib/data/public/posts", () => ({
+  getPostDetail: vi.fn()
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn()
 }));
 
-const mockedGetThreadDetail = vi.mocked(getThreadDetail);
+const mockedGetPostDetail = vi.mocked(getPostDetail);
 const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 
-describe("thread page forum UX", () => {
+describe("post page forum UX", () => {
   beforeEach(() => {
-    mockedGetThreadDetail.mockReset();
+    mockedGetPostDetail.mockReset();
     mockedCreateServerSupabaseClient.mockReset();
 
     mockedCreateServerSupabaseClient.mockResolvedValue({
@@ -29,12 +29,12 @@ describe("thread page forum UX", () => {
   });
 
   it("renders OP and comments with normalized line breaks and strict forum order", async () => {
-    mockedGetThreadDetail.mockResolvedValue({
-      thread: {
+    mockedGetPostDetail.mockResolvedValue({
+      post: {
         id: "t1",
         space_id: null,
-        slug: "thread-1",
-        title: "Thread test",
+        slug: "post-1",
+        title: "Post test",
         description: null,
         topic_status: "open",
         visibility: "public",
@@ -42,12 +42,12 @@ describe("thread page forum UX", () => {
         close_at: "2026-04-21T00:00:00.000Z",
         created_at: "2026-04-14T00:00:00.000Z"
       },
-      threadPosts: [
+      posts: [
         {
           id: "op1",
-          thread_id: "t1",
+          post_id: "t1",
           type: "article",
-          title: "Thread test",
+          title: "Post test",
           content: "Ligne 1\\n\\nLigne 2",
           metadata: {
             source_url: "https://example.com/article",
@@ -74,8 +74,8 @@ describe("thread page forum UX", () => {
       comments: [
         {
           id: "c1",
-          thread_id: "t1",
-          thread_post_id: "op1",
+          post_id: "t1",
+          post_item_id: "op1",
           parent_post_id: null,
           depth: 0,
           author_user_id: "u2",
@@ -92,8 +92,8 @@ describe("thread page forum UX", () => {
         },
         {
           id: "c2",
-          thread_id: "t1",
-          thread_post_id: "op1",
+          post_id: "t1",
+          post_item_id: "op1",
           parent_post_id: "c1",
           depth: 1,
           author_user_id: "u3",
@@ -111,7 +111,7 @@ describe("thread page forum UX", () => {
       ]
     });
 
-    render(await ThreadDetailPage({ params: Promise.resolve({ slug: "thread-1" }) }));
+    render(await PostDetailPage({ params: Promise.resolve({ slug: "post-1" }) }));
 
     expect(
       screen.getAllByText((content) => content.includes("Ligne 1") && content.includes("Ligne 2")).length
@@ -119,7 +119,7 @@ describe("thread page forum UX", () => {
     expect(screen.queryByText(/\\n/)).not.toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Post principal" })).toBeInTheDocument();
     expect(screen.getByLabelText("Actions du post")).toBeInTheDocument();
-    expect(screen.getByLabelText("Outils du thread")).toBeInTheDocument();
+    expect(screen.getByLabelText("Outils du post")).toBeInTheDocument();
     expect(screen.getByTestId("comment-thread")).toBeInTheDocument();
     expect(screen.getAllByLabelText("Classer gauche").length).toBeGreaterThan(0);
     expect(screen.getAllByLabelText("Classer droite").length).toBeGreaterThan(0);
@@ -129,13 +129,13 @@ describe("thread page forum UX", () => {
     expect(screen.getByText("Sous-commentaire")).toBeInTheDocument();
   });
 
-  it("opens auth sheet for logged-out reactions without thread load error", async () => {
-    mockedGetThreadDetail.mockResolvedValue({
-      thread: {
+  it("opens auth sheet for logged-out reactions without post load error", async () => {
+    mockedGetPostDetail.mockResolvedValue({
+      post: {
         id: "t1",
         space_id: null,
-        slug: "thread-1",
-        title: "Thread test",
+        slug: "post-1",
+        title: "Post test",
         description: null,
         topic_status: "open",
         visibility: "public",
@@ -143,12 +143,12 @@ describe("thread page forum UX", () => {
         close_at: "2026-04-21T00:00:00.000Z",
         created_at: "2026-04-14T00:00:00.000Z"
       },
-      threadPosts: [
+      posts: [
         {
           id: "op1",
-          thread_id: "t1",
+          post_id: "t1",
           type: "article",
-          title: "Thread test",
+          title: "Post test",
           content: "Contenu",
           metadata: {},
           entity_slug: null,
@@ -168,7 +168,7 @@ describe("thread page forum UX", () => {
       comments: []
     });
 
-    render(await ThreadDetailPage({ params: Promise.resolve({ slug: "thread-1" }) }));
+    render(await PostDetailPage({ params: Promise.resolve({ slug: "post-1" }) }));
 
     fireEvent.click(screen.getAllByLabelText("Classer gauche")[0]);
 
@@ -177,6 +177,12 @@ describe("thread page forum UX", () => {
     expect(screen.queryByText("Le thread n'a pas pu etre charge")).not.toBeInTheDocument();
   });
 });
+
+
+
+
+
+
 
 
 

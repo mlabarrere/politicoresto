@@ -1,8 +1,8 @@
 import type {
   CommentView,
-  ThreadFeedItemView,
-  ThreadPostView,
-  ThreadRow
+  PostFeedItemView,
+  PostView,
+  PostRowView
 } from "@/lib/types/views";
 
 export type LoadState<T> = {
@@ -11,12 +11,14 @@ export type LoadState<T> = {
 };
 
 export type HomeScreenData = {
-  feed: ThreadFeedItemView[];
+  feed: PostFeedItemView[];
   selectedBloc: string | null;
 };
 
-export type ThreadDetailScreenData = {
-  thread: ThreadRow | null;
-  threadPosts: ThreadPostView[];
+export type PostDetailScreenData = {
+  post: PostRowView | null;
+  posts: PostView[];
   comments: CommentView[];
 };
+
+

@@ -3,14 +3,14 @@
 import { useState } from "react";
 
 import { CompactForumHeader } from "@/components/home/compact-forum-header";
-import { CreateThreadCTA } from "@/components/home/create-thread-cta";
+import { CreatePostCTA } from "@/components/home/create-post-cta";
 import { FeedToolbar } from "@/components/home/feed-toolbar";
 import { LeftSidebar } from "@/components/home/left-sidebar";
 import { MobileFiltersSheet } from "@/components/home/mobile-filters-sheet";
 import { MobileNavDrawer } from "@/components/home/mobile-nav-drawer";
 import { ResponsiveLayoutGrid } from "@/components/home/responsive-layout-grid";
 import { RightSidebar } from "@/components/home/right-sidebar";
-import { ThreadFeed } from "@/components/home/thread-feed";
+import { PostFeed } from "@/components/home/post-feed";
 import type { FeedSortMode, HomePageShellProps } from "@/lib/types/homepage";
 
 export function HomePageShell({ items, isAuthenticated, selectedBloc }: HomePageShellProps) {
@@ -32,10 +32,11 @@ export function HomePageShell({ items, isAuthenticated, selectedBloc }: HomePage
       >
         <CompactForumHeader />
         <FeedToolbar sortMode={sortMode} onSortChange={setSortMode} />
-        <ThreadFeed items={items} isAuthenticated={isAuthenticated} sortMode={sortMode} />
+        <PostFeed items={items} isAuthenticated={isAuthenticated} sortMode={sortMode} />
       </ResponsiveLayoutGrid>
 
-      <CreateThreadCTA floating />
+      <CreatePostCTA floating />
     </div>
   );
 }
+

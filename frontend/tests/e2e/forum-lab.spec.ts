@@ -4,7 +4,7 @@ test.describe("forum lab critical flows", () => {
   test("authenticated flow covers publish/reply/edit/vote/collapse/depth", async ({ page }) => {
     await page.route("**/api/reactions", async (route) => {
       const body = route.request().postDataJSON() as {
-        targetType: "thread_post" | "comment";
+        targetType: "post" | "comment";
         targetId: string;
         side: "left" | "right" | "gauche" | "droite";
       };
@@ -62,12 +62,12 @@ test.describe("forum lab critical flows", () => {
     await expect(page.getByRole("heading", { name: "Forum Lab" })).toBeVisible();
 
     await page.getByRole("button", { name: "Commenter" }).click();
-    await page.getByPlaceholder("Votre réponse").fill("Nouveau commentaire racine");
+    await page.getByPlaceholder(/Votre r.+ponse/i).fill("Nouveau commentaire racine");
     await page.getByRole("button", { name: "Publier" }).first().click();
     await expect(page.getByText("Nouveau commentaire racine")).toBeVisible();
 
     await page.getByRole("button", { name: "Répondre" }).first().click();
-    await page.getByPlaceholder("Votre réponse").fill("Réponse test");
+    await page.getByPlaceholder(/Votre r.+ponse/i).fill("Réponse test");
     await page.getByRole("button", { name: "Publier" }).first().click();
     await expect(page.getByText("Réponse test")).toBeVisible();
 
@@ -92,6 +92,8 @@ test.describe("forum lab critical flows", () => {
     await page.getByLabel("Classer gauche").first().click();
     await expect(page.getByText("Se connecter")).toBeVisible();
 
-    await expect(page.getByText("Créer un compte")).toBeVisible();
+    await expect(page.getByText(/Cr.+er un compte/i)).toBeVisible();
   });
 });
+
+

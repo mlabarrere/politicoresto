@@ -10,14 +10,14 @@ describe("Editorial UI states", () => {
   it("renders an empty state with a clear recovery action", () => {
     render(
       <EmptyState
-        title="Aucun thread visible pour le moment"
+        title="Aucun Post visible pour le moment"
         body="Revenez plus tard ou explorez un autre bloc."
         actionHref={"/" as Route}
         actionLabel="Voir le feed"
       />
     );
 
-    expect(screen.getByText("Aucun thread visible pour le moment")).toBeInTheDocument();
+    expect(screen.getByText("Aucun Post visible pour le moment")).toBeInTheDocument();
     expect(screen.getByText("Revenez plus tard ou explorez un autre bloc.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Voir le feed" })).toHaveAttribute("href", "/");
   });
@@ -53,3 +53,4 @@ describe("Editorial UI states", () => {
     expect(badge.className).toContain("text-amber-800");
   });
 });
+

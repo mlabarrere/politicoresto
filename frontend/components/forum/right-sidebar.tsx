@@ -2,58 +2,44 @@
 
 import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/app/app-button";
+import { AppFilter } from "@/components/app/app-filter";
 import type { RightSidebarProps } from "@/lib/types/forum-components";
+
+const SORT_OPTIONS: Array<{ value: "top" | "recent" | "oldest"; label: string }> = [
+  { value: "top", label: "Populaires" },
+  { value: "recent", label: "Recentes" },
+  { value: "oldest", label: "Anciennes" }
+];
 
 export function RightSidebar({ sortMode, totalComments, onSortChange }: RightSidebarProps) {
   return (
-    <aside className="space-y-3 lg:sticky lg:top-24" aria-label="Navigation du thread">
+    <aside className="space-y-3 lg:sticky lg:top-24" aria-label="Navigation du post">
       <section className="app-card p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tri</p>
-        <div className="mt-2 grid gap-2">
-          {([
-            ["top", "Populaires"],
-            ["recent", "Récentes"],
-            ["oldest", "Anciennes"]
-          ] as const).map(([value, label]) => (
-            <Button
-              key={value}
-              type="button"
-              size="sm"
-              variant={sortMode === value ? "default" : "outline"}
-              onClick={() => onSortChange(value)}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
+        <AppFilter className="mt-2 grid gap-2" options={SORT_OPTIONS} value={sortMode} onChange={onSortChange} />
       </section>
 
       <section className="app-card p-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Métadonnées</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Metadonnees</p>
         <p className="mt-2 text-sm text-foreground">{totalComments} commentaires</p>
       </section>
 
       <section className="app-card p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Navigation rapide</p>
         <div className="mt-2 grid gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+          <AppButton type="button" variant="secondary" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <ArrowUpToLine className="size-3.5" /> Haut
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             type="button"
-            variant="outline"
-            size="sm"
+            variant="secondary"
             onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}
           >
             <ArrowDownToLine className="size-3.5" /> Bas
-          </Button>
+          </AppButton>
         </div>
       </section>
     </aside>
   );
 }
-
-
-
-

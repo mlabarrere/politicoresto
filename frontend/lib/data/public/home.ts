@@ -12,10 +12,10 @@ export async function getHomeScreenData(
   const supabase = await createServerSupabaseClient();
 
   const { data: feedRows, error } = await supabase
-    .from("v_feed_global")
+    .from("v_feed_global_post")
     .select("*")
-    .order("thread_score", { ascending: false })
-    .order("latest_thread_post_at", { ascending: false, nullsFirst: false })
+    .order("post_score", { ascending: false })
+    .order("latest_post_at", { ascending: false, nullsFirst: false })
     .order("editorial_feed_rank", { ascending: true })
     .limit(24);
 
@@ -23,8 +23,8 @@ export async function getHomeScreenData(
     .filter((row) => matchesPoliticalBloc(row as Record<string, unknown>, blocSlug ?? null))
     .map((row, index) => toHomeFeedTopic(row as Record<string, unknown>, index + 1));
 
-  const threadIds = feed.map((item) => item.topic_id).filter(Boolean);
-  const postByThreadId = new Map<
+  const postRootIds = feed.map((item) => item.topic_id).filter(Boolean);
+  const postByRootId = new Map<
     string,
     {
       id: string;
@@ -36,17 +36,17 @@ export async function getHomeScreenData(
     }
   >();
 
-  if (threadIds.length > 0) {
-    const { data: threadPosts } = await supabase
-      .from("v_thread_posts")
-      .select("id, thread_id, content, gauche_count, droite_count, comment_count, created_at")
-      .in("thread_id", threadIds)
+  if (postRootIds.length > 0) {
+    const { data: posts } = await supabase
+      .from("v_posts")
+      .select("id, post_id, content, gauche_count, droite_count, comment_count, created_at")
+      .in("post_id", postRootIds)
       .order("created_at", { ascending: true });
 
-    for (const post of threadPosts ?? []) {
-      const key = String(post.thread_id);
-      if (!postByThreadId.has(key)) {
-        postByThreadId.set(key, {
+    for (const post of posts ?? []) {
+      const key = String(post.post_id);
+      if (!postByRootId.has(key)) {
+        postByRootId.set(key, {
           id: String(post.id),
           content: (post.content as string | null) ?? null,
           gauche_count: (post.gauche_count as number | null) ?? 0,
@@ -62,15 +62,15 @@ export async function getHomeScreenData(
     currentUserId !== undefined ? currentUserId : (await getCurrentUser(supabase))?.id ?? null;
 
   const reactionByTarget = new Map<string, "gauche" | "droite">();
-  const threadPostIds = Array.from(postByThreadId.values()).map((post) => post.id);
+  const postIds = Array.from(postByRootId.values()).map((post) => post.id);
 
-  if (resolvedCurrentUserId && threadPostIds.length > 0) {
+  if (resolvedCurrentUserId && postIds.length > 0) {
     const { data: ownReactions } = await supabase
       .from("reaction")
       .select("target_id, reaction_type")
-      .eq("target_type", "thread_post")
+      .eq("target_type", "post")
       .eq("user_id", resolvedCurrentUserId)
-      .in("target_id", threadPostIds);
+      .in("target_id", postIds);
 
     for (const reaction of ownReactions ?? []) {
       const reactionType = reaction.reaction_type as "upvote" | "downvote";
@@ -79,13 +79,13 @@ export async function getHomeScreenData(
   }
 
   const enrichedFeed = feed.map((item) => {
-    const post = postByThreadId.get(item.topic_id);
+    const post = postByRootId.get(item.topic_id);
     if (!post) return item;
 
     return {
       ...item,
-      feed_thread_post_id: post.id,
-      feed_thread_post_content: post.content,
+      feed_post_id: post.id,
+      feed_post_content: post.content,
       feed_gauche_count: post.gauche_count,
       feed_droite_count: post.droite_count,
       feed_comment_count: post.comment_count,
@@ -101,3 +101,5 @@ export async function getHomeScreenData(
     error: error?.message ?? null
   };
 }
+
+

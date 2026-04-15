@@ -103,7 +103,7 @@ export type CommentActionsMenuProps = {
   onCopyLink: () => void;
 };
 
-export type ThreadToolbarProps = {
+export type PostToolbarProps = {
   sortMode: "top" | "recent" | "oldest";
   collapsedAll: boolean;
   compactMode: boolean;

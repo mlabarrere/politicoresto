@@ -1,7 +1,7 @@
 import { PageContainer } from "@/components/layout/page-container";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function LoadingThreadCard({ featured = false }: { featured?: boolean }) {
+function LoadingPostCard({ featured = false }: { featured?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
       <div className="flex gap-2">
@@ -49,9 +49,9 @@ export default function HomeLoading() {
             <Skeleton className="h-60 rounded-xl" />
           </aside>
           <div className="space-y-4">
-            <LoadingThreadCard featured />
-            <LoadingThreadCard featured />
-            <LoadingThreadCard />
+            <LoadingPostCard featured />
+            <LoadingPostCard featured />
+            <LoadingPostCard />
           </div>
           <aside className="space-y-6">
             <Skeleton className="h-64 rounded-xl" />
@@ -63,3 +63,4 @@ export default function HomeLoading() {
     </PageContainer>
   );
 }
+

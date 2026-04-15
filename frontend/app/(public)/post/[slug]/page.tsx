@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { Badge } from "@/components/ui/badge";
 import { getPostDetail } from "@/lib/data/public/posts";
-import { buildForumCommentTree, mapPostToForumPost } from "@/lib/forum/mappers";
+import { buildForumCommentTree, mapPostViewToForumPost } from "@/lib/forum/mappers";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -20,12 +20,12 @@ export default async function PostDetailPage({
   const currentUserId = user?.id ?? null;
   const detail = await getPostDetail(slug, currentUserId);
 
-  if (!detail?.thread) {
+  if (!detail?.post) {
     notFound();
   }
 
-  const post = detail.thread;
-  const op = detail.threadPosts[0] ?? null;
+  const post = detail.post;
+  const op = detail.posts[0] ?? null;
 
   return (
     <PageContainer>
@@ -37,7 +37,7 @@ export default async function PostDetailPage({
 
         {op ? (
           <ForumPage
-            post={mapPostToForumPost(op, post.title)}
+            post={mapPostViewToForumPost(op, post.title)}
             comments={buildForumCommentTree(detail.comments, "top")}
             currentUserId={currentUserId}
             postSlug={post.slug}

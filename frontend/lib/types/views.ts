@@ -109,8 +109,8 @@ export type HomeFeedTopicView = {
   feed_reason_label: string;
   editorial_feed_rank: number;
   topic_card_payload: TopicCardPayload;
-  feed_thread_post_id?: string | null;
-  feed_thread_post_content?: string | null;
+  feed_post_id?: string | null;
+  feed_post_content?: string | null;
   feed_gauche_count?: number | null;
   feed_droite_count?: number | null;
   feed_comment_count?: number | null;
@@ -293,9 +293,10 @@ export type CardCatalogRow = {
   is_active: boolean;
 };
 
-export type ThreadPostView = {
+export type PostView = {
   id: string;
-  thread_id: string;
+  post_id: string;
+  thread_id?: string;
   type: string;
   title: string | null;
   content: string | null;
@@ -317,8 +318,10 @@ export type ThreadPostView = {
 
 export type CommentView = {
   id: string;
-  thread_id: string;
-  thread_post_id: string | null;
+  post_id: string;
+  post_item_id: string | null;
+  thread_id?: string;
+  thread_post_id?: string | null;
   parent_post_id: string | null;
   depth: number;
   author_user_id: string;
@@ -350,7 +353,10 @@ export type LeaderboardEntryView = {
   updated_at?: string | null;
 };
 
-export type ThreadFeedItemView = HomeFeedTopicView;
-export type ThreadSummaryView = TopicSummaryView;
-export type ThreadPredictionAggregateView = TopicPredictionAggregateView;
-export type ThreadRow = TopicRow;
+export type PostFeedItemView = HomeFeedTopicView;
+export type PostSummaryView = TopicSummaryView;
+export type PostPredictionAggregateView = TopicPredictionAggregateView;
+export type PostRowView = TopicRow;
+
+
+

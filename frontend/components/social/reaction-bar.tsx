@@ -34,7 +34,7 @@ export const ReactionBar = memo(function ReactionBar({
   compact = false,
   isAuthenticated = false
 }: {
-  targetType: "thread_post" | "comment";
+  targetType: "post" | "comment";
   targetId: string;
   redirectPath: string;
   leftVotes?: number | null;
@@ -178,3 +178,4 @@ export const ReactionBar = memo(function ReactionBar({
     </div>
   );
 });
+

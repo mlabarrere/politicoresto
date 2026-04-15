@@ -7,7 +7,7 @@ import { CornerDownLeft, MessageSquare, Share2 } from "lucide-react";
 
 import { ReactionBar } from "@/components/social/reaction-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { ThreadFeedItemView } from "@/lib/types/views";
+import type { PostFeedItemView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
 import { normalizeMultilineText } from "@/lib/utils/multiline";
 
@@ -20,12 +20,12 @@ function truncatePreview(value: string) {
   return `${text.slice(0, PREVIEW_LIMIT).trimEnd()}...`;
 }
 
-export const ThreadCard = memo(function ThreadCard({
+export const PostCard = memo(function PostCard({
   item,
   featured = false,
   isAuthenticated = false
 }: {
-  item: ThreadFeedItemView;
+  item: PostFeedItemView;
   featured?: boolean;
   isAuthenticated?: boolean;
 }) {
@@ -40,13 +40,13 @@ export const ThreadCard = memo(function ThreadCard({
 
   const postHref = `/post/${item.topic_slug}` as Route;
   const replyHref = `/post/${item.topic_slug}#reply-form` as Route;
-  const targetPostId = item.feed_thread_post_id ?? null;
+  const targetPostId = item.feed_post_id ?? null;
   const commentCount = item.feed_comment_count ?? item.visible_post_count ?? 0;
 
   const previewText = useMemo(() => {
-    const source = item.feed_thread_post_content ?? item.discussion_payload.excerpt_text ?? item.topic_description ?? "";
+    const source = item.feed_post_content ?? item.discussion_payload.excerpt_text ?? item.topic_description ?? "";
     return truncatePreview(source);
-  }, [item.feed_thread_post_content, item.discussion_payload.excerpt_text, item.topic_description]);
+  }, [item.feed_post_content, item.discussion_payload.excerpt_text, item.topic_description]);
 
   const openPost = useCallback(() => {
     router.push(postHref);
@@ -142,7 +142,7 @@ export const ThreadCard = memo(function ThreadCard({
         <div className="flex items-center gap-3">
           {targetPostId ? (
             <ReactionBar
-              targetType="thread_post"
+              targetType="post"
               targetId={targetPostId}
               redirectPath={postHref}
               leftVotes={item.feed_gauche_count ?? 0}
@@ -177,5 +177,8 @@ export const ThreadCard = memo(function ThreadCard({
     </article>
   );
 });
+
+
+
 
 

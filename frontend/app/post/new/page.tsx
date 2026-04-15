@@ -1,6 +1,6 @@
-import { PostComposer } from "@/components/home/thread-composer";
+import { PostComposer } from "@/components/home/post-composer";
 import { PageContainer } from "@/components/layout/page-container";
-import { createPostAction } from "@/lib/actions/threads";
+import { createPostAction } from "@/lib/actions/posts";
 import { requireSession } from "@/lib/guards/require-session";
 
 export default async function NewPostPage() {
@@ -12,3 +12,4 @@ export default async function NewPostPage() {
     </PageContainer>
   );
 }
+

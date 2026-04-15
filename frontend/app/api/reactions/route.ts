@@ -5,7 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fromBackendVoteSide } from "@/lib/forum/vote";
 
 type ReactionPayload = {
-  targetType: "thread_post" | "comment";
+  targetType: "post" | "comment";
   targetId: string;
   side: ReactionSide | "left" | "right";
 };
@@ -15,7 +15,7 @@ function isReactionPayload(value: unknown): value is ReactionPayload {
   const payload = value as Partial<ReactionPayload>;
 
   return (
-    (payload.targetType === "thread_post" || payload.targetType === "comment") &&
+    (payload.targetType === "post" || payload.targetType === "comment") &&
     typeof payload.targetId === "string" &&
     payload.targetId.trim().length > 0 &&
     (payload.side === "gauche" ||
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       : fromBackendVoteSide(REACTION_TYPE_TO_SIDE[requestedReactionType]);
 
   const { error: rpcError } = await supabase.rpc("react_post", {
-    p_target_type: body.targetType,
+    p_target_type: body.targetType === "post" ? "post" : "comment",
     p_target_id: body.targetId,
     p_reaction_type: REACTION_SIDE_TO_TYPE[side]
   });
@@ -71,9 +71,9 @@ export async function POST(request: Request) {
   }
 
   const countsResult =
-    body.targetType === "thread_post"
+    body.targetType === "post"
       ? await supabase
-          .from("v_thread_posts")
+          .from("v_posts")
           .select("gauche_count, droite_count")
           .eq("id", body.targetId)
           .maybeSingle()
@@ -95,3 +95,4 @@ export async function POST(request: Request) {
     currentVote
   });
 }
+

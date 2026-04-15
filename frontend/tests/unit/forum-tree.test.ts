@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { buildForumCommentTree } from "@/lib/forum/mappers";
 import { getIndentPx } from "@/lib/forum/comments";
@@ -44,3 +44,6 @@ describe("forum comment tree", () => {
     expect(getIndentPx(8, 6, true)).toBe(30);
   });
 });
+
+
+

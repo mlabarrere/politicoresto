@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { parseNonEmptyString } from "@/lib/domain/comments/validation";
 import { mapCommentViewToForumNode } from "@/lib/forum/mappers";
@@ -9,27 +9,27 @@ function checkRateLimit() {
   return true;
 }
 
-async function getThreadPostIdBySlug(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, postSlug: string) {
-  const { data: thread, error: threadError } = await supabase
-    .from("v_thread_detail")
+async function getPostIdBySlug(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, postSlug: string) {
+  const { data: postRoot, error: postRootError } = await supabase
+    .from("v_post_detail")
     .select("id")
     .eq("slug", postSlug)
     .maybeSingle();
 
-  if (threadError || !thread) {
-    throw new Error("thread not found");
+  if (postRootError || !postRoot) {
+    throw new Error("post not found");
   }
 
   const { data: post, error: postError } = await supabase
-    .from("v_thread_posts")
+    .from("v_posts")
     .select("id")
-    .eq("thread_id", thread.id)
+    .eq("post_id", postRoot.id)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
 
   if (postError || !post) {
-    throw new Error("thread post not found");
+    throw new Error("post item not found");
   }
 
   return String(post.id);
@@ -67,6 +67,8 @@ async function fetchCommentView(
 
   return {
     ...(comment as CommentView),
+    post_id: String((comment as { post_id?: string | null }).post_id ?? (comment as { thread_id?: string | null }).thread_id ?? ""),
+    post_item_id: ((comment as { post_item_id?: string | null }).post_item_id ?? (comment as { thread_post_id?: string | null }).thread_post_id ?? null),
     user_reaction_side: userReactionSide
   };
 }
@@ -99,9 +101,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const threadPostId = await getThreadPostIdBySlug(supabase, postSlug);
-    const { data: inserted, error } = await supabase.rpc("create_comment", {
-      p_thread_post_id: threadPostId,
+    const postId = await getPostIdBySlug(supabase, postSlug);
+    const { data: inserted, error } = await supabase.rpc("create_post_comment", {
+      p_post_id: postId,
       p_parent_post_id: body.parentCommentId ?? null,
       p_body_markdown: commentBody
     });
@@ -192,5 +194,6 @@ export async function DELETE(request: Request) {
 
   return NextResponse.json({ ok: true });
 }
+
 
 

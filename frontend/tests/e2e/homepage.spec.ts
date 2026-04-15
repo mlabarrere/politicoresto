@@ -17,10 +17,10 @@ test("mvp public smoke", async ({ page }, testInfo) => {
   await expect(page).toHaveURL(/\/auth\/login|\/me/);
 
   await page.goto("/");
-  const postLinks = page.locator('a[href^="/post/"]');
-  const postCount = await postLinks.count();
+  const postCards = page.locator('article[role="link"]');
+  const postCount = await postCards.count();
   if (postCount > 0) {
-    await postLinks.first().click();
+    await postCards.first().click();
     await expect(page).toHaveURL(/\/post\//);
   }
 
