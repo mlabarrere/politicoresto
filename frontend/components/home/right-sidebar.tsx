@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 import { CreatePostCTA } from "@/components/home/create-post-cta";
 import type { FeedSortMode } from "@/lib/types/homepage";
@@ -29,6 +30,9 @@ export function RightSidebar({
             <Link href="/post/new" className="block text-foreground hover:underline">
               Nouveau post
             </Link>
+            <Link href={"/polls" as Route} className="block text-foreground hover:underline">
+              Explorer les sondages
+            </Link>
             <Link href="/me" className="block text-foreground hover:underline">
               Mon profil
             </Link>
@@ -41,10 +45,3 @@ export function RightSidebar({
     </aside>
   );
 }
-
-
-
-
-
-
-

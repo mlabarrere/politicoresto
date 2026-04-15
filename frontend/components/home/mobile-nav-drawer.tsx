@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Menu } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/app/app-button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ export function MobileNavDrawer({ selectedBloc }: { selectedBloc: string | null 
   return (
     <div className="xl:hidden">
       <Sheet>
-        <SheetTrigger render={<Button variant="outline" size="sm" aria-label="Ouvrir les categories" />}>
+        <SheetTrigger render={<AppButton variant="secondary" size="sm" aria-label="Ouvrir les categories" />}>
           <Menu className="size-4" />
           Categories
         </SheetTrigger>
@@ -28,6 +28,12 @@ export function MobileNavDrawer({ selectedBloc }: { selectedBloc: string | null 
               )}
             >
               Tous les sujets
+            </Link>
+            <Link
+              href={"/polls" as Route}
+              className="block rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            >
+              Sondages
             </Link>
             {politicalBlocs.map((bloc) => {
               const active = selectedBloc === bloc.slug;
@@ -50,4 +56,3 @@ export function MobileNavDrawer({ selectedBloc }: { selectedBloc: string | null 
     </div>
   );
 }
-

@@ -1,4 +1,5 @@
-﻿import type { UserSummary, VoteSide } from "@/lib/types/domain";
+import type { UserSummary, VoteSide } from "@/lib/types/domain";
+import type { PostPollSummaryView } from "@/lib/types/views";
 
 export type { UserSummary, VoteSide };
 
@@ -12,6 +13,7 @@ export type ForumPost = {
   rightCount: number;
   commentCount: number;
   currentUserVote: VoteSide;
+  pollSummary?: PostPollSummaryView | null;
 };
 
 export type CommentTreeNode = {
@@ -41,5 +43,3 @@ export type EditDraft = {
   commentId: string;
   body: string;
 };
-
-

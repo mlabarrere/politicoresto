@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { toHomeFeedTopic } from "./canonical";
+import { getPollSummariesByPostItemIds } from "./polls";
 
 export async function getHomeScreenData(
   blocSlug?: string | null,
@@ -93,9 +94,21 @@ export async function getHomeScreenData(
     };
   });
 
+  const pollByPostItemId = await getPollSummariesByPostItemIds(
+    enrichedFeed
+      .map((item) => item.feed_post_id)
+      .filter((value): value is string => typeof value === "string" && value.length > 0)
+  );
+
+  const feedWithPoll = enrichedFeed.map((item) => ({
+    ...item,
+    feed_poll_summary:
+      typeof item.feed_post_id === "string" ? (pollByPostItemId.get(item.feed_post_id) ?? null) : null
+  }));
+
   return {
     data: {
-      feed: enrichedFeed,
+      feed: feedWithPoll,
       selectedBloc: blocSlug ?? null
     },
     error: error?.message ?? null

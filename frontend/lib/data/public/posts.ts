@@ -3,6 +3,7 @@ import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toThreadRow } from "./canonical";
+import { getPollSummariesByPostItemIds } from "./polls";
 
 export async function getPostDetail(
   slug: string,
@@ -67,8 +68,16 @@ export async function getPostDetail(
   const postsWithMetadata = (posts ?? []).map((post) => ({
     ...post,
     post_id: String((post as { post_id?: string | null }).post_id ?? (post as { thread_id?: string | null }).thread_id ?? ""),
-    metadata: metadataById.get(String(post.id)) ?? null
+    metadata: metadataById.get(String(post.id)) ?? null,
+    poll_summary: null
   })) as PostDetailScreenData["posts"];
+
+  const pollByPostItemId = await getPollSummariesByPostItemIds(
+    postsWithMetadata.map((post) => post.id)
+  );
+  for (const post of postsWithMetadata) {
+    post.poll_summary = pollByPostItemId.get(post.id) ?? null;
+  }
 
   const commentsList = (comments ?? []).map((comment) => ({
     ...comment,

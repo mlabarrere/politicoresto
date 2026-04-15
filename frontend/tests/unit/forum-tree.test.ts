@@ -7,6 +7,8 @@ import type { CommentView } from "@/lib/types/views";
 function makeComment(partial: Partial<CommentView> & { id: string }): CommentView {
   return {
     id: partial.id,
+    post_id: partial.post_id ?? "t1",
+    post_item_id: partial.post_item_id ?? "op1",
     thread_id: partial.thread_id ?? "t1",
     thread_post_id: partial.thread_post_id ?? "op1",
     parent_post_id: partial.parent_post_id ?? null,

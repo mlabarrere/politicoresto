@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { Route } from "next";
 
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
@@ -10,6 +10,13 @@ export function LeftSidebar({ selectedBloc }: { selectedBloc: string | null }) {
       <section className="app-card p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>
         <div className="mt-3 space-y-2">
+          <Link
+            href={"/polls" as Route}
+            className="block rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            Sondages
+          </Link>
+
           <Link
             href="/"
             className={cn(

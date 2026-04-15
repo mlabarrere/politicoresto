@@ -115,6 +115,7 @@ export type HomeFeedTopicView = {
   feed_droite_count?: number | null;
   feed_comment_count?: number | null;
   feed_user_reaction_side?: "gauche" | "droite" | null;
+  feed_poll_summary?: PostPollSummaryView | null;
 };
 
 export type TopicSummaryView = {
@@ -147,6 +148,42 @@ export type PublicPollResultsView = {
   poll_option_id: string | null;
   option_label: string | null;
   response_count: number | null;
+};
+
+export type PostPollOptionSummary = {
+  option_id: string;
+  label: string;
+  sort_order: number;
+};
+
+export type PostPollResultPoint = {
+  option_id: string;
+  option_label: string;
+  sort_order: number;
+  response_count?: number;
+  weighted_count?: number;
+  share: number;
+};
+
+export type PostPollSummaryView = {
+  post_item_id: string;
+  post_id: string;
+  post_slug: string;
+  post_title: string;
+  question: string;
+  deadline_at: string;
+  poll_status: "open" | "closed";
+  sample_size: number;
+  effective_sample_size: number;
+  representativity_score: number;
+  coverage_score: number;
+  distance_score: number;
+  stability_score: number;
+  anti_brigading_score: number;
+  raw_results: PostPollResultPoint[];
+  corrected_results: PostPollResultPoint[];
+  options: PostPollOptionSummary[];
+  selected_option_id: string | null;
 };
 
 export type PublicCardShowcaseView = {
@@ -314,6 +351,7 @@ export type PostView = {
   user_reaction_side?: "gauche" | "droite" | null;
   weighted_votes: number | null;
   comment_count: number | null;
+  poll_summary?: PostPollSummaryView | null;
 };
 
 export type CommentView = {

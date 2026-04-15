@@ -1,8 +1,11 @@
 # Supabase Seed Notes
 
-Forum MVP only.
+Forum MVP + poll demo.
 
-Current seed file:
+Current seed files:
 - `forum_minimal_seed.sql`
+- `polls_demo.sql`
 
-No prediction/poll/card/territory/showcase/editorial seed content is kept.
+`polls_demo.sql` creates believable political poll examples.
+Data is synthetic.
+No real survey claim.

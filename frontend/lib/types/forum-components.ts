@@ -25,6 +25,7 @@ export type ForumPageProps = {
 export type PostCardProps = {
   post: ForumPost;
   initialExpanded?: boolean;
+  isAuthenticated?: boolean;
 };
 
 export type PostActionsBarProps = {

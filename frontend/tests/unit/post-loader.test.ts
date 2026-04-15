@@ -87,6 +87,8 @@ describe("post detail loader", () => {
           return { select: vi.fn(() => makeSelectQuery({ data: posts, error: null })) };
         if (table === "v_post_comments")
           return { select: vi.fn(() => makeSelectQuery({ data: comments, error: null })) };
+        if (table === "v_post_poll_summary")
+          return { select: vi.fn(() => ({ in: vi.fn(async () => ({ data: [], error: null })) })) };
         if (table === "post")
           return {
             select: vi.fn(() => ({
