@@ -1,14 +1,6 @@
-import dynamic from "next/dynamic";
-
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { PageContainer } from "@/components/layout/page-container";
 import { SectionCard } from "@/components/layout/section-card";
-
-const OAuthButtons = dynamic(
-  () => import("@/components/auth/oauth-buttons").then((module) => module.OAuthButtons),
-  {
-    ssr: false
-  }
-);
 
 function safeNextPath(next?: string) {
   const fallback = "/";

@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 function normalizeNextPath(next?: string) {
   const fallback = "/";
@@ -38,6 +37,7 @@ export function OAuthButtons({
       return;
     }
 
+    const { createBrowserSupabaseClient } = await import("@/lib/supabase/client");
     const supabase = createBrowserSupabaseClient();
     setErrorMessage(null);
     setPending("google");
