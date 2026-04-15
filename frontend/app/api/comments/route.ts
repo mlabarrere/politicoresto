@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 
-import { buildForumCommentTree } from "@/lib/forum/mappers";
+import { mapCommentViewToForumNode } from "@/lib/forum/mappers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CommentView } from "@/lib/types/views";
 
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
     }
 
     const comment = await fetchCommentView(supabase, insertedId, user.id);
-    const node = buildForumCommentTree([comment], "oldest")[0];
+    const node = mapCommentViewToForumNode(comment);
 
     return NextResponse.json({ comment: node });
   } catch (error) {
