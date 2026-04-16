@@ -4,6 +4,7 @@ import { ForumPage } from "@/components/forum/forum-page";
 import { AppBadge } from "@/components/app/app-badge";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
+import { ScreenState } from "@/components/layout/screen-state";
 import { getPostDetail } from "@/lib/data/public/posts";
 import { buildForumCommentTree, mapPostViewToForumPost } from "@/lib/forum/mappers";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
@@ -18,7 +19,28 @@ export default async function PostDetailPage({
   const supabase = await createServerSupabaseClient();
   const user = await getCurrentUser(supabase);
   const currentUserId = user?.id ?? null;
-  const detail = await getPostDetail(slug, currentUserId);
+  let detail;
+
+  try {
+    detail = await getPostDetail(slug, currentUserId);
+  } catch (error) {
+    const code = String((error as { code?: string }).code ?? "");
+    const message = String((error as { message?: string }).message ?? "");
+    const isForbidden = code === "42501" || message.toLowerCase().includes("permission denied");
+
+    if (isForbidden) {
+      return (
+        <PageContainer>
+          <ScreenState
+            title="Acces refuse"
+            body="Ce contenu n'est pas accessible avec vos droits actuels."
+          />
+        </PageContainer>
+      );
+    }
+
+    throw error;
+  }
 
   if (!detail?.post) {
     notFound();
