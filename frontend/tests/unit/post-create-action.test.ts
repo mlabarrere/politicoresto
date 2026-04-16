@@ -235,6 +235,37 @@ describe("createPostAction", () => {
     expect(mocks.redirectMock).toHaveBeenCalledWith("/");
   });
 
+  it("falls back to create_post when create_post_item is missing in schema cache", async () => {
+    mocks.rpcMock
+      .mockResolvedValueOnce({ data: { id: "thread-fallback-item" }, error: null })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: "Could not find the function public.create_post_item in the schema cache",
+          code: "PGRST202"
+        }
+      })
+      .mockResolvedValueOnce({ data: { id: "post-item-from-create-post" }, error: null });
+    mockedFetchUrlPreview.mockResolvedValue(null);
+
+    await createPostAction(
+      makeFormData({
+        title: "Thread fallback item",
+        body: "Body",
+        redirect_path: "/"
+      })
+    );
+
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_post_topic", expect.any(Object));
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post_item", expect.objectContaining({
+      p_post_id: "thread-fallback-item"
+    }));
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(3, "create_post", expect.objectContaining({
+      p_thread_id: "thread-fallback-item"
+    }));
+    expect(mocks.redirectMock).toHaveBeenCalledWith("/");
+  });
+
   it("redirects back to composer with explicit error when poll RPC fails", async () => {
     mocks.rpcMock
       .mockResolvedValueOnce({ data: { id: "thread-4" }, error: null })

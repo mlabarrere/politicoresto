@@ -36,6 +36,57 @@ function extractTopicId(result: unknown) {
     : ((result as { id?: string } | null)?.id ?? null);
 }
 
+async function createPostItemWithFallback({
+  supabase,
+  postId,
+  title,
+  body,
+  metadata
+}: {
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
+  postId: string;
+  title: string;
+  body: string;
+  metadata: Record<string, unknown>;
+}): Promise<{ postItemId: string | null; method: "create_post_item" | "create_post" }> {
+  const createPostItemInput = {
+    p_post_id: postId,
+    p_type: "article",
+    p_title: title,
+    p_content: body || null,
+    p_metadata: metadata
+  };
+
+  const createPostItemResult = await supabase.rpc("create_post_item", createPostItemInput);
+  if (!createPostItemResult.error) {
+    return {
+      postItemId: extractTopicId(createPostItemResult.data),
+      method: "create_post_item"
+    };
+  }
+
+  if (!isMissingRpc(createPostItemResult.error)) {
+    throw new Error(createPostItemResult.error.message);
+  }
+
+  const createPostResult = await supabase.rpc("create_post", {
+    p_thread_id: postId,
+    p_type: "article",
+    p_title: title,
+    p_content: body || null,
+    p_metadata: metadata
+  });
+
+  if (createPostResult.error) {
+    throw new Error(createPostResult.error.message);
+  }
+
+  return {
+    postItemId: extractTopicId(createPostResult.data),
+    method: "create_post"
+  };
+}
+
 export async function createPostAction(formData: FormData) {
   const fallbackErrorPath = "/post/new";
   try {
@@ -80,6 +131,7 @@ export async function createPostAction(formData: FormData) {
     const createTopicResult = await supabase.rpc("create_post_topic", createPostTopicInput);
     let postId = extractTopicId(createTopicResult.data);
     let createMethod: "create_post_topic" | "create_thread" = "create_post_topic";
+    let createItemMethod: "create_post_item" | "create_post" | "none" = "none";
 
     if (createTopicResult.error && isMissingRpc(createTopicResult.error)) {
       const createThreadResult = await supabase.rpc("create_thread", createPostTopicInput);
@@ -95,26 +147,21 @@ export async function createPostAction(formData: FormData) {
     if (postId) {
       const preview = sourceUrl ? await fetchUrlPreview(sourceUrl) : null;
 
-      const { data: postItemData, error: opError } = await supabase.rpc("create_post_item", {
-        p_post_id: postId,
-        p_type: "article",
-        p_title: title,
-        p_content: body || null,
-        p_metadata: {
-          is_original_post: true,
-          source_url: sourceUrl,
-          link_preview: preview,
-          post_mode: mode
-        }
+      const postMetadata = {
+        is_original_post: true,
+        source_url: sourceUrl,
+        link_preview: preview,
+        post_mode: mode
+      };
+
+      const { postItemId, method: postItemMethod } = await createPostItemWithFallback({
+        supabase,
+        postId,
+        title,
+        body,
+        metadata: postMetadata
       });
-
-      if (opError) {
-        throw new Error(opError.message);
-      }
-
-      const postItemId = Array.isArray(postItemData)
-        ? (postItemData[0] as { id?: string } | null)?.id ?? null
-        : ((postItemData as { id?: string } | null)?.id ?? null);
+      createItemMethod = postItemMethod;
 
       if (mode === "poll" && postItemId) {
         const deadlineAt = new Date(Date.now() + pollDeadlineHours * 60 * 60 * 1000).toISOString();
@@ -162,7 +209,8 @@ export async function createPostAction(formData: FormData) {
       mode,
       redirectPath,
       createMethod,
-      postId
+      postId,
+      createItemMethod
     });
     redirect(redirectPath as never);
   } catch (error) {
