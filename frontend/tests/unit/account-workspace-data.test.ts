@@ -139,7 +139,7 @@ describe("account workspace data", () => {
     expect(data.sectionStatus.profile.state).toBe("unavailable");
     expect(data.sectionStatus.votes.state).toBe("unavailable");
     expect(data.sectionStatus.posts.state).toBe("unavailable");
-    expect(data.sectionStatus.votes.message).toBe("Indisponible temporairement sur cet environnement.");
+    expect(data.sectionStatus.votes.message).toBe("Indisponible temporairement.");
     expect(data.voteHistory).toEqual([]);
     expect(data.publications).toEqual([]);
   });

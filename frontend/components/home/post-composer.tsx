@@ -83,6 +83,11 @@ export function PostComposer({
     setLastSavedAt(new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
   }, [draft]);
 
+  useEffect(() => {
+    if (!initialError) return;
+    console.error("[PostComposer] initialError", { message: initialError });
+  }, [initialError]);
+
   const draftState = useMemo(() => {
     if (!draft.title.trim() && !draft.body.trim() && !draft.poll_question.trim()) return "Vide";
     return `Sauvegarde ${lastSavedAt ?? ""}`.trim();

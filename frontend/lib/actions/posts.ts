@@ -12,6 +12,30 @@ const VALIDATION_ERRORS = new Set([
   "At least two poll options required"
 ]);
 
+type BackendError = {
+  message?: string;
+  code?: string;
+};
+
+function isMissingRpc(error: BackendError | null | undefined) {
+  if (!error) return false;
+  const message = String(error.message ?? "").toLowerCase();
+  const code = String(error.code ?? "").toLowerCase();
+  return (
+    message.includes("schema cache") ||
+    message.includes("could not find the function") ||
+    message.includes("undefined function") ||
+    code === "42883" ||
+    code === "pgrst202"
+  );
+}
+
+function extractTopicId(result: unknown) {
+  return Array.isArray(result)
+    ? (result[0] as { id?: string } | null)?.id ?? null
+    : ((result as { id?: string } | null)?.id ?? null);
+}
+
 export async function createPostAction(formData: FormData) {
   const fallbackErrorPath = "/post/new";
   try {
@@ -45,21 +69,28 @@ export async function createPostAction(formData: FormData) {
     }
 
     const supabase = await createServerSupabaseClient();
-    const { data: postData, error } = await supabase.rpc("create_post_topic", {
+    const createPostTopicInput = {
       p_title: title,
       p_description: description,
       p_entity_id: null,
       p_space_id: null,
       p_close_at: null
-    });
+    };
 
-    if (error) {
-      throw new Error(error.message);
+    const createTopicResult = await supabase.rpc("create_post_topic", createPostTopicInput);
+    let postId = extractTopicId(createTopicResult.data);
+    let createMethod: "create_post_topic" | "create_thread" = "create_post_topic";
+
+    if (createTopicResult.error && isMissingRpc(createTopicResult.error)) {
+      const createThreadResult = await supabase.rpc("create_thread", createPostTopicInput);
+      if (createThreadResult.error) {
+        throw new Error(createThreadResult.error.message);
+      }
+      postId = extractTopicId(createThreadResult.data);
+      createMethod = "create_thread";
+    } else if (createTopicResult.error) {
+      throw new Error(createTopicResult.error.message);
     }
-
-    const postId = Array.isArray(postData)
-      ? (postData[0] as { id?: string } | null)?.id ?? null
-      : ((postData as { id?: string } | null)?.id ?? null);
 
     if (postId) {
       const preview = sourceUrl ? await fetchUrlPreview(sourceUrl) : null;
@@ -127,13 +158,23 @@ export async function createPostAction(formData: FormData) {
     if (redirectPath !== "/") {
       revalidatePath(redirectPath);
     }
+    console.info("[createPostAction] post created", {
+      mode,
+      redirectPath,
+      createMethod,
+      postId
+    });
     redirect(redirectPath as never);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Creation du post impossible.";
     if (VALIDATION_ERRORS.has(message)) {
       throw error;
     }
-    console.error("[createPostAction] failed:", message, error);
+    console.error("[createPostAction] failed", {
+      message,
+      error,
+      context: { path: "/post/new" }
+    });
     redirect(`${fallbackErrorPath}?error=${encodeURIComponent(message)}`);
   }
 }

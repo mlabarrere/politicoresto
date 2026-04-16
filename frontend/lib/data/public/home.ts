@@ -6,19 +6,80 @@ import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { toHomeFeedTopic } from "./canonical";
 import { getPollSummariesByPostItemIds } from "./polls";
 
+type BackendError = {
+  message?: string;
+  code?: string;
+};
+
+function isCapabilityMissing(error: BackendError | null | undefined) {
+  if (!error) return false;
+  const message = String(error.message ?? "").toLowerCase();
+  const code = String(error.code ?? "").toLowerCase();
+  return (
+    message.includes("schema cache") ||
+    message.includes("could not find") ||
+    message.includes("undefined table") ||
+    message.includes("undefined function") ||
+    code === "42p01" ||
+    code === "42883" ||
+    code === "pgrst202" ||
+    code === "pgrst204"
+  );
+}
+
+function toNumber(value: unknown, fallback = 0) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function toTimestamp(value: unknown) {
+  if (typeof value !== "string") return 0;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function sortFeedRows(rows: Record<string, unknown>[]) {
+  return [...rows].sort((a, b) => {
+    const scoreDiff =
+      toNumber(b.post_score) - toNumber(a.post_score) ||
+      toNumber(b.editorial_feed_score) - toNumber(a.editorial_feed_score) ||
+      toNumber(b.thread_score) - toNumber(a.thread_score);
+    if (scoreDiff !== 0) return scoreDiff;
+
+    const freshnessDiff =
+      toTimestamp(b.latest_post_at) - toTimestamp(a.latest_post_at) ||
+      toTimestamp(b.last_activity_at) - toTimestamp(a.last_activity_at) ||
+      toTimestamp(b.latest_thread_post_at) - toTimestamp(a.latest_thread_post_at) ||
+      toTimestamp(b.created_at) - toTimestamp(a.created_at);
+    if (freshnessDiff !== 0) return freshnessDiff;
+
+    return toNumber(a.editorial_feed_rank, Number.MAX_SAFE_INTEGER) - toNumber(b.editorial_feed_rank, Number.MAX_SAFE_INTEGER);
+  });
+}
+
 export async function getHomeScreenData(
   blocSlug?: string | null,
   currentUserId?: string | null
 ): Promise<LoadState<HomeScreenData>> {
   const supabase = await createServerSupabaseClient();
 
-  const { data: feedRows, error } = await supabase
+  const primaryFeed = await supabase
     .from("v_feed_global_post")
     .select("*")
     .order("post_score", { ascending: false })
     .order("latest_post_at", { ascending: false, nullsFirst: false })
     .order("editorial_feed_rank", { ascending: true })
     .limit(24);
+
+  let feedRows = (primaryFeed.data ?? []) as Record<string, unknown>[];
+  let feedError: BackendError | null = primaryFeed.error;
+
+  if (feedError && isCapabilityMissing(feedError)) {
+    const fallbackFeed = await supabase.from("v_feed_global").select("*").limit(48);
+    feedRows = sortFeedRows((fallbackFeed.data ?? []) as Record<string, unknown>[]).slice(0, 24);
+    feedError = fallbackFeed.error;
+  }
+
+  const safeError = feedError && !isCapabilityMissing(feedError) ? String(feedError.message ?? "Feed indisponible.") : null;
 
   const feed = (feedRows ?? [])
     .filter((row) => matchesPoliticalBloc(row as Record<string, unknown>, blocSlug ?? null))
@@ -111,7 +172,7 @@ export async function getHomeScreenData(
       feed: feedWithPoll,
       selectedBloc: blocSlug ?? null
     },
-    error: error?.message ?? null
+    error: safeError
   };
 }
 

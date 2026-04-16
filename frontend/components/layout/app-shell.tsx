@@ -1,8 +1,7 @@
 import type { PropsWithChildren } from "react";
 
-import { createPostAction } from "@/lib/actions/posts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { CreateFlowProvider } from "@/components/layout/create-flow-provider";
+import { AppPrimaryCTA } from "@/components/app/app-primary-cta";
 import { AppHeader } from "@/components/layout/app-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 
@@ -14,12 +13,13 @@ export async function AppShell({ children }: PropsWithChildren) {
   const isAuthenticated = Boolean(session);
 
   return (
-    <CreateFlowProvider isAuthenticated={isAuthenticated} action={createPostAction}>
-      <div className="min-h-screen bg-background text-foreground">
-        <AppHeader isAuthenticated={isAuthenticated} />
-        <main className="pb-12">{children}</main>
-        <SiteFooter />
+    <div className="min-h-screen bg-background text-foreground">
+      <AppHeader isAuthenticated={isAuthenticated} />
+      <main className="pb-12">{children}</main>
+      <div className="fixed bottom-4 right-4 z-40 lg:hidden">
+        <AppPrimaryCTA mode="fab" isAuthenticated={isAuthenticated} />
       </div>
-    </CreateFlowProvider>
+      <SiteFooter />
+    </div>
   );
 }

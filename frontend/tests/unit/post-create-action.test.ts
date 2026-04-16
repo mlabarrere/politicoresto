@@ -206,6 +206,35 @@ describe("createPostAction", () => {
     );
   });
 
+  it("falls back to create_thread when create_post_topic is missing in schema cache", async () => {
+    mocks.rpcMock
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: "Could not find the function public.create_post_topic in the schema cache",
+          code: "PGRST202"
+        }
+      })
+      .mockResolvedValueOnce({ data: { id: "thread-fallback" }, error: null })
+      .mockResolvedValueOnce({ data: { id: "post-item-fallback" }, error: null });
+    mockedFetchUrlPreview.mockResolvedValue(null);
+
+    await createPostAction(
+      makeFormData({
+        title: "Thread fallback",
+        body: "Body",
+        redirect_path: "/"
+      })
+    );
+
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_post_topic", expect.any(Object));
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_thread", expect.any(Object));
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(3, "create_post_item", expect.objectContaining({
+      p_post_id: "thread-fallback"
+    }));
+    expect(mocks.redirectMock).toHaveBeenCalledWith("/");
+  });
+
   it("redirects back to composer with explicit error when poll RPC fails", async () => {
     mocks.rpcMock
       .mockResolvedValueOnce({ data: { id: "thread-4" }, error: null })
