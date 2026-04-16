@@ -1,16 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
 
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from "@/components/ui/sheet";
+import { AppButton } from "@/components/app/app-button";
+import { AppDrawer } from "@/components/app/app-drawer";
 
 export function AuthRequiredSheet({
   triggerContent,
@@ -26,35 +19,22 @@ export function AuthRequiredSheet({
   const encodedNext = encodeURIComponent(nextPath || "/");
 
   return (
-    <Sheet>
-      <SheetTrigger
-        render={<button type="button" aria-label={triggerLabel} className={triggerClassName} />}
-      >
-        {triggerContent}
-      </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl border-x border-t border-border bg-card">
-        <SheetHeader>
-          <SheetTitle>Participation reservee aux membres</SheetTitle>
-          <SheetDescription>
-            Connectez-vous pour reagir, commenter et repondre dans le post.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="space-y-2 px-4 pb-4">
-          <Link
-            href={`/auth/login?next=${encodedNext}`}
-            className="block rounded-xl bg-foreground px-3 py-2 text-center text-sm font-medium text-background"
-          >
-            Se connecter
-          </Link>
-          <Link
-            href={`/auth/login?mode=signup&next=${encodedNext}`}
-            className="block rounded-xl border border-border px-3 py-2 text-center text-sm font-medium text-foreground"
-          >
-            Créer un compte
-          </Link>
-        </div>
-      </SheetContent>
-    </Sheet>
+    <AppDrawer
+      side="bottom"
+      title="Participation reservee aux membres"
+      trigger={
+        <AppButton type="button" variant="ghost" aria-label={triggerLabel} className={triggerClassName}>
+          {triggerContent}
+        </AppButton>
+      }
+    >
+      <p className="text-sm text-muted-foreground">Connectez-vous pour reagir, commenter et repondre dans le post.</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <AppButton href={`/auth/login?next=${encodedNext}`}>Se connecter</AppButton>
+        <AppButton href={`/auth/login?mode=signup&next=${encodedNext}`} variant="secondary">
+          Creer un compte
+        </AppButton>
+      </div>
+    </AppDrawer>
   );
 }
-

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { AppButton } from "@/components/app/app-button";
+import { AppTextarea } from "@/components/app/app-textarea";
 
 export function CommentComposerShell({
   initialValue,
@@ -49,7 +49,7 @@ export function CommentComposerShell({
 
   return (
     <div className="space-y-2 rounded-xl border border-border/70 bg-background/80 p-3" data-testid={testId}>
-      <Textarea
+      <AppTextarea
         autoFocus={autoFocus}
         rows={3}
         value={body}
@@ -59,12 +59,12 @@ export function CommentComposerShell({
       />
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
       <div className="flex items-center justify-end gap-2">
-        <Button type="button" variant="outline" size="sm" disabled={isSubmitting} onClick={onCancel}>
+        <AppButton type="button" variant="secondary" size="sm" disabled={isSubmitting} onClick={onCancel}>
           Annuler
-        </Button>
-        <Button type="button" size="sm" disabled={isSubmitting} onClick={() => void handleSubmit()}>
+        </AppButton>
+        <AppButton type="button" size="sm" disabled={isSubmitting} onClick={() => void handleSubmit()}>
           {isSubmitting ? submittingLabel : submitLabel}
-        </Button>
+        </AppButton>
       </div>
     </div>
   );

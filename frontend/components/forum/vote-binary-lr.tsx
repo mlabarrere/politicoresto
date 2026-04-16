@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 import { AuthRequiredSheet } from "@/components/auth/auth-required-sheet";
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/app/app-button";
 import type { VoteBinaryLRProps } from "@/lib/types/forum-components";
 import type { VoteSide } from "@/lib/types/forum";
 import { cn } from "@/lib/utils";
@@ -81,7 +81,7 @@ export function VoteBinaryLR({
         }
 
         return (
-          <Button
+          <AppButton
             key={pole.value}
             type="button"
             variant="ghost"
@@ -93,7 +93,7 @@ export function VoteBinaryLR({
             onClick={() => onChange(next)}
           >
             {content}
-          </Button>
+          </AppButton>
         );
       })}
     </div>

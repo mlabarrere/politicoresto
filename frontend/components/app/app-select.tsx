@@ -1,6 +1,7 @@
-import { Select } from "@/components/ui/select";
-import type { ComponentProps } from "react";
+import type { SelectHTMLAttributes } from "react";
 
-export function AppSelect(props: ComponentProps<typeof Select>) {
-  return <Select className="rounded-xl px-3 py-2" {...props} />;
+import { CatalystSelect } from "@/components/catalyst/select";
+
+export function AppSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
+  return <CatalystSelect {...props} />;
 }

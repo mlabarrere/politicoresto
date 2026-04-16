@@ -1,3 +1,6 @@
+import { AppButton } from "@/components/app/app-button";
+import { AppInput } from "@/components/app/app-input";
+import { AppTextarea } from "@/components/app/app-textarea";
 import { SectionCard } from "@/components/layout/section-card";
 import {
   clearPrivateProfileAction,
@@ -15,32 +18,32 @@ export default async function MeSettingsPage() {
           <input type="hidden" name="redirect_path" value="/me/settings" />
           <label className="block text-sm">
             <span className="text-muted-foreground">Interet politique (1-5)</span>
-            <input
+            <AppInput
               name="political_interest_level"
               type="number"
               min={1}
               max={5}
               defaultValue={data.profile?.political_interest_level ?? ""}
-              className="mt-1 w-full rounded-xl border border-border px-3 py-2"
+              className="mt-1"
             />
           </label>
           <label className="block text-sm">
             <span className="text-muted-foreground">Mon histoire personnelle</span>
-            <textarea
+            <AppTextarea
               name="notes_private"
               rows={6}
               defaultValue={data.profile?.notes_private ?? ""}
               placeholder="Pourquoi vous participez aux discussions, vos convictions, votre parcours..."
-              className="mt-1 w-full rounded-xl border border-border px-3 py-2"
+              className="mt-1"
             />
           </label>
           <div className="flex gap-2">
-            <button type="submit" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
+            <AppButton type="submit">
               Enregistrer
-            </button>
-            <button type="submit" formAction={clearPrivateProfileAction} className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground">
+            </AppButton>
+            <AppButton type="submit" formAction={clearPrivateProfileAction} variant="secondary">
               Vider
-            </button>
+            </AppButton>
           </div>
         </form>
       </SectionCard>

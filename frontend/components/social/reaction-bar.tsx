@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
+import { AppButton } from "@/components/app/app-button";
 import { AuthRequiredSheet } from "@/components/auth/auth-required-sheet";
 import { applyReactionTransition, type ReactionCountsState, type ReactionSide } from "@/lib/reactions";
 import { formatNumber } from "@/lib/utils/format";
@@ -159,9 +160,11 @@ export const ReactionBar = memo(function ReactionBar({
         }
 
         return (
-          <button
+          <AppButton
             key={reaction.side}
             type="button"
+            variant="ghost"
+            size="sm"
             aria-label={reaction.tooltip}
             aria-pressed={isActive}
             data-active={isActive ? "true" : "false"}
@@ -172,7 +175,7 @@ export const ReactionBar = memo(function ReactionBar({
             disabled={isSubmitting}
           >
             {content}
-          </button>
+          </AppButton>
         );
       })}
     </div>

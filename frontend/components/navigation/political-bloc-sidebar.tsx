@@ -11,7 +11,7 @@ export function PoliticalBlocSidebar({
 }) {
   return (
     <section className="rounded-3xl border border-border bg-card p-4">
-      <p className="eyebrow">Categories</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>
       <div className="mt-3 space-y-2">
         <Link
           href="/"

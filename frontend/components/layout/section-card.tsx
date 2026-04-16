@@ -1,6 +1,6 @@
 import type { PropsWithChildren, ReactNode } from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard } from "@/components/app/app-card";
 import { cn } from "@/lib/utils";
 
 export function SectionCard({
@@ -18,19 +18,19 @@ export function SectionCard({
   contentClassName?: string;
 }>) {
   return (
-    <Card className={cn("overflow-hidden border-border bg-card", className)}>
-      <CardHeader className="pb-4">
+    <AppCard className={cn("overflow-hidden", className)}>
+      <div className="pb-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
-            <CardTitle className="mt-2 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+            {eyebrow ? <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{eyebrow}</p> : null}
+            <h2 className="mt-2 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
               {title}
-            </CardTitle>
+            </h2>
           </div>
           {aside}
         </div>
-      </CardHeader>
-      <CardContent className={cn("px-5 pb-5 pt-0", contentClassName)}>{children}</CardContent>
-    </Card>
+      </div>
+      <div className={cn("pt-0", contentClassName)}>{children}</div>
+    </AppCard>
   );
 }

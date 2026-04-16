@@ -1,5 +1,5 @@
 import { EmptyState } from "@/components/layout/empty-state";
-import { PostCard } from "@/components/domain/post-card";
+import { AppFeedItem } from "@/components/app/app-feed-item";
 import type { FeedSortMode } from "@/lib/types/homepage";
 import type { PostFeedItemView } from "@/lib/types/views";
 
@@ -43,7 +43,7 @@ export function PostFeed({
   return (
     <div className="space-y-3">
       {sortedItems.map((item) => (
-        <PostCard key={item.topic_id} item={item} isAuthenticated={isAuthenticated} />
+        <AppFeedItem key={item.topic_id} item={item} isAuthenticated={isAuthenticated} />
       ))}
     </div>
   );

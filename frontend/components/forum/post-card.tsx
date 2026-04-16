@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
+import { AppCard } from "@/components/app/app-card";
 import { PollDetailBlock } from "@/components/poll/poll-detail-block";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { PostCardProps } from "@/lib/types/forum-components";
@@ -25,7 +26,7 @@ export function PostCard({
   }, [expanded, isLong, post.body]);
 
   return (
-    <article className="space-y-4 app-card p-4" aria-label="Post principal">
+    <AppCard as="article" className="space-y-4 p-4" aria-label="Post principal">
       <header className="flex items-start gap-3">
         <Avatar size="sm">
           <AvatarImage src={post.author.avatarUrl} alt={post.author.username} />
@@ -55,7 +56,7 @@ export function PostCard({
       </div>
 
       {post.pollSummary ? <PollDetailBlock poll={post.pollSummary} isAuthenticated={isAuthenticated} /> : null}
-    </article>
+    </AppCard>
   );
 }
 

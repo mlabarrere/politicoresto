@@ -1,39 +1,57 @@
-﻿@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.ts";
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @layer base {
   :root {
     color-scheme: light;
-    --background: 0 0% 100%;
-    --foreground: 222 22% 10%;
+
+    --background: 38 45% 98%;
+    --foreground: 28 19% 14%;
+
     --card: 0 0% 100%;
-    --card-foreground: 222 22% 10%;
+    --card-foreground: 28 19% 14%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222 22% 10%;
-    --primary: 217 91% 60%;
+    --popover-foreground: 28 19% 14%;
+
+    --primary: 20 81% 39%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 20% 97%;
-    --secondary-foreground: 222 22% 10%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8% 46%;
-    --accent: 217 100% 97%;
-    --accent-foreground: 222 22% 10%;
-    --destructive: 344 67% 40%;
-    --border: 220 14% 91%;
-    --input: 220 14% 91%;
-    --ring: 217 91% 60%;
+
+    --secondary: 42 35% 93%;
+    --secondary-foreground: 28 19% 14%;
+
+    --muted: 42 24% 92%;
+    --muted-foreground: 27 10% 39%;
+
+    --accent: 46 70% 95%;
+    --accent-foreground: 28 19% 14%;
+
+    --destructive: 348 72% 41%;
+
+    --border: 31 27% 84%;
+    --input: 31 27% 84%;
+    --ring: 20 81% 39%;
+
     --radius: 0.9rem;
-    --sidebar: 220 20% 98%;
-    --sidebar-foreground: 222 22% 10%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 100% 97%;
-    --sidebar-accent-foreground: 222 22% 10%;
-    --sidebar-border: 220 14% 91%;
-    --sidebar-ring: 217 91% 60%;
+
+    --shadow-sm: 0 4px 16px rgba(28, 25, 23, 0.06);
+    --shadow-md: 0 14px 34px rgba(28, 25, 23, 0.08);
+
+    --spacing-compact: 0.5rem;
+    --spacing-base: 0.75rem;
+    --spacing-section: 1.5rem;
+
+    --vichy-bg: linear-gradient(
+      45deg,
+      hsl(46 60% 96% / 0.35) 25%,
+      transparent 25%,
+      transparent 50%,
+      hsl(46 60% 96% / 0.35) 50%,
+      hsl(46 60% 96% / 0.35) 75%,
+      transparent 75%,
+      transparent
+    );
   }
 
   * {
@@ -41,14 +59,15 @@
     box-sizing: border-box;
   }
 
-  body {
-    min-height: 100vh;
-    @apply bg-background text-foreground antialiased;
-  }
-
   html {
     min-height: 100%;
     @apply scroll-smooth font-sans;
+  }
+
+  body {
+    min-height: 100vh;
+    @apply bg-background text-foreground antialiased;
+    background-image: radial-gradient(circle at top right, hsl(45 100% 97%), hsl(var(--background)) 55%);
   }
 
   a {
@@ -61,25 +80,8 @@
     @apply relative;
   }
 
-  .eyebrow {
-    @apply text-xs font-medium uppercase tracking-[0.06em] text-muted-foreground;
-  }
-
-  .editorial-title {
-    @apply tracking-tight text-foreground;
-  }
-
-  .soft-panel {
-    @apply rounded-3xl border border-border bg-card;
-  }
-
-  .soft-section {
-    @apply rounded-3xl border border-border bg-card;
-  }
-
-  .app-card {
-    @apply rounded-2xl border border-border bg-card;
+  .vichy-accent {
+    background-image: var(--vichy-bg);
+    background-size: 12px 12px;
   }
 }
-
-

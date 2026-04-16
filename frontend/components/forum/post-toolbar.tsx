@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { AppButton } from "@/components/app/app-button";
-import { AppFilter } from "@/components/app/app-filter";
+import { AppCard } from "@/components/app/app-card";
+import { AppFilterBar } from "@/components/app/app-filter-bar";
 import type { PostToolbarProps } from "@/lib/types/forum-components";
 
 const SORT_OPTIONS: Array<{ value: "top" | "recent" | "oldest"; label: string }> = [
@@ -22,9 +23,9 @@ export function PostToolbar({
   onToggleComposer
 }: PostToolbarProps) {
   return (
-    <div className="space-y-2 app-card px-3 py-2" aria-label="Outils du post">
+    <AppCard className="space-y-2 px-3 py-2" aria-label="Outils du post">
       <div className="flex flex-wrap items-center gap-2">
-        <AppFilter options={SORT_OPTIONS} value={sortMode} onChange={onSortChange} />
+        <AppFilterBar options={SORT_OPTIONS} value={sortMode} onChange={onSortChange} />
 
         <AppButton type="button" variant="secondary" onClick={onToggleCollapseAll}>
           {collapsedAll ? "Tout déplier" : "Tout replier"}
@@ -40,6 +41,6 @@ export function PostToolbar({
       </div>
 
       {showComposer ? composerSlot : null}
-    </div>
+    </AppCard>
   );
 }

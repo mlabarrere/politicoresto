@@ -1,6 +1,6 @@
 "use client";
 
-import { AppFilter } from "@/components/app/app-filter";
+import { AppFilterBar } from "@/components/app/app-filter-bar";
 import type { PollExplorerFilter } from "@/lib/types/polls";
 
 const FILTERS: Array<{ value: PollExplorerFilter; label: string }> = [
@@ -17,5 +17,5 @@ export function PollFilterBar({
   value: PollExplorerFilter;
   onChange: (next: PollExplorerFilter) => void;
 }) {
-  return <AppFilter options={FILTERS} value={value} onChange={onChange} className="flex flex-wrap gap-2" />;
+  return <AppFilterBar options={FILTERS} value={value} onChange={onChange} className="flex flex-wrap gap-2" />;
 }

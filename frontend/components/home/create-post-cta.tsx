@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import type { Route } from "next";
 import { Plus } from "lucide-react";
 
 import { AppButton } from "@/components/app/app-button";
@@ -18,8 +16,7 @@ export function CreatePostCTA({
     : "w-full";
 
   return (
-    <AppButton variant="primary" size="sm" className={baseClass} render={<Link href={href as Route} />}>
-      <Plus className="size-4" />
+    <AppButton variant="primary" size="sm" className={baseClass} href={href} icon={<Plus className="size-4" />}>
       Nouveau post
     </AppButton>
   );

@@ -3,8 +3,8 @@
 import { SlidersHorizontal } from "lucide-react";
 
 import { AppButton } from "@/components/app/app-button";
-import { AppFilter } from "@/components/app/app-filter";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { AppDrawer } from "@/components/app/app-drawer";
+import { AppFilterBar } from "@/components/app/app-filter-bar";
 import type { FeedSortMode } from "@/lib/types/homepage";
 
 const SORTS: Array<{ value: FeedSortMode; label: string }> = [
@@ -21,20 +21,16 @@ export function MobileFiltersSheet({
   onSortChange: (mode: FeedSortMode) => void;
 }) {
   return (
-    <Sheet>
-      <SheetTrigger render={<AppButton variant="secondary" size="sm" aria-label="Ouvrir les filtres" />}>
-        <SlidersHorizontal className="size-4" />
-        Filtres
-      </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl bg-card">
-        <SheetTitle className="text-lg font-semibold tracking-tight">Filtres du feed</SheetTitle>
-        <AppFilter
-          className="mt-4 grid gap-2"
-          options={SORTS}
-          value={sortMode}
-          onChange={onSortChange}
-        />
-      </SheetContent>
-    </Sheet>
+    <AppDrawer
+      side="bottom"
+      title="Filtres du feed"
+      trigger={
+        <AppButton variant="secondary" size="sm" aria-label="Ouvrir les filtres" icon={<SlidersHorizontal className="size-4" />}>
+          Filtres
+        </AppButton>
+      }
+    >
+      <AppFilterBar className="mt-2 grid gap-2" options={SORTS} value={sortMode} onChange={onSortChange} />
+    </AppDrawer>
   );
 }

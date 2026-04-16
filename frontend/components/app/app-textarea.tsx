@@ -1,6 +1,7 @@
-import { Textarea } from "@/components/ui/textarea";
-import type { ComponentProps } from "react";
+import type { TextareaHTMLAttributes } from "react";
 
-export function AppTextarea(props: ComponentProps<typeof Textarea>) {
-  return <Textarea className="rounded-xl px-3 py-2" {...props} />;
+import { CatalystTextarea } from "@/components/catalyst/textarea";
+
+export function AppTextarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <CatalystTextarea {...props} />;
 }

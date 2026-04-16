@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { AppCard } from "@/components/app/app-card";
+import { AppPollFeedItem } from "@/components/app/app-feed-item";
 import { PollFilterBar } from "@/components/poll/poll-filter-bar";
 import { PollSortControl } from "@/components/poll/poll-sort-control";
-import { PollStatusBadge } from "@/components/poll/poll-status-badge";
 import type { PollExplorerFilter, PollExplorerSort } from "@/lib/types/polls";
 import type { PostPollSummaryView } from "@/lib/types/views";
 
@@ -56,23 +55,7 @@ export function PollExplorerList({ rows }: { rows: PostPollSummaryView[] }) {
       </AppCard>
 
       {visibleRows.map((row) => (
-        <AppCard key={row.post_item_id} className="space-y-2 p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-foreground">{row.question}</p>
-            <PollStatusBadge status={row.poll_status} />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Representativite {row.representativity_score.toFixed(1)} / 100 - Panel {row.sample_size}
-          </p>
-          <div className="flex flex-wrap gap-3 text-xs">
-            <Link href={`/post/${row.post_slug}`} className="font-medium text-foreground hover:underline">
-              Ouvrir detail
-            </Link>
-            <Link href={`/post/${row.post_slug}`} className="font-medium text-foreground hover:underline">
-              Ouvrir post source
-            </Link>
-          </div>
-        </AppCard>
+        <AppPollFeedItem key={row.post_item_id} row={row} />
       ))}
     </div>
   );

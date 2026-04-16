@@ -13,7 +13,9 @@ const bannedClassPatterns = [
   /\bbg-paper\b/,
   /\bborder-line\b/,
   /\btext-info\b/,
-  /\btext-warning\b/
+  /\btext-warning\b/,
+  /\bsoft-panel\b/,
+  /\bsoft-section\b/
 ];
 
 const sourceFiles = [
@@ -51,6 +53,37 @@ describe("UI standards", () => {
 
     expect(source).not.toContain("@apply relative overflow-hidden;");
     expect(source).not.toContain(".page-shell::before");
+  });
+
+  it("keeps app and pages on wrappers instead of legacy ui primitives", () => {
+    const allSource = fs
+      .readdirSync(path.join(root, "components"), { recursive: true })
+      .filter((entry) => typeof entry === "string" && entry.endsWith(".tsx"))
+      .map((entry) => path.join(root, "components", entry as string))
+      .concat(
+        fs
+          .readdirSync(path.join(root, "app"), { recursive: true })
+          .filter((entry) => typeof entry === "string" && entry.endsWith(".tsx"))
+          .map((entry) => path.join(root, "app", entry as string))
+      );
+
+    for (const file of allSource) {
+      const normalized = file.replaceAll("\\", "/");
+      if (normalized.includes("/components/ui/")) continue;
+      if (normalized.includes("/components/app/")) continue;
+      if (normalized.includes("/tests/")) continue;
+      const source = fs.readFileSync(file, "utf8");
+      expect(source).not.toContain("@/components/ui/button");
+      expect(source).not.toContain("@/components/ui/input");
+      expect(source).not.toContain("@/components/ui/textarea");
+      expect(source).not.toContain("@/components/ui/select");
+      expect(source).not.toContain("@/components/ui/card");
+      expect(source).not.toContain("@/components/ui/tabs");
+      expect(source).not.toContain("@/components/ui/sheet");
+      expect(source).not.toContain('className="app-card');
+      expect(source).not.toContain('className="eyebrow');
+      expect(source).not.toContain('className="editorial-title');
+    }
   });
 });
 

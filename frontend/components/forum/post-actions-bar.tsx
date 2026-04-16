@@ -4,6 +4,7 @@ import { Flag, MessageSquare, Share2 } from "lucide-react";
 import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
+import { AppCard } from "@/components/app/app-card";
 import { VoteBinaryLR } from "@/components/forum/vote-binary-lr";
 import type { PostActionsBarProps } from "@/lib/types/forum-components";
 
@@ -45,7 +46,7 @@ export function PostActionsBar({
   }
 
   return (
-    <div className="space-y-2 app-card px-3 py-2" aria-label="Actions du post" data-post-id={postId}>
+    <AppCard className="space-y-2 px-3 py-2" aria-label="Actions du post" data-post-id={postId}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <VoteBinaryLR
           entityType="post"
@@ -71,6 +72,6 @@ export function PostActionsBar({
       </div>
 
       {feedback ? <p className="text-xs text-muted-foreground">{feedback}</p> : null}
-    </div>
+    </AppCard>
   );
 }

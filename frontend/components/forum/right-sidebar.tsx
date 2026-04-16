@@ -3,7 +3,8 @@
 import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
 
 import { AppButton } from "@/components/app/app-button";
-import { AppFilter } from "@/components/app/app-filter";
+import { AppCard } from "@/components/app/app-card";
+import { AppFilterBar } from "@/components/app/app-filter-bar";
 import type { RightSidebarProps } from "@/lib/types/forum-components";
 
 const SORT_OPTIONS: Array<{ value: "top" | "recent" | "oldest"; label: string }> = [
@@ -15,17 +16,17 @@ const SORT_OPTIONS: Array<{ value: "top" | "recent" | "oldest"; label: string }>
 export function RightSidebar({ sortMode, totalComments, onSortChange }: RightSidebarProps) {
   return (
     <aside className="space-y-3 lg:sticky lg:top-24" aria-label="Navigation du post">
-      <section className="app-card p-3">
+      <AppCard className="p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tri</p>
-        <AppFilter className="mt-2 grid gap-2" options={SORT_OPTIONS} value={sortMode} onChange={onSortChange} />
-      </section>
+        <AppFilterBar className="mt-2 grid gap-2" options={SORT_OPTIONS} value={sortMode} onChange={onSortChange} />
+      </AppCard>
 
-      <section className="app-card p-3">
+      <AppCard className="p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Metadonnees</p>
         <p className="mt-2 text-sm text-foreground">{totalComments} commentaires</p>
-      </section>
+      </AppCard>
 
-      <section className="app-card p-3">
+      <AppCard className="p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Navigation rapide</p>
         <div className="mt-2 grid gap-2">
           <AppButton type="button" variant="secondary" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
@@ -39,7 +40,7 @@ export function RightSidebar({ sortMode, totalComments, onSortChange }: RightSid
             <ArrowDownToLine className="size-3.5" /> Bas
           </AppButton>
         </div>
-      </section>
+      </AppCard>
     </aside>
   );
 }
