@@ -1,20 +1,20 @@
 import Link from "next/link";
 import type { Route } from "next";
+import Image from "next/image";
 import { Menu } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { AppButton } from "@/components/app/app-button";
+import { AppPrimaryCTA } from "@/components/app/app-primary-cta";
 import { AppDrawer } from "@/components/app/app-drawer";
 import { MainNav } from "@/components/navigation/main-nav";
 import { siteConfig } from "@/lib/config/site";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export async function SiteHeader() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
-
+export function AppHeader({
+  isAuthenticated
+}: {
+  isAuthenticated: boolean;
+}) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/95">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-10">
@@ -39,17 +39,26 @@ export async function SiteHeader() {
             </AppDrawer>
           </div>
 
-          <div>
-            <Link href="/" className="text-xl font-semibold tracking-tight text-foreground">
-              {siteConfig.name}
-            </Link>
-            <p className="mt-1 text-sm text-muted-foreground">Forum politique</p>
-          </div>
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/logo-politicoresto.svg"
+              alt="Logo PoliticoResto"
+              width={36}
+              height={36}
+              className="size-9 rounded-md border border-border bg-background p-1"
+              priority
+            />
+            <div>
+              <p className="text-xl font-semibold tracking-tight text-foreground">{siteConfig.name}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Forum politique</p>
+            </div>
+          </Link>
         </div>
 
         <div className="flex items-center gap-3">
           <MainNav />
-          {session ? (
+          <AppPrimaryCTA />
+          {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <AppButton variant="secondary" size="sm" href="/me">Mon profil</AppButton>
               <SignOutButton />

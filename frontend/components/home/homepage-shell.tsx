@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { CompactForumHeader } from "@/components/home/compact-forum-header";
-import { CreatePostCTA } from "@/components/home/create-post-cta";
 import { FeedToolbar } from "@/components/home/feed-toolbar";
 import { LeftSidebar } from "@/components/home/left-sidebar";
 import { MobileFiltersSheet } from "@/components/home/mobile-filters-sheet";
@@ -34,8 +33,6 @@ export function HomePageShell({ items, isAuthenticated, selectedBloc }: HomePage
         <FeedToolbar sortMode={sortMode} onSortChange={setSortMode} />
         <PostFeed items={items} isAuthenticated={isAuthenticated} sortMode={sortMode} />
       </ResponsiveLayoutGrid>
-
-      <CreatePostCTA floating />
     </div>
   );
 }

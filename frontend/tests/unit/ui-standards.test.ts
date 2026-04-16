@@ -26,7 +26,7 @@ const sourceFiles = [
   "app/(authenticated)/me/page.tsx",
   "app/(authenticated)/me/settings/page.tsx",
   "components/layout/app-shell.tsx",
-  "components/layout/site-header.tsx",
+  "components/layout/app-header.tsx",
   "components/layout/site-footer.tsx",
   "components/layout/section-card.tsx",
   "components/layout/empty-state.tsx",
