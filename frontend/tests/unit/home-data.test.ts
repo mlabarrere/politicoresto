@@ -42,10 +42,12 @@ function makeFeedRow(id: string, score: number, createdAt: string) {
 
 function makeSupabase({
   primaryFeed,
-  fallbackFeed
+  fallbackFeed,
+  postRows = []
 }: {
   primaryFeed: QueryResult;
   fallbackFeed: QueryResult;
+  postRows?: Array<Record<string, unknown>>;
 }) {
   return {
     from: vi.fn((table: string) => {
@@ -73,7 +75,7 @@ function makeSupabase({
         return {
           select: vi.fn(() => ({
             in: vi.fn(() => ({
-              order: vi.fn(async () => ({ data: [], error: null }))
+              order: vi.fn(async () => ({ data: postRows, error: null }))
             }))
           }))
         };
@@ -111,7 +113,18 @@ describe("getHomeScreenData fallback", () => {
         fallbackFeed: {
           data: [makeFeedRow("topic-fallback", 5, "2026-04-16T09:00:00.000Z")],
           error: null
-        }
+        },
+        postRows: [
+          {
+            id: "post-item-primary",
+            post_id: "topic-primary",
+            content: "Post body",
+            gauche_count: 1,
+            droite_count: 0,
+            comment_count: 0,
+            created_at: "2026-04-16T10:00:00.000Z"
+          }
+        ]
       }) as never
     );
 
@@ -131,7 +144,18 @@ describe("getHomeScreenData fallback", () => {
         fallbackFeed: {
           data: [makeFeedRow("topic-fallback", 12, "2026-04-16T12:00:00.000Z")],
           error: null
-        }
+        },
+        postRows: [
+          {
+            id: "post-item-fallback",
+            post_id: "topic-fallback",
+            content: "Post body fallback",
+            gauche_count: 0,
+            droite_count: 0,
+            comment_count: 0,
+            created_at: "2026-04-16T12:00:00.000Z"
+          }
+        ]
       }) as never
     );
 
@@ -151,6 +175,26 @@ describe("getHomeScreenData fallback", () => {
         fallbackFeed: {
           data: null,
           error: { message: "Could not find the table 'public.v_feed_global' in the schema cache" }
+        }
+      }) as never
+    );
+
+    const result = await getHomeScreenData(null, null);
+
+    expect(result.error).toBeNull();
+    expect(result.data.feed).toEqual([]);
+  });
+
+  it("does not expose feed entries without initial post rows", async () => {
+    mockedCreateServerSupabaseClient.mockResolvedValue(
+      makeSupabase({
+        primaryFeed: {
+          data: [makeFeedRow("topic-without-op", 9, "2026-04-16T09:00:00.000Z")],
+          error: null
+        },
+        fallbackFeed: {
+          data: [],
+          error: null
         }
       }) as never
     );

@@ -140,7 +140,9 @@ export async function getHomeScreenData(
     }
   }
 
-  const enrichedFeed = feed.map((item) => {
+  const feedWithOp = feed.filter((item) => postByRootId.has(item.topic_id));
+
+  const enrichedFeed = feedWithOp.map((item) => {
     const post = postByRootId.get(item.topic_id);
     if (!post) return item;
 
