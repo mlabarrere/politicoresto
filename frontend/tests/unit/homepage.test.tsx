@@ -104,7 +104,7 @@ describe("HomePage", () => {
     expect(screen.getByText("Aucun post visible")).toBeInTheDocument();
   });
 
-  it("renders an unavailable state when the feed query fails", async () => {
+  it("does not expose technical feed errors in UI", async () => {
     mockedGetHomeScreenData.mockResolvedValue({
       data: makeHomeScreenData(),
       error: "relation public.v_feed_global does not exist"
@@ -112,7 +112,7 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(screen.getByText("Feed partiel")).toBeInTheDocument();
-    expect(screen.getByText(/v_feed_global/)).toBeInTheDocument();
+    expect(screen.queryByText("Feed partiel")).not.toBeInTheDocument();
+    expect(screen.queryByText(/v_feed_global/)).not.toBeInTheDocument();
   });
 });

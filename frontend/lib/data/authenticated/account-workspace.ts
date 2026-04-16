@@ -119,7 +119,7 @@ function statusFromError(error: BackendError | null | undefined): SectionStatus 
   if (isCapabilityMissing(error)) {
     return {
       state: "unavailable",
-      message: "Indisponible temporairement sur cet environnement."
+      message: "Indisponible temporairement."
     };
   }
 

@@ -12,6 +12,5 @@
 ## Global entrypoints now
 
 - Desktop + mobile header: `AppPrimaryCTA` in `AppHeader`.
-- Mobile FAB: `AppPrimaryCTA` in `CreateFlowProvider`.
-- Shared create drawer: single instance in `CreateFlowProvider`.
-- Fallback deep-link route: `/post/new` (same composer contract).
+- Mobile FAB: `AppPrimaryCTA` in `AppShell`.
+- Create flow: direct navigation to `/post/new` (no drawer global).

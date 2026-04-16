@@ -110,17 +110,6 @@ export default async function MePage({
                 </label>
 
                 <label className="block space-y-2">
-                  <span className="text-xs font-medium text-muted-foreground">Interet politique (1-5)</span>
-                  <AppInput
-                    name="political_interest_level"
-                    type="number"
-                    min={1}
-                    max={5}
-                    defaultValue={data.privateProfile?.political_interest_level ?? ""}
-                  />
-                </label>
-
-                <label className="block space-y-2">
                   <span className="text-xs font-medium text-muted-foreground">Notes personnelles</span>
                   <AppTextarea
                     name="notes_private"
@@ -204,13 +193,6 @@ export default async function MePage({
           </div>
         ) : null}
 
-        {section === "profile" && data.sectionStatus.profile.state !== "ready" ? (
-          <AppBanner
-            title="Profil partiellement indisponible"
-            body={data.sectionStatus.profile.message ?? "Certaines informations ne sont pas disponibles temporairement."}
-            tone={data.sectionStatus.profile.state === "error" ? "warning" : "default"}
-          />
-        ) : null}
       </div>
     </AppAccountShell>
   );

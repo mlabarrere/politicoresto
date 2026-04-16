@@ -57,7 +57,7 @@ export function AppHeader({
 
         <div className="flex items-center gap-3">
           <MainNav />
-          <AppPrimaryCTA />
+          <AppPrimaryCTA isAuthenticated={isAuthenticated} />
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <AppButton variant="secondary" size="sm" href="/me">Mon profil</AppButton>

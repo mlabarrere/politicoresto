@@ -1,5 +1,4 @@
 import { HomePageShell } from "@/components/home/homepage-shell";
-import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { getHomeScreenData } from "@/lib/data/public/home";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
@@ -9,12 +8,11 @@ export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
   const user = await getCurrentUser(supabase);
   const currentUserId = user?.id ?? null;
-  const { data, error } = await getHomeScreenData(null, currentUserId);
+  const { data } = await getHomeScreenData(null, currentUserId);
 
   return (
     <PageContainer>
       <div className="space-y-4">
-        {error ? <EmptyState title="Feed partiel" body={`Lecture incomplete: ${error}`} /> : null}
         <HomePageShell
           items={data.feed}
           selectedBloc={null}
@@ -24,4 +22,3 @@ export default async function HomePage() {
     </PageContainer>
   );
 }
-

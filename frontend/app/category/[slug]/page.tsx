@@ -1,6 +1,5 @@
 import { HomePageShell } from "@/components/home/homepage-shell";
 import { AppPageHeader } from "@/components/app/app-page-header";
-import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { getPoliticalBloc } from "@/lib/data/political-taxonomy";
 import { getHomeScreenData } from "@/lib/data/public/home";
@@ -18,7 +17,7 @@ export default async function CategoryPage({
   const supabase = await createServerSupabaseClient();
   const user = await getCurrentUser(supabase);
   const currentUserId = user?.id ?? null;
-  const { data, error } = await getHomeScreenData(selectedBloc, currentUserId);
+  const { data } = await getHomeScreenData(selectedBloc, currentUserId);
 
   return (
     <PageContainer>
@@ -28,9 +27,6 @@ export default async function CategoryPage({
           title={bloc?.label ?? slug}
           description="Posts filtres par categorie politique."
         />
-
-        {error ? <EmptyState title="Feed partiel" body={`Lecture incomplete: ${error}`} /> : null}
-
         <HomePageShell
           items={data.feed}
           selectedBloc={selectedBloc}

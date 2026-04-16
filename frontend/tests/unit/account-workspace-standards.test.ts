@@ -16,6 +16,8 @@ describe("Account workspace standards", () => {
     expect(source).toContain("AppPostHistoryList");
     expect(source).toContain("AppCommentHistoryList");
     expect(source).toContain("AppDangerZone");
+    expect(source).not.toContain("Interet politique (1-5)");
+    expect(source).not.toContain("Profil partiellement indisponible");
   });
 
   it("renders one section nav per breakpoint in account shell", () => {

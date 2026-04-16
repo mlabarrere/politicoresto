@@ -85,17 +85,22 @@ export async function upsertPrivateProfileAction(formData: FormData) {
   const level = interestRaw ? Number(interestRaw) : null;
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.rpc("rpc_upsert_private_political_profile", {
+  const rpcPayload: Record<string, unknown> = {
     p_declared_partisan_term_id: null,
     p_declared_ideology_term_id: null,
-    p_political_interest_level: Number.isFinite(level) ? level : null,
     p_notes_private: notes,
     p_profile_payload: {
       socio_professional_category: socioProfessionalCategory,
       employment_status: employmentStatus,
       education_level: educationLevel
     }
-  });
+  };
+
+  if (interestRaw && Number.isFinite(level)) {
+    rpcPayload.p_political_interest_level = level;
+  }
+
+  const { error } = await supabase.rpc("rpc_upsert_private_political_profile", rpcPayload);
 
   if (error) {
     throw new Error(error.message);

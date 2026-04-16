@@ -9,6 +9,8 @@ vi.mock("@/lib/data/political-taxonomy", () => ({
 
 describe("Post composer tabs", () => {
   it("renders 3 tabs and poll info block", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
     render(
       <PostComposer
         action={async () => undefined}
@@ -24,5 +26,10 @@ describe("Post composer tabs", () => {
     expect(screen.getByText("create_post_topic failed in db")).toBeTruthy();
     expect(screen.getByText("Mode sondage")).toBeTruthy();
     expect(screen.getByText(/version brute et version redressee/)).toBeTruthy();
+    expect(consoleErrorSpy).toHaveBeenCalledWith("[PostComposer] initialError", {
+      message: "create_post_topic failed in db"
+    });
+
+    consoleErrorSpy.mockRestore();
   });
 });

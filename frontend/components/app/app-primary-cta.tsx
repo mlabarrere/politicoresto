@@ -1,10 +1,9 @@
-ï»¿"use client";
+"use client";
 
 import { Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { AppButton } from "@/components/app/app-button";
-import { useCreateFlow } from "@/components/layout/create-flow-provider";
 
 function toSafeNext(pathname: string | null): string {
   if (!pathname || !pathname.startsWith("/")) return "/";
@@ -13,13 +12,14 @@ function toSafeNext(pathname: string | null): string {
 }
 
 export function AppPrimaryCTA({
-  mode = "inline"
+  mode = "inline",
+  isAuthenticated
 }: {
   mode?: "inline" | "fab";
+  isAuthenticated: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, openCreate } = useCreateFlow();
 
   const className = mode === "fab" ? "shadow-[var(--shadow-md)]" : undefined;
 
@@ -29,7 +29,8 @@ export function AppPrimaryCTA({
       router.push(`/auth/login?next=${encodeURIComponent(next)}`);
       return;
     }
-    openCreate();
+
+    router.push("/post/new");
   }
 
   return (
@@ -39,10 +40,10 @@ export function AppPrimaryCTA({
       size={mode === "fab" ? "md" : "sm"}
       className={className}
       icon={<Plus className="size-4" />}
-      aria-label="CrÃ©er"
+      aria-label="Créer"
       onClick={handleClick}
     >
-      CrÃ©er
+      Créer
     </AppButton>
   );
 }
