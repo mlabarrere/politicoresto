@@ -186,6 +186,49 @@ describe("createPostAction", () => {
       )
     ).rejects.toThrow(/At least two poll options required/i);
   });
+
+  it("redirects back to composer with explicit error when post topic RPC fails", async () => {
+    mocks.rpcMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "create_post_topic failed in db" }
+    });
+
+    await createPostAction(
+      makeFormData({
+        title: "Thread erreur",
+        body: "Body",
+        redirect_path: "/"
+      })
+    );
+
+    expect(mocks.redirectMock).toHaveBeenCalledWith(
+      "/post/new?error=create_post_topic%20failed%20in%20db"
+    );
+  });
+
+  it("redirects back to composer with explicit error when poll RPC fails", async () => {
+    mocks.rpcMock
+      .mockResolvedValueOnce({ data: { id: "thread-4" }, error: null })
+      .mockResolvedValueOnce({ data: { id: "post-item-4" }, error: null })
+      .mockResolvedValueOnce({ error: { message: "create_post_poll failed in db" } });
+    mockedFetchUrlPreview.mockResolvedValue(null);
+
+    await createPostAction(
+      makeFormData({
+        title: "Sondage erreur",
+        body: "Contexte",
+        post_mode: "poll",
+        poll_question: "Question test",
+        poll_deadline_hours: "24",
+        poll_options: ["A", "B"],
+        redirect_path: "/"
+      })
+    );
+
+    expect(mocks.redirectMock).toHaveBeenCalledWith(
+      "/post/new?error=create_post_poll%20failed%20in%20db"
+    );
+  });
 });
 
 
