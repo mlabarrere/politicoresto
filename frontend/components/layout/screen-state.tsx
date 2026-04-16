@@ -2,10 +2,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, Compass, RefreshCw } from "lucide-react";
 
-import { buttonVariants } from "@/components/ui/button-variants";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { AppButton } from "@/components/app/app-button";
+import { AppCard } from "@/components/app/app-card";
 
 type ScreenStateProps = {
   title: string;
@@ -25,13 +23,12 @@ export function ScreenState({
   onRetry
 }: ScreenStateProps) {
   return (
-    <Card className="rounded-xl border border-border bg-card shadow-sm">
-      <CardContent className="flex flex-col gap-5 p-6 sm:p-8">
+    <AppCard className="flex flex-col gap-5 p-6 sm:p-8">
         <div className="flex items-center gap-3 text-primary">
           <div className="flex size-10 items-center justify-center rounded-full bg-muted">
             <Compass className="size-5" />
           </div>
-          <p className="eyebrow text-primary">Infos utiles</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Infos utiles</p>
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h2>
@@ -39,19 +36,20 @@ export function ScreenState({
         </div>
         <div className="flex flex-wrap gap-3">
           {actionHref && actionLabel ? (
-            <Link href={actionHref} className={cn(buttonVariants({ size: "sm" }))}>
+            <Link href={actionHref}>
+              <AppButton size="sm">
               {actionLabel}
               <ArrowRight data-icon="inline-end" />
+              </AppButton>
             </Link>
           ) : null}
           {onRetry && retryLabel ? (
-            <Button variant="outline" size="sm" onClick={onRetry}>
+            <AppButton variant="secondary" size="sm" onClick={onRetry}>
               <RefreshCw data-icon="inline-start" />
               {retryLabel}
-            </Button>
+            </AppButton>
           ) : null}
         </div>
-      </CardContent>
-    </Card>
+    </AppCard>
   );
 }

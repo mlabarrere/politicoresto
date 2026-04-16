@@ -6,8 +6,9 @@ import { CommentActionsMenu } from "@/components/forum/comment-actions-menu";
 import { EditComposer } from "@/components/forum/edit-composer";
 import { ReplyComposer } from "@/components/forum/reply-composer";
 import { VoteBinaryLR } from "@/components/forum/vote-binary-lr";
+import { AppButton } from "@/components/app/app-button";
+import { AppCard } from "@/components/app/app-card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { transitionCommentNodeMode, type CommentNodeMode } from "@/lib/forum/fsm";
 import { getIndentPx } from "@/lib/forum/comments";
 import type { CommentNodeProps } from "@/lib/types/forum-components";
@@ -82,7 +83,7 @@ function CommentNodeBase({
 
   return (
     <div style={{ marginLeft: indentPx }} className="space-y-2" id={`comment-${node.id}`} data-depth={depth} data-mode={modeLabel}>
-      <article className={cn("app-card px-3 py-3 shadow-sm", showDepthBadge && "border-dashed")}>
+      <AppCard as="article" className={cn("px-3 py-3 shadow-sm", showDepthBadge && "border-dashed")}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
             <Avatar size="sm">
@@ -109,15 +110,15 @@ function CommentNodeBase({
         <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground/95">{node.body}</p>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button
+          <AppButton
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={isSubmitting}
             onClick={() => setMode((previous) => transitionCommentNodeMode(previous, { type: "START_REPLY" }))}
           >
             Répondre
-          </Button>
+          </AppButton>
 
           <VoteBinaryLR
             entityType="comment"
@@ -131,14 +132,14 @@ function CommentNodeBase({
           />
 
           {node.children.length ? (
-            <Button
+            <AppButton
               type="button"
               size="sm"
               variant="ghost"
               onClick={() => setCollapsedChildren((previous) => !previous)}
             >
               {childrenCollapsed ? `Afficher ${node.children.length}` : `Masquer ${node.children.length}`}
-            </Button>
+            </AppButton>
           ) : null}
         </div>
 
@@ -166,7 +167,7 @@ function CommentNodeBase({
             />
           </div>
         )}
-      </article>
+      </AppCard>
 
       {!childrenCollapsed && node.children.length ? (
         <div className="space-y-2">

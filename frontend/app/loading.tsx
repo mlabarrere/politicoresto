@@ -1,3 +1,4 @@
+import { AppCard } from "@/components/app/app-card";
 import { PageContainer } from "@/components/layout/page-container";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -37,12 +38,12 @@ export default function HomeLoading() {
   return (
     <PageContainer>
       <div className="space-y-8">
-        <section className="soft-panel p-6 sm:p-8">
+        <AppCard className="p-6 sm:p-8">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="mt-4 h-12 w-3/4" />
           <Skeleton className="mt-3 h-5 w-2/3" />
           <Skeleton className="mt-8 h-12 w-44 rounded-lg" />
-        </section>
+        </AppCard>
         <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
           <aside className="space-y-6">
             <Skeleton className="h-64 rounded-xl" />

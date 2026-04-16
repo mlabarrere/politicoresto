@@ -58,7 +58,7 @@ export default async function LoginPage({
               </div>
             </div>
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
-              <p className="eyebrow text-amber-800">Acces</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">Acces</p>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 Connexion Google securisee. En cas d'indisponibilite, le message vous indique
                 l'action de configuration necessaire.

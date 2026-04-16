@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/app/app-button";
 
 function normalizeNextPath(next?: string) {
   const fallback = "/";
@@ -76,9 +76,9 @@ export function OAuthButtons({
 
   return (
     <div className="flex flex-col gap-3">
-      <Button onClick={() => handleProvider()} disabled={pending !== null || !googleEnabled}>
+      <AppButton onClick={() => handleProvider()} disabled={pending !== null || !googleEnabled}>
         {pending === "google" ? "Connexion..." : "Continuer avec Google"}
-      </Button>
+      </AppButton>
       {errorMessage ? (
         <p className="text-xs leading-6 text-amber-700" role="alert">
           {errorMessage}

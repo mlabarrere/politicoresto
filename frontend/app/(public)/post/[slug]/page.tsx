@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { ForumPage } from "@/components/forum/forum-page";
+import { AppBadge } from "@/components/app/app-badge";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
-import { Badge } from "@/components/ui/badge";
 import { getPostDetail } from "@/lib/data/public/posts";
 import { buildForumCommentTree, mapPostViewToForumPost } from "@/lib/forum/mappers";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
@@ -31,8 +31,8 @@ export default async function PostDetailPage({
     <PageContainer>
       <div className="mx-auto max-w-6xl space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">Post</Badge>
-          <Badge variant="outline">{post.topic_status}</Badge>
+          <AppBadge label="Post" tone="default" />
+          <AppBadge label={post.topic_status} tone="muted" />
         </div>
 
         {op ? (

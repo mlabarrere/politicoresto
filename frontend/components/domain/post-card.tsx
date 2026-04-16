@@ -7,7 +7,8 @@ import { CornerDownLeft, MessageSquare, Share2 } from "lucide-react";
 
 import { ReactionBar } from "@/components/social/reaction-bar";
 import { PollCardInline } from "@/components/poll/poll-card-inline";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { AppCard } from "@/components/app/app-card";
+import { AppBadge } from "@/components/app/app-badge";
 import type { PostFeedItemView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
 import { normalizeMultilineText } from "@/lib/utils/multiline";
@@ -100,9 +101,10 @@ export const PostCard = memo(function PostCard({
   );
 
   return (
-    <article
+    <AppCard
+      as="article"
       className={
-        featured ? "app-card cursor-pointer px-5 py-4" : "app-card cursor-pointer px-4 py-3"
+        featured ? "cursor-pointer px-5 py-4" : "cursor-pointer px-4 py-3"
       }
       onClick={openPost}
       onKeyDown={(event) => {
@@ -130,8 +132,8 @@ export const PostCard = memo(function PostCard({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {item.primary_taxonomy_label ? <StatusBadge label={item.primary_taxonomy_label} tone="accent" /> : null}
-        <StatusBadge label={item.topic_status} tone="muted" />
+        {item.primary_taxonomy_label ? <AppBadge label={item.primary_taxonomy_label} tone="accent" /> : null}
+        <AppBadge label={item.topic_status} tone="muted" />
       </div>
 
       {previewText ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/90">{previewText}</p> : null}
@@ -181,7 +183,7 @@ export const PostCard = memo(function PostCard({
           </button>
         </div>
       </div>
-    </article>
+    </AppCard>
   );
 });
 

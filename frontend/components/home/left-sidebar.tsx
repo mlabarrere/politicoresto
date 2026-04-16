@@ -1,13 +1,14 @@
 import Link from "next/link";
 import type { Route } from "next";
 
+import { AppCard } from "@/components/app/app-card";
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
 import { cn } from "@/lib/utils";
 
 export function LeftSidebar({ selectedBloc }: { selectedBloc: string | null }) {
   return (
     <aside className="hidden xl:block">
-      <section className="app-card p-4">
+      <AppCard className="p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>
         <div className="mt-3 space-y-2">
           <Link
@@ -44,7 +45,7 @@ export function LeftSidebar({ selectedBloc }: { selectedBloc: string | null }) {
             );
           })}
         </div>
-      </section>
+      </AppCard>
     </aside>
   );
 }

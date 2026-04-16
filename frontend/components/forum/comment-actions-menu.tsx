@@ -2,7 +2,7 @@
 
 import { Ellipsis, Pencil, Trash2, Link2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/app/app-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,7 @@ export function CommentActionsMenu({
 }: CommentActionsMenuProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" disabled={disabled} aria-label="Actions commentaire"><Ellipsis className="size-4" /></Button>} />
+      <DropdownMenuTrigger render={<AppButton variant="ghost" size="sm" disabled={disabled} aria-label="Actions commentaire"><Ellipsis className="size-4" /></AppButton>} />
       <DropdownMenuContent side="bottom" align="end" className="min-w-44">
         <DropdownMenuItem onClick={onCopyLink}>
           <Link2 className="size-4" /> Copier le lien
