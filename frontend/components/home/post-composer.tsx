@@ -50,6 +50,14 @@ export function PostComposer({
 }) {
   const [draft, setDraft] = useState<PostDraft>(buildDefaultDraft);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [draftSaveMode, setDraftSaveMode] = useState<"auto" | "manual">("auto");
+
+  function persistDraft(nextDraft: PostDraft, mode: "auto" | "manual") {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(nextDraft));
+    setLastSavedAt(new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
+    setDraftSaveMode(mode);
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -79,8 +87,7 @@ export function PostComposer({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    setLastSavedAt(new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
+    persistDraft(draft, "auto");
   }, [draft]);
 
   useEffect(() => {
@@ -90,22 +97,24 @@ export function PostComposer({
 
   const draftState = useMemo(() => {
     if (!draft.title.trim() && !draft.body.trim() && !draft.poll_question.trim()) return "Vide";
-    return `Sauvegarde ${lastSavedAt ?? ""}`.trim();
-  }, [draft.body, draft.poll_question, draft.title, lastSavedAt]);
+    const prefix = draftSaveMode === "manual" ? "Sauvegarde manuelle" : "Sauvegarde auto";
+    return `${prefix} ${lastSavedAt ?? ""}`.trim();
+  }, [draft.body, draft.poll_question, draft.title, draftSaveMode, lastSavedAt]);
 
   const postTab = (
     <div className="space-y-4">
       <label className="block space-y-2">
-        <span className="text-xs font-medium text-muted-foreground">Corps</span>
+        <span className="text-xs font-medium text-muted-foreground">Corps (Markdown)</span>
         <AppTextarea
           name="body"
           required
           rows={9}
           value={draft.body}
           onChange={(event) => setDraft((prev) => ({ ...prev, body: event.target.value }))}
-          placeholder="Expliquez votre point de vue"
+          placeholder={"# Votre position\n\nExpliquez votre point de vue avec du **Markdown**."}
           className="resize-y"
         />
+        <p className="text-xs text-muted-foreground">Format accepte: Markdown (titres, listes, liens, gras, italique).</p>
       </label>
     </div>
   );
@@ -114,7 +123,7 @@ export function PostComposer({
     <div className="space-y-4">
       <AppBanner
         title="Mode sondage"
-        body="Deux resultats seront affiches: version brute et version redressee."
+        body="Deux resultats seront affiches: version brute et version redressee automatiquement selon l'historique de vote des repondants."
       />
 
       <section className="space-y-3 rounded-xl border border-dashed border-border p-3">
@@ -231,6 +240,7 @@ export function PostComposer({
       <form action={action} className="space-y-4">
         <input type="hidden" name="redirect_path" value={redirectPath} />
         <input type="hidden" name="post_mode" value={draft.mode === "bet" ? "post" : draft.mode} />
+        <input type="hidden" name="body_format" value="markdown" />
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
@@ -282,6 +292,13 @@ export function PostComposer({
         />
 
         <footer className="flex flex-wrap items-center justify-end gap-2">
+          <AppButton
+            type="button"
+            variant="ghost"
+            onClick={() => persistDraft(draft, "manual")}
+          >
+            Enregistrer le brouillon
+          </AppButton>
           <AppButton variant="secondary" href={redirectPath}>Annuler</AppButton>
           <AppButton type="submit">Publier le post</AppButton>
         </footer>
