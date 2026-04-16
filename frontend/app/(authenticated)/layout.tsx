@@ -1,6 +1,5 @@
-import type { PropsWithChildren } from "react";
+﻿import type { PropsWithChildren } from "react";
 
-import { AuthenticatedShell } from "@/components/layout/authenticated-shell";
 import { requireSession } from "@/lib/guards/require-session";
 
 export default async function AuthenticatedLayout({
@@ -8,5 +7,5 @@ export default async function AuthenticatedLayout({
 }: PropsWithChildren) {
   await requireSession();
 
-  return <AuthenticatedShell>{children}</AuthenticatedShell>;
+  return children;
 }

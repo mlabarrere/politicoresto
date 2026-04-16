@@ -6,9 +6,9 @@ import { CommentActionsMenu } from "@/components/forum/comment-actions-menu";
 import { EditComposer } from "@/components/forum/edit-composer";
 import { ReplyComposer } from "@/components/forum/reply-composer";
 import { VoteBinaryLR } from "@/components/forum/vote-binary-lr";
+import { AppAvatar, AppAvatarFallback } from "@/components/app/app-avatar";
 import { AppButton } from "@/components/app/app-button";
 import { AppCard } from "@/components/app/app-card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { transitionCommentNodeMode, type CommentNodeMode } from "@/lib/forum/fsm";
 import { getIndentPx } from "@/lib/forum/comments";
 import type { CommentNodeProps } from "@/lib/types/forum-components";
@@ -86,9 +86,9 @@ function CommentNodeBase({
       <AppCard as="article" className={cn("px-3 py-3 shadow-sm", showDepthBadge && "border-dashed")}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Avatar size="sm">
-              <AvatarFallback>{node.author.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <AppAvatar size="sm">
+              <AppAvatarFallback>{node.author.username.slice(0, 2).toUpperCase()}</AppAvatarFallback>
+            </AppAvatar>
             <div>
               <p className="text-sm font-semibold text-foreground">{node.author.username}</p>
               <p className="mt-1 text-xs text-muted-foreground">

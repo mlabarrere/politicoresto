@@ -33,8 +33,7 @@ const sourceFiles = [
   "components/layout/screen-state.tsx",
   "app/not-found.tsx",
   "components/domain/post-card.tsx",  "components/navigation/political-bloc-sidebar.tsx",
-  "components/navigation/main-nav.tsx",
-  "components/navigation/auth-nav.tsx"
+  "components/navigation/main-nav.tsx"
 ];
 
 describe("UI standards", () => {
@@ -80,6 +79,10 @@ describe("UI standards", () => {
       expect(source).not.toContain("@/components/ui/card");
       expect(source).not.toContain("@/components/ui/tabs");
       expect(source).not.toContain("@/components/ui/sheet");
+      expect(source).not.toContain("@/components/ui/avatar");
+      expect(source).not.toContain("@/components/ui/dropdown-menu");
+      expect(source).not.toContain("@/components/ui/skeleton");
+      expect(source).not.toContain("@/components/catalyst/");
       expect(source).not.toContain('className="app-card');
       expect(source).not.toContain('className="eyebrow');
       expect(source).not.toContain('className="editorial-title');

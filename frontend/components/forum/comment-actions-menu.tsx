@@ -4,11 +4,11 @@ import { Ellipsis, Pencil, Trash2, Link2 } from "lucide-react";
 
 import { AppButton } from "@/components/app/app-button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+  AppDropdownMenu,
+  AppDropdownMenuContent,
+  AppDropdownMenuItem,
+  AppDropdownMenuTrigger
+} from "@/components/app/app-dropdown-menu";
 import type { CommentActionsMenuProps } from "@/lib/types/forum-components";
 
 export function CommentActionsMenu({
@@ -20,23 +20,23 @@ export function CommentActionsMenu({
   onCopyLink
 }: CommentActionsMenuProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<AppButton variant="ghost" size="sm" disabled={disabled} aria-label="Actions commentaire"><Ellipsis className="size-4" /></AppButton>} />
-      <DropdownMenuContent side="bottom" align="end" className="min-w-44">
-        <DropdownMenuItem onClick={onCopyLink}>
+    <AppDropdownMenu>
+      <AppDropdownMenuTrigger render={<AppButton variant="ghost" size="sm" disabled={disabled} aria-label="Actions commentaire"><Ellipsis className="size-4" /></AppButton>} />
+      <AppDropdownMenuContent side="bottom" align="end" className="min-w-44">
+        <AppDropdownMenuItem onClick={onCopyLink}>
           <Link2 className="size-4" /> Copier le lien
-        </DropdownMenuItem>
+        </AppDropdownMenuItem>
         {canEdit ? (
-          <DropdownMenuItem onClick={onEdit}>
+          <AppDropdownMenuItem onClick={onEdit}>
             <Pencil className="size-4" /> Modifier
-          </DropdownMenuItem>
+          </AppDropdownMenuItem>
         ) : null}
         {canDelete ? (
-          <DropdownMenuItem variant="destructive" onClick={onDelete}>
+          <AppDropdownMenuItem variant="destructive" onClick={onDelete}>
             <Trash2 className="size-4" /> Supprimer
-          </DropdownMenuItem>
+          </AppDropdownMenuItem>
         ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </AppDropdownMenuContent>
+    </AppDropdownMenu>
   );
 }
