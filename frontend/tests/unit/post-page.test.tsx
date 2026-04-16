@@ -176,6 +176,18 @@ describe("post page forum UX", () => {
     expect(screen.getByText(/Cr.+er un compte/i)).toBeInTheDocument();
     expect(screen.queryByText("Le thread n'a pas pu etre charge")).not.toBeInTheDocument();
   });
+
+  it("renders explicit forbidden state when backend denies access", async () => {
+    mockedGetPostDetail.mockRejectedValue({
+      code: "42501",
+      message: "permission denied for relation v_post_detail"
+    });
+
+    render(await PostDetailPage({ params: Promise.resolve({ slug: "post-locked" }) }));
+
+    expect(screen.getByText("Acces refuse")).toBeInTheDocument();
+    expect(screen.getByText(/n'est pas accessible avec vos droits/i)).toBeInTheDocument();
+  });
 });
 
 

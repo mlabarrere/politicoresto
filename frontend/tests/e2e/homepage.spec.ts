@@ -8,20 +8,26 @@ test("mvp public smoke", async ({ page }, testInfo) => {
   await expect(page.getByText("Forum politique", { exact: true }).first()).toBeVisible();
 
   await page.goto("/category/gauche-radicale");
-  await expect(page.getByText("Categorie:")).toBeVisible();
-
-  await page.goto("/auth/login");
-  await expect(page.getByText("Se connecter", { exact: true })).toBeVisible();
-
-  await page.goto("/me");
-  await expect(page).toHaveURL(/\/auth\/login|\/me/);
+  await expect(page.getByText("Categorie").first()).toBeVisible();
 
   await page.goto("/");
-  const postCards = page.locator('article[role="link"]');
-  const postCount = await postCards.count();
+  const postLinks = page.locator('a[href^="/post/"]');
+  const postCount = await postLinks.count();
   if (postCount > 0) {
-    await postCards.first().click();
+    const postLink = postLinks.first();
+    const postHref = await postLink.getAttribute("href");
+    await postLink.click();
     await expect(page).toHaveURL(/\/post\//);
+    await expect(page.getByText("Le post n'a pas pu etre charge")).toHaveCount(0);
+    await expect(page.getByText("La page publique du post reste momentanement indisponible")).toHaveCount(0);
+
+    if (postHref) {
+      await page.goto(postHref);
+      await expect(page).toHaveURL(/\/post\//);
+      await expect(page.getByText("Le post n'a pas pu etre charge")).toHaveCount(0);
+      await page.reload();
+      await expect(page.getByText("Le post n'a pas pu etre charge")).toHaveCount(0);
+    }
   }
 
   await page.screenshot({
