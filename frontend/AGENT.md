@@ -3,6 +3,7 @@
 ## Principe directeur
 
 Le frontend ne detient aucune logique metier critique. Supabase reste l'unique source de verite pour les regles, la securite, les permissions, les agregations, les workflows et les calculs.
+Le frontend et le backend doivent evoluer comme un seul contrat versionne: aucun ecran ou mutation ne part en prod sans verification explicite que les objets SQL appeles existent et correspondent au schema cible.
 
 ## Interdictions
 
@@ -21,6 +22,25 @@ Le frontend ne detient aucune logique metier critique. Supabase reste l'unique s
 - `lib/supabase/` pour les clients SSR/browser et la gestion des cookies
 
 Les pages ne doivent pas parler directement a Supabase si une fonction dediee peut vivre dans `lib/data/`.
+
+## Alignement Front/Back (obligatoire)
+
+- toute nouvelle lecture/mutation doit declarer son contrat SQL explicite: vue/table/rpc, colonnes attendues, filtres, statut attendu
+- interdiction d'introduire une reference frontend a un objet SQL non present dans les migrations du repo
+- toute migration qui renomme/remplace un objet (ex: `post_*` -> `thread_*`) impose une mise a jour synchronisee du frontend dans la meme livraison
+- les fallbacks runtime sont des filets de securite temporaires, jamais une strategie produit permanente
+- aucun message d'erreur SQL brut ne doit etre affiche aux utilisateurs
+- si un objet est optionnel selon environnement, l'etat UX doit etre `unavailable` avec micro-copy non technique
+
+## Gate de release (schema contract)
+
+- avant merge, verifier que chaque objet SQL reference dans `lib/data/*` et `lib/actions/*` existe reellement sur l'environnement cible
+- avant release, executer une verification automatisee de compatibilite contrat:
+- `npm run typecheck`
+- `npm run test:unit`
+- tests integration/e2e des parcours critiques (creation -> feed -> detail, commentaire, reaction, profil)
+- aucun deploy prod si un parcours critique depend d'un fallback "objet manquant"
+- toute erreur `schema cache` en staging/prod est un bloqueur release, pas un warning
 
 ## Conventions de rendu
 
@@ -54,6 +74,8 @@ Les pages ne doivent pas parler directement a Supabase si une fonction dediee pe
 - ne pas reintroduire `app-card`, `soft-panel`, `soft-section`, `eyebrow`, `editorial-title`
 - ne pas coder de `<button>`, `<input>`, `<select>`, `<textarea>` libres pour les usages recurrents
 - ne pas contourner un wrapper `App*` avec un composant local equivalent
+- ne pas coder une query/rpc inline dans une page ou route si une fonction de contrat dediee manque dans `lib/data/*`
+- ne pas melanger deux modeles metier concurrents sans plan de migration (ex: `post_*` et `thread_*` en parallele non documente)
 
 ## Conventions de routing
 
@@ -66,3 +88,4 @@ Les pages ne doivent pas parler directement a Supabase si une fonction dediee pe
 - enrichir les ecrans via nouvelles vues et RPC Supabase plutot qu'en complexifiant le client
 - si un besoin de detail manque cote frontend, verifier d'abord si le contrat Supabase doit evoluer
 - preserver le caractere deployable Vercel depuis `frontend/` comme Root Directory unique
+- maintenir une matrice de compatibilite front/back pour les objets critiques (feed, detail post, creation, commentaires, reactions, workspace `/me`)

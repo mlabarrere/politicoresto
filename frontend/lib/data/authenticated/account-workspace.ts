@@ -134,6 +134,55 @@ function mergeStatus(current: SectionStatus, next: SectionStatus): SectionStatus
   return rank[next.state] > rank[current.state] ? next : current;
 }
 
+async function fetchPublicationRows(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  userId: string
+) {
+  const legacy = await supabase
+    .from("v_posts")
+    .select("id, post_id, type, title, status, entity_slug, entity_name, created_at")
+    .eq("created_by", userId)
+    .order("created_at", { ascending: false });
+
+  if (!legacy.error || !isCapabilityMissing(legacy.error)) {
+    return {
+      rows: legacy.data ?? [],
+      error: legacy.error
+    };
+  }
+
+  const thread = await supabase
+    .from("v_thread_posts")
+    .select("id, thread_id, type, title, status, created_at")
+    .eq("created_by", userId)
+    .order("created_at", { ascending: false });
+
+  return {
+    rows:
+      (thread.data ?? []).map((row) => {
+        const typed = row as {
+          id: string;
+          thread_id: string;
+          type: string;
+          title: string | null;
+          status: string;
+          created_at: string;
+        };
+        return {
+          id: typed.id,
+          post_id: typed.thread_id,
+          type: typed.type,
+          title: typed.title,
+          status: typed.status,
+          entity_slug: null,
+          entity_name: null,
+          created_at: typed.created_at
+        } satisfies PostHistoryRow;
+      }) ?? [],
+    error: thread.error
+  };
+}
+
 export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   const supabase = await createServerSupabaseClient();
   const {
@@ -174,11 +223,7 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
         .eq("created_by", user.id)
         .eq("status", "draft")
         .order("updated_at", { ascending: false }),
-      supabase
-        .from("v_posts")
-        .select("id, post_id, type, title, status, entity_slug, entity_name, created_at")
-        .eq("created_by", user.id)
-        .order("created_at", { ascending: false }),
+      fetchPublicationRows(supabase, user.id),
       supabase
         .from("v_post_comments")
         .select("id, thread_post_id, body_markdown, title, post_status, created_at")
@@ -202,7 +247,7 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   const parentTitleById = new Map<string, string | null>();
   if (parentPostIds.length && sectionStatus.posts.state === "ready") {
     const parentResult = await supabase
-      .from("v_posts")
+      .from("v_thread_posts")
       .select("id, title")
       .in("id", parentPostIds);
 
@@ -222,7 +267,7 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
     privateProfile: privateProfileResult.error ? null : ((privateProfileResult.data ?? null) as PrivateProfileRow | null),
     voteHistory: voteResult.error ? [] : ((voteResult.data ?? []) as VoteHistoryRow[]),
     drafts: draftResult.error ? [] : ((draftResult.data ?? []) as DraftRow[]),
-    publications: postResult.error ? [] : ((postResult.data ?? []) as PostHistoryRow[]),
+    publications: postResult.error ? [] : ((postResult.rows ?? []) as PostHistoryRow[]),
     comments: comments.map((comment) => ({
       ...comment,
       parentTitle: comment.thread_post_id ? parentTitleById.get(comment.thread_post_id) ?? null : null

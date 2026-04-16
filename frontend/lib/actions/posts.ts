@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -31,26 +31,42 @@ function isMissingRpc(error: BackendError | null | undefined) {
 }
 
 function extractTopicId(result: unknown) {
+  if (typeof result === "string") return result;
   return Array.isArray(result)
     ? (result[0] as { id?: string } | null)?.id ?? null
     : ((result as { id?: string } | null)?.id ?? null);
 }
 
+async function rollbackThreadCreation(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  threadId: string | null
+) {
+  if (!threadId || typeof (supabase as { from?: unknown }).from !== "function") return;
+
+  const { error } = await supabase.from("topic").delete().eq("id", threadId);
+  if (error) {
+    console.warn("[createPostAction] rollback failed", {
+      threadId,
+      message: error.message
+    });
+  }
+}
+
 async function createPostItemWithFallback({
   supabase,
-  postId,
+  threadId,
   title,
   body,
   metadata
 }: {
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
-  postId: string;
+  threadId: string;
   title: string;
   body: string;
   metadata: Record<string, unknown>;
 }): Promise<{ postItemId: string | null; method: "create_post_item" | "create_post" }> {
   const createPostItemInput = {
-    p_post_id: postId,
+    p_post_id: threadId,
     p_type: "article",
     p_title: title,
     p_content: body || null,
@@ -70,7 +86,7 @@ async function createPostItemWithFallback({
   }
 
   const createPostResult = await supabase.rpc("create_post", {
-    p_thread_id: postId,
+    p_thread_id: threadId,
     p_type: "article",
     p_title: title,
     p_content: body || null,
@@ -120,7 +136,7 @@ export async function createPostAction(formData: FormData) {
     }
 
     const supabase = await createServerSupabaseClient();
-    const createPostTopicInput = {
+    const createThreadInput = {
       p_title: title,
       p_description: description,
       p_entity_id: null,
@@ -128,75 +144,89 @@ export async function createPostAction(formData: FormData) {
       p_close_at: null
     };
 
-    const createTopicResult = await supabase.rpc("create_post_topic", createPostTopicInput);
-    let postId = extractTopicId(createTopicResult.data);
-    let createMethod: "create_post_topic" | "create_thread" = "create_post_topic";
+    const createThreadResult = await supabase.rpc("create_thread", createThreadInput);
+    let threadId = extractTopicId(createThreadResult.data);
+    let createMethod: "create_post_topic" | "create_thread" = "create_thread";
     let createItemMethod: "create_post_item" | "create_post" | "none" = "none";
 
-    if (createTopicResult.error && isMissingRpc(createTopicResult.error)) {
-      const createThreadResult = await supabase.rpc("create_thread", createPostTopicInput);
-      if (createThreadResult.error) {
-        throw new Error(createThreadResult.error.message);
+    if (createThreadResult.error && isMissingRpc(createThreadResult.error)) {
+      const createTopicResult = await supabase.rpc("create_post_topic", createThreadInput);
+      if (createTopicResult.error) {
+        throw new Error(createTopicResult.error.message);
       }
-      postId = extractTopicId(createThreadResult.data);
-      createMethod = "create_thread";
-    } else if (createTopicResult.error) {
-      throw new Error(createTopicResult.error.message);
+      threadId = extractTopicId(createTopicResult.data);
+      createMethod = "create_post_topic";
+    } else if (createThreadResult.error) {
+      throw new Error(createThreadResult.error.message);
     }
 
-    if (postId) {
-      const preview = sourceUrl ? await fetchUrlPreview(sourceUrl) : null;
+    if (!threadId) {
+      throw new Error("Creation du thread impossible.");
+    }
 
-      const postMetadata = {
-        is_original_post: true,
-        source_url: sourceUrl,
-        link_preview: preview,
-        post_mode: mode
-      };
+    const preview = sourceUrl ? await fetchUrlPreview(sourceUrl) : null;
 
-      const { postItemId, method: postItemMethod } = await createPostItemWithFallback({
+    const postMetadata = {
+      is_original_post: true,
+      source_url: sourceUrl,
+      link_preview: preview,
+      post_mode: mode
+    };
+
+    let postItemId: string | null = null;
+    try {
+      const createdPost = await createPostItemWithFallback({
         supabase,
-        postId,
+        threadId,
         title,
         body,
         metadata: postMetadata
       });
-      createItemMethod = postItemMethod;
+      postItemId = createdPost.postItemId;
+      createItemMethod = createdPost.method;
+    } catch (error) {
+      await rollbackThreadCreation(supabase, threadId);
+      throw error;
+    }
 
-      if (mode === "poll" && postItemId) {
-        const deadlineAt = new Date(Date.now() + pollDeadlineHours * 60 * 60 * 1000).toISOString();
+    if (!postItemId) {
+      await rollbackThreadCreation(supabase, threadId);
+      throw new Error("Creation du post initial impossible.");
+    }
 
-        const { error: pollError } = await supabase.rpc("create_post_poll", {
-          p_post_item_id: postItemId,
-          p_question: pollQuestion,
-          p_deadline_at: deadlineAt,
-          p_options: pollOptions
-        });
+    if (mode === "poll") {
+      const deadlineAt = new Date(Date.now() + pollDeadlineHours * 60 * 60 * 1000).toISOString();
 
-        if (pollError) {
-          throw new Error(pollError.message);
-        }
+      const { error: pollError } = await supabase.rpc("create_post_poll", {
+        p_post_item_id: postItemId,
+        p_question: pollQuestion,
+        p_deadline_at: deadlineAt,
+        p_options: pollOptions
+      });
 
-        const { error: metadataError } = await supabase.rpc("rpc_update_thread_post", {
-          p_thread_post_id: postItemId,
-          p_title: title,
-          p_content: body || null,
-          p_metadata: {
-            is_original_post: true,
-            source_url: sourceUrl,
-            link_preview: preview,
-            post_mode: "poll",
-            poll: {
-              question: pollQuestion,
-              deadline_at: deadlineAt,
-              option_count: pollOptions.length
-            }
+      if (pollError) {
+        throw new Error(pollError.message);
+      }
+
+      const { error: metadataError } = await supabase.rpc("rpc_update_thread_post", {
+        p_thread_post_id: postItemId,
+        p_title: title,
+        p_content: body || null,
+        p_metadata: {
+          is_original_post: true,
+          source_url: sourceUrl,
+          link_preview: preview,
+          post_mode: "poll",
+          poll: {
+            question: pollQuestion,
+            deadline_at: deadlineAt,
+            option_count: pollOptions.length
           }
-        });
-
-        if (metadataError) {
-          throw new Error(metadataError.message);
         }
+      });
+
+      if (metadataError) {
+        throw new Error(metadataError.message);
       }
     }
 
@@ -209,8 +239,9 @@ export async function createPostAction(formData: FormData) {
       mode,
       redirectPath,
       createMethod,
-      postId,
-      createItemMethod
+      threadId,
+      createItemMethod,
+      postItemId
     });
     redirect(redirectPath as never);
   } catch (error) {
@@ -226,5 +257,3 @@ export async function createPostAction(formData: FormData) {
     redirect(`${fallbackErrorPath}?error=${encodeURIComponent(message)}`);
   }
 }
-
-
