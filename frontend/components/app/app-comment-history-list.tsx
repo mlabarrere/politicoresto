@@ -20,18 +20,24 @@ function excerpt(value: string) {
 export function AppCommentHistoryList({
   items,
   loading = false,
-  error = null
+  status = "ready",
+  message = null
 }: {
   items: CommentHistoryItem[];
   loading?: boolean;
-  error?: string | null;
+  status?: "ready" | "unavailable" | "error";
+  message?: string | null;
 }) {
   if (loading) {
     return <AppCard>Chargement des commentaires...</AppCard>;
   }
 
-  if (error) {
-    return <AppEmptyState title="Commentaires indisponibles" body={error} />;
+  if (status === "unavailable") {
+    return <AppEmptyState title="Commentaires indisponibles temporairement" body={message ?? "Cette section sera active bientot sur cet environnement."} />;
+  }
+
+  if (status === "error") {
+    return <AppEmptyState title="Commentaires indisponibles" body={message ?? "Reessayez dans quelques instants."} />;
   }
 
   if (!items.length) {

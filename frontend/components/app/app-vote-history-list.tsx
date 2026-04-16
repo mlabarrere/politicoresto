@@ -15,18 +15,24 @@ type VoteHistoryItem = {
 export function AppVoteHistoryList({
   items,
   loading = false,
-  error = null
+  status = "ready",
+  message = null
 }: {
   items: VoteHistoryItem[];
   loading?: boolean;
-  error?: string | null;
+  status?: "ready" | "unavailable" | "error";
+  message?: string | null;
 }) {
   if (loading) {
     return <AppCard>Chargement de votre historique de vote...</AppCard>;
   }
 
-  if (error) {
-    return <AppEmptyState title="Historique indisponible" body={error} />;
+  if (status === "unavailable") {
+    return <AppEmptyState title="Historique indisponible temporairement" body={message ?? "Cette section sera active bientot sur cet environnement."} />;
+  }
+
+  if (status === "error") {
+    return <AppEmptyState title="Historique indisponible" body={message ?? "Reessayez dans quelques instants."} />;
   }
 
   if (!items.length) {

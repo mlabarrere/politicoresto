@@ -18,6 +18,13 @@ describe("Account workspace standards", () => {
     expect(source).toContain("AppDangerZone");
   });
 
+  it("renders one section nav per breakpoint in account shell", () => {
+    const source = fs.readFileSync(path.join(root, "components/app/app-account-shell.tsx"), "utf8");
+
+    expect(source).toContain("<AppSectionNav items={navItems} mode=\"mobile\" />");
+    expect(source).toContain("<AppSectionNav items={navItems} mode=\"desktop\" />");
+  });
+
   it("keeps /me/settings as redirect to unified account workspace", () => {
     const source = fs.readFileSync(path.join(root, "app/(authenticated)/me/settings/page.tsx"), "utf8");
     expect(source).toContain("redirect(\"/me?section=security\")");

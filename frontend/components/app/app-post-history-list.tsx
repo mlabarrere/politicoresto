@@ -22,18 +22,24 @@ function toTypeLabel(type: string) {
 export function AppPostHistoryList({
   items,
   loading = false,
-  error = null
+  status = "ready",
+  message = null
 }: {
   items: PostHistoryItem[];
   loading?: boolean;
-  error?: string | null;
+  status?: "ready" | "unavailable" | "error";
+  message?: string | null;
 }) {
   if (loading) {
     return <AppCard>Chargement des publications...</AppCard>;
   }
 
-  if (error) {
-    return <AppEmptyState title="Publications indisponibles" body={error} />;
+  if (status === "unavailable") {
+    return <AppEmptyState title="Publications indisponibles temporairement" body={message ?? "Cette section sera active bientot sur cet environnement."} />;
+  }
+
+  if (status === "error") {
+    return <AppEmptyState title="Publications indisponibles" body={message ?? "Reessayez dans quelques instants."} />;
   }
 
   if (!items.length) {
