@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   const { data: existingReaction, error: existingReactionError } = await supabase
     .from("reaction")
     .select("reaction_type")
-    .eq("target_type", body.targetType)
+    .eq("target_type", body.targetType === "post" ? "thread_post" : "comment")
     .eq("target_id", body.targetId)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       : fromBackendVoteSide(REACTION_TYPE_TO_SIDE[requestedReactionType]);
 
   const { error: rpcError } = await supabase.rpc("react_post", {
-    p_target_type: body.targetType === "post" ? "post" : "comment",
+    p_target_type: body.targetType === "post" ? "thread_post" : "comment",
     p_target_id: body.targetId,
     p_reaction_type: REACTION_SIDE_TO_TYPE[side]
   });
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
   const countsResult =
     body.targetType === "post"
       ? await supabase
-          .from("v_posts")
+          .from("v_thread_posts")
           .select("gauche_count, droite_count")
           .eq("id", body.targetId)
           .maybeSingle()

@@ -99,14 +99,25 @@ export async function getHomeScreenData(
   >();
 
   if (postRootIds.length > 0) {
-    const { data: posts } = await supabase
-      .from("v_posts")
-      .select("id, post_id, content, gauche_count, droite_count, comment_count, created_at")
-      .in("post_id", postRootIds)
+    const threadPosts = await supabase
+      .from("v_thread_posts")
+      .select("id, thread_id, content, gauche_count, droite_count, comment_count, created_at")
+      .in("thread_id", postRootIds)
       .order("created_at", { ascending: true });
 
+    const posts =
+      threadPosts.error && isCapabilityMissing(threadPosts.error)
+        ? (
+            await supabase
+              .from("v_posts")
+              .select("id, post_id, content, gauche_count, droite_count, comment_count, created_at")
+              .in("post_id", postRootIds)
+              .order("created_at", { ascending: true })
+          ).data ?? []
+        : threadPosts.data ?? [];
+
     for (const post of posts ?? []) {
-      const key = String(post.post_id);
+      const key = String((post as { thread_id?: string; post_id?: string }).thread_id ?? (post as { post_id?: string }).post_id);
       if (!postByRootId.has(key)) {
         postByRootId.set(key, {
           id: String(post.id),
@@ -127,12 +138,23 @@ export async function getHomeScreenData(
   const postIds = Array.from(postByRootId.values()).map((post) => post.id);
 
   if (resolvedCurrentUserId && postIds.length > 0) {
-    const { data: ownReactions } = await supabase
+    const ownReactionsResult = await supabase
       .from("reaction")
       .select("target_id, reaction_type")
-      .eq("target_type", "post")
+      .eq("target_type", "thread_post")
       .eq("user_id", resolvedCurrentUserId)
       .in("target_id", postIds);
+    const ownReactions =
+      ownReactionsResult.error && isCapabilityMissing(ownReactionsResult.error)
+        ? (
+            await supabase
+              .from("reaction")
+              .select("target_id, reaction_type")
+              .eq("target_type", "post")
+              .eq("user_id", resolvedCurrentUserId)
+              .in("target_id", postIds)
+          ).data ?? []
+        : ownReactionsResult.data ?? [];
 
     for (const reaction of ownReactions ?? []) {
       const reactionType = reaction.reaction_type as "upvote" | "downvote";

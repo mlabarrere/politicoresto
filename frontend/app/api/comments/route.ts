@@ -11,7 +11,7 @@ function checkRateLimit() {
 
 async function getPostIdBySlug(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, postSlug: string) {
   const { data: postRoot, error: postRootError } = await supabase
-    .from("v_post_detail")
+    .from("v_thread_detail")
     .select("id")
     .eq("slug", postSlug)
     .maybeSingle();
@@ -21,9 +21,9 @@ async function getPostIdBySlug(supabase: Awaited<ReturnType<typeof createServerS
   }
 
   const { data: post, error: postError } = await supabase
-    .from("v_posts")
+    .from("v_thread_posts")
     .select("id")
-    .eq("post_id", postRoot.id)
+    .eq("thread_id", postRoot.id)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -102,8 +102,8 @@ export async function POST(request: Request) {
 
   try {
     const postId = await getPostIdBySlug(supabase, postSlug);
-    const { data: inserted, error } = await supabase.rpc("create_post_comment", {
-      p_post_id: postId,
+    const { data: inserted, error } = await supabase.rpc("create_comment", {
+      p_thread_post_id: postId,
       p_parent_post_id: body.parentCommentId ?? null,
       p_body_markdown: commentBody
     });
