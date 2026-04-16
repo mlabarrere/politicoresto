@@ -25,7 +25,9 @@ describe("Post composer tabs", () => {
     expect(screen.getByText("Publication impossible")).toBeTruthy();
     expect(screen.getByText("create_post_topic failed in db")).toBeTruthy();
     expect(screen.getByText("Mode sondage")).toBeTruthy();
-    expect(screen.getByText(/version brute et version redressee/)).toBeTruthy();
+    expect(screen.getByText(/version brute et version redressee automatiquement/)).toBeTruthy();
+    expect(screen.getByText("Corps (Markdown)")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Enregistrer le brouillon" })).toBeTruthy();
     expect(consoleErrorSpy).toHaveBeenCalledWith("[PostComposer] initialError", {
       message: "create_post_topic failed in db"
     });

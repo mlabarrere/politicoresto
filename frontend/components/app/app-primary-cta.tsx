@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -40,10 +40,10 @@ export function AppPrimaryCTA({
       size={mode === "fab" ? "md" : "sm"}
       className={className}
       icon={<Plus className="size-4" />}
-      aria-label="Créer"
+      aria-label="Creer"
       onClick={handleClick}
     >
-      Créer
+      Creer
     </AppButton>
   );
 }
