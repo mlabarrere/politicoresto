@@ -41,10 +41,12 @@ function buildDefaultDraft(): PostDraft {
 
 export function PostComposer({
   action,
-  redirectPath = "/"
+  redirectPath = "/",
+  initialError = null
 }: {
   action: (formData: FormData) => Promise<void>;
   redirectPath?: string;
+  initialError?: string | null;
 }) {
   const [draft, setDraft] = useState<PostDraft>(buildDefaultDraft);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
@@ -213,6 +215,13 @@ export function PostComposer({
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Nouveau post</h1>
         <p className="text-sm text-muted-foreground">Brouillon: {draftState}</p>
       </header>
+      {initialError ? (
+        <AppBanner
+          title="Publication impossible"
+          body={initialError}
+          tone="warning"
+        />
+      ) : null}
 
       <form action={action} className="space-y-4">
         <input type="hidden" name="redirect_path" value={redirectPath} />
