@@ -20,7 +20,7 @@ export function AppAccountShell({
 }) {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-4 px-4 py-4 lg:px-10 lg:py-6">
-      <AppCard className="space-y-3">
+      <AppCard className="vichy-accent space-y-3 border-border/70">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Espace personnel</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">{heading}</h1>
@@ -29,11 +29,13 @@ export function AppAccountShell({
         <AppPrivateNotice message="Visible uniquement par vous" />
       </AppCard>
 
-      <AppSectionNav items={navItems} />
+      <div className="lg:hidden">
+        <AppSectionNav items={navItems} mode="mobile" />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
         <aside className="hidden lg:block lg:sticky lg:top-24">
-          <AppSectionNav items={navItems} />
+          <AppSectionNav items={navItems} mode="desktop" />
         </aside>
         <section className="min-w-0" data-account-section={section}>
           {children}

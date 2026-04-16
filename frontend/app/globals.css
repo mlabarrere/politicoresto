@@ -6,37 +6,37 @@
   :root {
     color-scheme: light;
 
-    --background: 38 45% 98%;
-    --foreground: 28 19% 14%;
+    --background: 38 52% 97%;
+    --foreground: 25 22% 13%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 28 19% 14%;
+    --card: 40 37% 99%;
+    --card-foreground: 25 22% 13%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 28 19% 14%;
 
-    --primary: 20 81% 39%;
+    --primary: 21 88% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 42 35% 93%;
-    --secondary-foreground: 28 19% 14%;
+    --secondary: 38 42% 92%;
+    --secondary-foreground: 25 22% 13%;
 
-    --muted: 42 24% 92%;
-    --muted-foreground: 27 10% 39%;
+    --muted: 42 30% 90%;
+    --muted-foreground: 24 11% 34%;
 
-    --accent: 46 70% 95%;
-    --accent-foreground: 28 19% 14%;
+    --accent: 43 86% 93%;
+    --accent-foreground: 25 22% 13%;
 
     --destructive: 348 72% 41%;
 
-    --border: 31 27% 84%;
-    --input: 31 27% 84%;
+    --border: 30 30% 80%;
+    --input: 30 30% 80%;
     --ring: 20 81% 39%;
 
     --radius: 0.9rem;
 
-    --shadow-sm: 0 4px 16px rgba(28, 25, 23, 0.06);
-    --shadow-md: 0 14px 34px rgba(28, 25, 23, 0.08);
+    --shadow-sm: 0 5px 18px rgba(73, 45, 18, 0.08);
+    --shadow-md: 0 16px 34px rgba(73, 45, 18, 0.12);
 
     --spacing-compact: 0.5rem;
     --spacing-base: 0.75rem;
@@ -44,11 +44,11 @@
 
     --vichy-bg: linear-gradient(
       45deg,
-      hsl(46 60% 96% / 0.35) 25%,
+      hsl(43 76% 90% / 0.22) 25%,
       transparent 25%,
       transparent 50%,
-      hsl(46 60% 96% / 0.35) 50%,
-      hsl(46 60% 96% / 0.35) 75%,
+      hsl(43 76% 90% / 0.22) 50%,
+      hsl(43 76% 90% / 0.22) 75%,
       transparent 75%,
       transparent
     );
@@ -67,7 +67,7 @@
   body {
     min-height: 100vh;
     @apply bg-background text-foreground antialiased;
-    background-image: radial-gradient(circle at top right, hsl(45 100% 97%), hsl(var(--background)) 55%);
+    background-image: radial-gradient(circle at top right, hsl(42 92% 95%), hsl(var(--background)) 58%);
   }
 
   a {
@@ -82,6 +82,6 @@
 
   .vichy-accent {
     background-image: var(--vichy-bg);
-    background-size: 12px 12px;
+    background-size: 14px 14px;
   }
 }

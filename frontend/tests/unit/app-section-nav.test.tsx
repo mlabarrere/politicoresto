@@ -22,7 +22,7 @@ describe("AppSectionNav", () => {
     const voteLinks = screen.getAllByRole("link", { name: /Historique de vote/i });
     const profileLinks = screen.getAllByRole("link", { name: /Profil/i });
 
-    expect(voteLinks[0]).toHaveClass("border-foreground");
-    expect(profileLinks[0]).not.toHaveClass("border-foreground");
+    expect(voteLinks[0]).toHaveClass("border-[hsl(var(--primary))]");
+    expect(profileLinks[0]).not.toHaveClass("border-[hsl(var(--primary))]");
   });
 });

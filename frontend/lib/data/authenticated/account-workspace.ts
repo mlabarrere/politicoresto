@@ -61,6 +61,25 @@ type CommentHistoryRow = {
   created_at: string;
 };
 
+type SectionStatus = {
+  state: "ready" | "unavailable" | "error";
+  message: string | null;
+};
+
+type AccountSectionStatuses = {
+  profile: SectionStatus;
+  votes: SectionStatus;
+  drafts: SectionStatus;
+  posts: SectionStatus;
+  comments: SectionStatus;
+  security: SectionStatus;
+};
+
+type BackendError = {
+  message?: string;
+  code?: string;
+};
+
 export type AccountWorkspaceData = {
   userId: string;
   email: string;
@@ -71,8 +90,49 @@ export type AccountWorkspaceData = {
   drafts: DraftRow[];
   publications: PostHistoryRow[];
   comments: Array<CommentHistoryRow & { parentTitle: string | null }>;
-  errors: string[];
+  sectionStatus: AccountSectionStatuses;
 };
+
+function readyStatus(): SectionStatus {
+  return { state: "ready", message: null };
+}
+
+function isCapabilityMissing(error: BackendError | null | undefined) {
+  if (!error) return false;
+  const message = String(error.message ?? "").toLowerCase();
+  const code = String(error.code ?? "").toLowerCase();
+
+  return (
+    message.includes("schema cache") ||
+    message.includes("could not find") ||
+    message.includes("undefined table") ||
+    message.includes("undefined function") ||
+    code === "42p01" ||
+    code === "42883" ||
+    code === "pgrst202" ||
+    code === "pgrst204"
+  );
+}
+
+function statusFromError(error: BackendError | null | undefined): SectionStatus {
+  if (!error) return readyStatus();
+  if (isCapabilityMissing(error)) {
+    return {
+      state: "unavailable",
+      message: "Indisponible temporairement sur cet environnement."
+    };
+  }
+
+  return {
+    state: "error",
+    message: "Indisponible temporairement. Reessayez dans quelques instants."
+  };
+}
+
+function mergeStatus(current: SectionStatus, next: SectionStatus): SectionStatus {
+  const rank = { ready: 0, unavailable: 1, error: 2 } as const;
+  return rank[next.state] > rank[current.state] ? next : current;
+}
 
 export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   const supabase = await createServerSupabaseClient();
@@ -85,7 +145,14 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
     throw new Error(userError?.message ?? "Authentication required");
   }
 
-  const errors: string[] = [];
+  const sectionStatus: AccountSectionStatuses = {
+    profile: readyStatus(),
+    votes: readyStatus(),
+    drafts: readyStatus(),
+    posts: readyStatus(),
+    comments: readyStatus(),
+    security: readyStatus()
+  };
 
   const [profileResult, visibilityResult, privateProfileResult, voteResult, draftResult, postResult, commentResult] =
     await Promise.all([
@@ -119,13 +186,13 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
         .order("created_at", { ascending: false })
     ]);
 
-  if (profileResult.error) errors.push(`Profil: ${profileResult.error.message}`);
-  if (visibilityResult.error) errors.push(`Visibilite: ${visibilityResult.error.message}`);
-  if (privateProfileResult.error) errors.push(`Profil prive: ${privateProfileResult.error.message}`);
-  if (voteResult.error) errors.push(`Votes prives: ${voteResult.error.message}`);
-  if (draftResult.error) errors.push(`Brouillons: ${draftResult.error.message}`);
-  if (postResult.error) errors.push(`Publications: ${postResult.error.message}`);
-  if (commentResult.error) errors.push(`Commentaires: ${commentResult.error.message}`);
+  sectionStatus.profile = mergeStatus(sectionStatus.profile, statusFromError(profileResult.error));
+  sectionStatus.profile = mergeStatus(sectionStatus.profile, statusFromError(privateProfileResult.error));
+  sectionStatus.profile = mergeStatus(sectionStatus.profile, statusFromError(visibilityResult.error));
+  sectionStatus.votes = mergeStatus(sectionStatus.votes, statusFromError(voteResult.error));
+  sectionStatus.drafts = mergeStatus(sectionStatus.drafts, statusFromError(draftResult.error));
+  sectionStatus.posts = mergeStatus(sectionStatus.posts, statusFromError(postResult.error));
+  sectionStatus.comments = mergeStatus(sectionStatus.comments, statusFromError(commentResult.error));
 
   const comments = (commentResult.data ?? []) as CommentHistoryRow[];
   const parentPostIds = Array.from(
@@ -133,15 +200,13 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   );
 
   const parentTitleById = new Map<string, string | null>();
-  if (parentPostIds.length) {
+  if (parentPostIds.length && sectionStatus.posts.state === "ready") {
     const parentResult = await supabase
       .from("v_posts")
       .select("id, title")
       .in("id", parentPostIds);
 
-    if (parentResult.error) {
-      errors.push(`Parents commentaires: ${parentResult.error.message}`);
-    } else {
+    if (!parentResult.error) {
       for (const row of parentResult.data ?? []) {
         const typed = row as { id: string; title: string | null };
         parentTitleById.set(typed.id, typed.title);
@@ -152,16 +217,16 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   return {
     userId: user.id,
     email: user.email ?? "",
-    profile: (profileResult.data ?? null) as AppProfileRow | null,
-    visibility: (visibilityResult.data ?? null) as VisibilityRow | null,
-    privateProfile: (privateProfileResult.data ?? null) as PrivateProfileRow | null,
-    voteHistory: (voteResult.data ?? []) as VoteHistoryRow[],
-    drafts: (draftResult.data ?? []) as DraftRow[],
-    publications: (postResult.data ?? []) as PostHistoryRow[],
+    profile: profileResult.error ? null : ((profileResult.data ?? null) as AppProfileRow | null),
+    visibility: visibilityResult.error ? null : ((visibilityResult.data ?? null) as VisibilityRow | null),
+    privateProfile: privateProfileResult.error ? null : ((privateProfileResult.data ?? null) as PrivateProfileRow | null),
+    voteHistory: voteResult.error ? [] : ((voteResult.data ?? []) as VoteHistoryRow[]),
+    drafts: draftResult.error ? [] : ((draftResult.data ?? []) as DraftRow[]),
+    publications: postResult.error ? [] : ((postResult.data ?? []) as PostHistoryRow[]),
     comments: comments.map((comment) => ({
       ...comment,
       parentTitle: comment.thread_post_id ? parentTitleById.get(comment.thread_post_id) ?? null : null
     })),
-    errors
+    sectionStatus
   };
 }

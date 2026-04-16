@@ -20,18 +20,24 @@ function toDraftLabel(type: string) {
 export function AppDraftList({
   items,
   loading = false,
-  error = null
+  status = "ready",
+  message = null
 }: {
   items: DraftItem[];
   loading?: boolean;
-  error?: string | null;
+  status?: "ready" | "unavailable" | "error";
+  message?: string | null;
 }) {
   if (loading) {
     return <AppCard>Chargement des brouillons...</AppCard>;
   }
 
-  if (error) {
-    return <AppEmptyState title="Brouillons indisponibles" body={error} />;
+  if (status === "unavailable") {
+    return <AppEmptyState title="Brouillons indisponibles temporairement" body={message ?? "Cette section sera active bientot sur cet environnement."} />;
+  }
+
+  if (status === "error") {
+    return <AppEmptyState title="Brouillons indisponibles" body={message ?? "Reessayez dans quelques instants."} />;
   }
 
   if (!items.length) {

@@ -4,6 +4,7 @@ import { AppBanner } from "@/components/app/app-banner";
 import { AppButton } from "@/components/app/app-button";
 import { AppCard } from "@/components/app/app-card";
 import { AppCommentHistoryList } from "@/components/app/app-comment-history-list";
+import { AppCheckbox } from "@/components/app/app-checkbox";
 import { AppDangerZone } from "@/components/app/app-danger-zone";
 import { AppDraftList } from "@/components/app/app-draft-list";
 import { AppInput } from "@/components/app/app-input";
@@ -24,10 +25,6 @@ import { ACCOUNT_SECTIONS, resolveAccountSection } from "@/lib/account/sections"
 import { getAccountWorkspaceData } from "@/lib/data/authenticated/account-workspace";
 
 type SearchParams = Promise<{ section?: string; error?: string }>;
-
-function sectionError(errors: string[], prefix: string) {
-  return errors.find((entry) => entry.startsWith(prefix)) ?? null;
-}
 
 export default async function MePage({
   searchParams
@@ -79,8 +76,7 @@ export default async function MePage({
                 </label>
 
                 <label className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm text-foreground">
-                  <input
-                    type="checkbox"
+                  <AppCheckbox
                     name="is_public_profile_enabled"
                     defaultChecked={Boolean(data.profile?.is_public_profile_enabled)}
                     className="mt-0.5"
@@ -150,7 +146,8 @@ export default async function MePage({
             <AppPrivateNotice message="Historique prive. Visible uniquement par vous." />
             <AppVoteHistoryList
               items={data.voteHistory}
-              error={sectionError(data.errors, "Votes prives")}
+              status={data.sectionStatus.votes.state}
+              message={data.sectionStatus.votes.message}
             />
           </div>
         ) : null}
@@ -158,21 +155,24 @@ export default async function MePage({
         {section === "drafts" ? (
           <AppDraftList
             items={data.drafts}
-            error={sectionError(data.errors, "Brouillons")}
+            status={data.sectionStatus.drafts.state}
+            message={data.sectionStatus.drafts.message}
           />
         ) : null}
 
         {section === "posts" ? (
           <AppPostHistoryList
             items={data.publications}
-            error={sectionError(data.errors, "Publications")}
+            status={data.sectionStatus.posts.state}
+            message={data.sectionStatus.posts.message}
           />
         ) : null}
 
         {section === "comments" ? (
           <AppCommentHistoryList
             items={data.comments}
-            error={sectionError(data.errors, "Commentaires")}
+            status={data.sectionStatus.comments.state}
+            message={data.sectionStatus.comments.message}
           />
         ) : null}
 
@@ -204,11 +204,11 @@ export default async function MePage({
           </div>
         ) : null}
 
-        {data.errors.length ? (
+        {section === "profile" && data.sectionStatus.profile.state !== "ready" ? (
           <AppBanner
-            title="Lecture partielle"
-            body={data.errors.join(" | ")}
-            tone="warning"
+            title="Profil partiellement indisponible"
+            body={data.sectionStatus.profile.message ?? "Certaines informations ne sont pas disponibles temporairement."}
+            tone={data.sectionStatus.profile.state === "error" ? "warning" : "default"}
           />
         ) : null}
       </div>
