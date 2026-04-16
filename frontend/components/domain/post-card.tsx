@@ -9,6 +9,7 @@ import { ReactionBar } from "@/components/social/reaction-bar";
 import { PollCardInline } from "@/components/poll/poll-card-inline";
 import { AppCard } from "@/components/app/app-card";
 import { AppBadge } from "@/components/app/app-badge";
+import { AppButton } from "@/components/app/app-button";
 import type { PostFeedItemView } from "@/lib/types/views";
 import { formatDate, formatNumber } from "@/lib/utils/format";
 import { normalizeMultilineText } from "@/lib/utils/multiline";
@@ -173,14 +174,16 @@ export const PostCard = memo(function PostCard({
             <span>{formatNumber(commentCount)} commentaires</span>
           </span>
 
-          <button
+          <AppButton
             type="button"
-            className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
+            variant="ghost"
+            size="sm"
+            className="h-auto border-0 p-0 text-xs"
             onClick={onShare}
           >
             <Share2 className="size-3.5" />
             <span>{shareFeedback ?? "Partager"}</span>
-          </button>
+          </AppButton>
         </div>
       </div>
     </AppCard>

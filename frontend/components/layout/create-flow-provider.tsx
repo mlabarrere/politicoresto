@@ -3,8 +3,8 @@
 import { createContext, useContext, useMemo, useState, type PropsWithChildren } from "react";
 import { usePathname } from "next/navigation";
 
+import { AppDrawer } from "@/components/app/app-drawer";
 import { AppPrimaryCTA } from "@/components/app/app-primary-cta";
-import { CatalystDialog } from "@/components/catalyst/dialog";
 import { PostComposer } from "@/components/home/post-composer";
 
 type CreateFlowContextValue = {
@@ -52,9 +52,9 @@ export function CreateFlowProvider({
       <div className="fixed bottom-4 right-4 z-40 lg:hidden">
         <AppPrimaryCTA mode="fab" />
       </div>
-      <CatalystDialog open={isOpen} onClose={setIsOpen} title="Créer" side="right">
+      <AppDrawer open={isOpen} onClose={setIsOpen} title="Créer" side="right">
         <PostComposer action={action} redirectPath={redirectPath} />
-      </CatalystDialog>
+      </AppDrawer>
     </CreateFlowContext.Provider>
   );
 }

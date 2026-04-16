@@ -8,24 +8,39 @@ export function AppDrawer({
   trigger,
   title,
   side = "right",
+  open,
+  onClose,
   children
 }: {
-  trigger: ReactNode;
+  trigger?: ReactNode;
   title: string;
   side?: "right" | "left" | "bottom";
+  open?: boolean;
+  onClose?: (open: boolean) => void;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = typeof open === "boolean";
+  const resolvedOpen = isControlled ? open : internalOpen;
+
+  function setOpen(next: boolean) {
+    if (!isControlled) {
+      setInternalOpen(next);
+    }
+    onClose?.(next);
+  }
 
   return (
     <>
-      <span role="button" tabIndex={0} onClick={() => setOpen(true)} onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setOpen(true);
-        }
-      }}>{trigger}</span>
-      <CatalystDialog open={open} onClose={setOpen} title={title} side={side}>
+      {trigger ? (
+        <span role="button" tabIndex={0} onClick={() => setOpen(true)} onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}>{trigger}</span>
+      ) : null}
+      <CatalystDialog open={resolvedOpen} onClose={setOpen} title={title} side={side}>
         {children}
       </CatalystDialog>
     </>

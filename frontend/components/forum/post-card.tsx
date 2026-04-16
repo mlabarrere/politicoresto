@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 
+import { AppAvatar, AppAvatarFallback, AppAvatarImage } from "@/components/app/app-avatar";
 import { AppButton } from "@/components/app/app-button";
 import { AppCard } from "@/components/app/app-card";
 import { PollDetailBlock } from "@/components/poll/poll-detail-block";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { PostCardProps } from "@/lib/types/forum-components";
 import { formatDate } from "@/lib/utils/format";
 
@@ -28,10 +28,10 @@ export function PostCard({
   return (
     <AppCard as="article" className="space-y-4 p-4" aria-label="Post principal">
       <header className="flex items-start gap-3">
-        <Avatar size="sm">
-          <AvatarImage src={post.author.avatarUrl} alt={post.author.username} />
-          <AvatarFallback>{initials}</AvatarFallback>
-        </Avatar>
+        <AppAvatar size="sm">
+          <AppAvatarImage src={post.author.avatarUrl} alt={post.author.username} />
+          <AppAvatarFallback>{initials}</AppAvatarFallback>
+        </AppAvatar>
         <div>
           <p className="text-sm font-semibold text-foreground">{post.author.username}</p>
           <p className="text-xs text-muted-foreground">{formatDate(post.createdAt)}</p>
