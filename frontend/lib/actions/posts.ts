@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { canCreatePostToday, RATE_LIMIT_MESSAGES } from "@/lib/security/rate-limit";
 import { fetchUrlPreview, normalizeSourceUrl } from "@/lib/utils/url-preview";
 
 const VALIDATION_ERRORS = new Set([
   "Title required",
   "Poll question required",
-  "At least two poll options required"
+  "At least two poll options required",
+  RATE_LIMIT_MESSAGES.post
 ]);
 
 const GENERIC_ERROR_CODE = "publish_failed";
@@ -97,6 +99,19 @@ export async function createPostAction(formData: FormData) {
     }
 
     const supabase = await createServerSupabaseClient();
+    const userResult =
+      typeof (supabase as { auth?: { getUser?: () => Promise<{ data: { user: { id: string } | null } }> } }).auth
+        ?.getUser === "function"
+        ? await supabase.auth.getUser()
+        : null;
+
+    if (userResult?.data.user) {
+      const postRateLimit = await canCreatePostToday(supabase, userResult.data.user.id);
+      if (!postRateLimit.allowed) {
+        throw new Error(RATE_LIMIT_MESSAGES.post);
+      }
+    }
+
     const createThreadResult = await supabase.rpc("create_thread", {
       p_title: title,
       p_description: description,

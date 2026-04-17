@@ -2,20 +2,13 @@
 
 import { AppCard } from "@/components/app/app-card";
 import { AppFilterBar } from "@/components/app/app-filter-bar";
-import type { FeedSortMode, FeedToolbarProps } from "@/lib/types/homepage";
-
-const SORTS: Array<{ value: FeedSortMode; label: string }> = [
-  { value: "popular", label: "Populaires" },
-  { value: "recent", label: "Recents" }
-];
+import { HOME_FEED_SORT_OPTIONS } from "@/lib/ui/feed-sort-options";
+import type { FeedToolbarProps } from "@/lib/types/homepage";
 
 export function FeedToolbar({ sortMode, onSortChange }: FeedToolbarProps) {
   return (
     <AppCard className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
-      <AppFilterBar options={SORTS} value={sortMode} onChange={onSortChange} />
+      <AppFilterBar options={HOME_FEED_SORT_OPTIONS} value={sortMode} onChange={onSortChange} />
     </AppCard>
   );
 }
-
-
-

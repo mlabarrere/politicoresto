@@ -28,6 +28,8 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     {
       id: string;
       content: string | null;
+      username: string | null;
+      display_name: string | null;
       gauche_count: number | null;
       droite_count: number | null;
       comment_count: number | null;
@@ -72,9 +74,11 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       .eq("user_id", resolvedCurrentUserId)
       .in("target_id", postIds);
 
-    for (const reaction of ownReactionsResult.data ?? []) {
-      const reactionType = reaction.reaction_type as "upvote" | "downvote";
-      reactionByTarget.set(String(reaction.target_id), REACTION_TYPE_TO_SIDE[reactionType]);
+    if (!ownReactionsResult.error) {
+      for (const reaction of ownReactionsResult.data ?? []) {
+        const reactionType = reaction.reaction_type as "upvote" | "downvote";
+        reactionByTarget.set(String(reaction.target_id), REACTION_TYPE_TO_SIDE[reactionType]);
+      }
     }
   }
 
@@ -88,6 +92,8 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       ...item,
       feed_post_id: post.id,
       feed_post_content: post.content,
+      feed_author_username: post.username,
+      feed_author_display_name: post.display_name,
       feed_gauche_count: post.gauche_count,
       feed_droite_count: post.droite_count,
       feed_comment_count: post.comment_count,

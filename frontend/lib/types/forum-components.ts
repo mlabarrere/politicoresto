@@ -115,10 +115,3 @@ export type PostToolbarProps = {
   onToggleCompactMode: () => void;
   onToggleComposer: () => void;
 };
-
-export type RightSidebarProps = {
-  sortMode: "top" | "recent" | "oldest";
-  totalComments: number;
-  onSortChange: (next: "top" | "recent" | "oldest") => void;
-};
-

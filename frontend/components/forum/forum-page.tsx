@@ -7,7 +7,6 @@ import { PostActionsBar } from "@/components/forum/post-actions-bar";
 import { PostCard } from "@/components/forum/post-card";
 import { PostToolbar } from "@/components/forum/post-toolbar";
 import { ReplyComposer } from "@/components/forum/reply-composer";
-import { RightSidebar } from "@/components/forum/right-sidebar";
 import { applyVoteTransition, computeNextVote } from "@/lib/forum/vote";
 import type { CommentTreeNode, VoteSide } from "@/lib/types/forum";
 import type { ForumPageProps, ForumPageState } from "@/lib/types/forum-components";
@@ -295,7 +294,7 @@ export function ForumPage({ post, comments, currentUserId, postSlug }: ForumPage
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]" role="feed" aria-busy={state.commentsStatus === "loading"}>
+    <div className="grid gap-4" role="feed" aria-busy={state.commentsStatus === "loading"}>
       <section className="space-y-4" id="post-main">
         <PostCard post={postView} isAuthenticated={Boolean(currentUserId)} />
 
@@ -343,12 +342,6 @@ export function ForumPage({ post, comments, currentUserId, postSlug }: ForumPage
           onVoteChange={(commentId, next) => handleVote("comment", commentId, next)}
         />
       </section>
-
-      <RightSidebar
-        sortMode={state.sortMode}
-        totalComments={postView.commentCount}
-        onSortChange={(next) => setState((previous) => ({ ...previous, sortMode: next }))}
-      />
     </div>
   );
 }
@@ -367,5 +360,4 @@ function findCommentNode(tree: CommentTreeNode[], commentId: string): CommentTre
 
   return null;
 }
-
 
