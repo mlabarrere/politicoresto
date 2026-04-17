@@ -8,7 +8,6 @@ import { LeftSidebar } from "@/components/home/left-sidebar";
 import { MobileFiltersSheet } from "@/components/home/mobile-filters-sheet";
 import { MobileNavDrawer } from "@/components/home/mobile-nav-drawer";
 import { ResponsiveLayoutGrid } from "@/components/home/responsive-layout-grid";
-import { RightSidebar } from "@/components/home/right-sidebar";
 import { PostFeed } from "@/components/home/post-feed";
 import type { FeedSortMode, HomePageShellProps } from "@/lib/types/homepage";
 
@@ -25,10 +24,7 @@ export function HomePageShell({ items, isAuthenticated }: HomePageShellProps) {
         />
       </div>
 
-      <ResponsiveLayoutGrid
-        left={<LeftSidebar />}
-        right={<RightSidebar sortMode={sortMode} postCount={items.length} />}
-      >
+      <ResponsiveLayoutGrid left={<LeftSidebar />}>
         <CompactForumHeader />
         <FeedToolbar sortMode={sortMode} onSortChange={setSortMode} />
         <PostFeed items={items} isAuthenticated={isAuthenticated} sortMode={sortMode} />
@@ -36,4 +32,3 @@ export function HomePageShell({ items, isAuthenticated }: HomePageShellProps) {
     </div>
   );
 }
-

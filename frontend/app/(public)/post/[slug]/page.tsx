@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 
 import { ForumPage } from "@/components/forum/forum-page";
-import { AppBadge } from "@/components/app/app-badge";
 import { EmptyState } from "@/components/layout/empty-state";
 import { PageContainer } from "@/components/layout/page-container";
 import { ScreenState } from "@/components/layout/screen-state";
@@ -52,11 +51,6 @@ export default async function PostDetailPage({
   return (
     <PageContainer>
       <div className="mx-auto max-w-6xl space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <AppBadge label="Post" tone="default" />
-          <AppBadge label={post.topic_status} tone="muted" />
-        </div>
-
         {op ? (
           <ForumPage
             post={mapPostViewToForumPost(op, post.title)}
@@ -74,4 +68,3 @@ export default async function PostDetailPage({
     </PageContainer>
   );
 }
-

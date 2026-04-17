@@ -111,6 +111,8 @@ export type HomeFeedTopicView = {
   topic_card_payload: TopicCardPayload;
   feed_post_id?: string | null;
   feed_post_content?: string | null;
+  feed_author_username?: string | null;
+  feed_author_display_name?: string | null;
   feed_gauche_count?: number | null;
   feed_droite_count?: number | null;
   feed_comment_count?: number | null;
@@ -395,6 +397,5 @@ export type PostFeedItemView = HomeFeedTopicView;
 export type PostSummaryView = TopicSummaryView;
 export type PostPredictionAggregateView = TopicPredictionAggregateView;
 export type PostRowView = TopicRow;
-
 
 

@@ -5,12 +5,8 @@ import { SlidersHorizontal } from "lucide-react";
 import { AppButton } from "@/components/app/app-button";
 import { AppDrawer } from "@/components/app/app-drawer";
 import { AppFilterBar } from "@/components/app/app-filter-bar";
+import { HOME_FEED_SORT_OPTIONS } from "@/lib/ui/feed-sort-options";
 import type { FeedSortMode } from "@/lib/types/homepage";
-
-const SORTS: Array<{ value: FeedSortMode; label: string }> = [
-  { value: "popular", label: "Populaires" },
-  { value: "recent", label: "Recents" }
-];
 
 export function MobileFiltersSheet({
   sortMode,
@@ -29,7 +25,7 @@ export function MobileFiltersSheet({
         </AppButton>
       }
     >
-      <AppFilterBar className="mt-2 grid gap-2" options={SORTS} value={sortMode} onChange={onSortChange} />
+      <AppFilterBar className="mt-2 grid gap-2" options={HOME_FEED_SORT_OPTIONS} value={sortMode} onChange={onSortChange} />
     </AppDrawer>
   );
 }

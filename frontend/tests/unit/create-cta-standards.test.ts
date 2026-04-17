@@ -20,10 +20,9 @@ describe("Create CTA standards", () => {
 
   it("removes legacy create entrypoints", () => {
     const homeShell = fs.readFileSync(path.join(root, "components/home/homepage-shell.tsx"), "utf8");
-    const rightSidebar = fs.readFileSync(path.join(root, "components/home/right-sidebar.tsx"), "utf8");
 
     expect(homeShell).not.toContain("CreatePostCTA");
-    expect(rightSidebar).not.toContain("CreatePostCTA");
+    expect(fs.existsSync(path.join(root, "components/home/right-sidebar.tsx"))).toBe(false);
     expect(fs.existsSync(path.join(root, "components/home/create-post-cta.tsx"))).toBe(false);
   });
 

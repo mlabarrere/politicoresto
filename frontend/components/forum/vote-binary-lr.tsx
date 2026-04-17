@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useMemo } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { AuthRequiredSheet } from "@/components/auth/auth-required-sheet";
 import { AppButton } from "@/components/app/app-button";
@@ -10,7 +11,8 @@ import { cn } from "@/lib/utils";
 
 type Pole = {
   value: Exclude<VoteSide, null>;
-  label: string;
+  tooltip: string;
+  Icon: typeof ArrowLeft;
   activeClass: string;
   idleClass: string;
 };
@@ -18,13 +20,15 @@ type Pole = {
 const POLES: Pole[] = [
   {
     value: "left",
-    label: "Gauche",
+    tooltip: "C'est de gauche",
+    Icon: ArrowLeft,
     activeClass: "border-rose-600 bg-rose-600 text-white",
     idleClass: "border-rose-200 text-rose-700 hover:bg-rose-50"
   },
   {
     value: "right",
-    label: "Droite",
+    tooltip: "C'est de droite",
+    Icon: ArrowRight,
     activeClass: "border-sky-600 bg-sky-600 text-white",
     idleClass: "border-sky-200 text-sky-700 hover:bg-sky-50"
   }
@@ -53,6 +57,7 @@ export function VoteBinaryLR({
   return (
     <div className="flex items-center gap-2" aria-label="Votes gauche droite">
       {POLES.map((pole) => {
+        const Icon = pole.Icon;
         const isActive = value === pole.value;
         const next = isActive ? null : pole.value;
         const className = cn(
@@ -63,8 +68,9 @@ export function VoteBinaryLR({
 
         const content = (
           <>
-            <span>{pole.label}</span>
+            <Icon className="size-3.5" />
             <span className="tabular-nums">{pole.value === "left" ? counts.left : counts.right}</span>
+            <span className="sr-only">{pole.tooltip}</span>
           </>
         );
 
@@ -73,7 +79,7 @@ export function VoteBinaryLR({
             <AuthRequiredSheet
               key={pole.value}
               nextPath={redirectPath}
-              triggerLabel={`Classer ${pole.label.toLowerCase()}`}
+              triggerLabel={`Classer ${pole.value === "left" ? "gauche" : "droite"}`}
               triggerClassName={className}
               triggerContent={content}
             />
@@ -88,7 +94,8 @@ export function VoteBinaryLR({
             size="sm"
             className={className}
             aria-pressed={isActive}
-            aria-label={`Classer ${pole.label.toLowerCase()}`}
+            title={pole.tooltip}
+            aria-label={`Classer ${pole.value === "left" ? "gauche" : "droite"}`}
             disabled={disabled}
             onClick={() => onChange(next)}
           >

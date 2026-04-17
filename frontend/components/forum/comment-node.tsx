@@ -6,6 +6,7 @@ import { CommentActionsMenu } from "@/components/forum/comment-actions-menu";
 import { EditComposer } from "@/components/forum/edit-composer";
 import { ReplyComposer } from "@/components/forum/reply-composer";
 import { VoteBinaryLR } from "@/components/forum/vote-binary-lr";
+import { CornerDownLeft } from "lucide-react";
 import { AppAvatar, AppAvatarFallback } from "@/components/app/app-avatar";
 import { AppButton } from "@/components/app/app-button";
 import { AppCard } from "@/components/app/app-card";
@@ -32,6 +33,7 @@ function CommentNodeBase({
 
   const isSubmitting = mode === "submittingReply" || mode === "submittingEdit";
   const canEdit = currentUserId === node.author.id;
+  const canReply = depth < 1;
   const indentPx = getIndentPx(depth, maxInlineDepth, maxInlineDepth <= 3);
   const showDepthBadge = depth >= maxInlineDepth;
   const childrenCollapsed = collapsedAll || collapsedChildren;
@@ -110,15 +112,19 @@ function CommentNodeBase({
         <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground/95">{node.body}</p>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <AppButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            disabled={isSubmitting}
-            onClick={() => setMode((previous) => transitionCommentNodeMode(previous, { type: "START_REPLY" }))}
-          >
-            Répondre
-          </AppButton>
+          {canReply ? (
+            <AppButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={isSubmitting}
+              onClick={() => setMode((previous) => transitionCommentNodeMode(previous, { type: "START_REPLY" }))}
+              aria-label="Répondre au commentaire"
+            >
+              <CornerDownLeft className="size-3.5" />
+              <span className="sr-only">Répondre</span>
+            </AppButton>
+          ) : null}
 
           <VoteBinaryLR
             entityType="comment"
@@ -143,7 +149,7 @@ function CommentNodeBase({
           ) : null}
         </div>
 
-        {(mode === "replying" || mode === "submittingReply") && (
+        {canReply && (mode === "replying" || mode === "submittingReply") && (
           <div className="mt-3">
             <ReplyComposer
               targetType="comment"
@@ -169,7 +175,7 @@ function CommentNodeBase({
         )}
       </AppCard>
 
-      {!childrenCollapsed && node.children.length ? (
+      {!childrenCollapsed && node.children.length && depth < 1 ? (
         <div className="space-y-2">
           {node.children.map((child) => (
             <CommentNode
@@ -193,6 +199,5 @@ function CommentNodeBase({
 }
 
 export const CommentNode = memo(CommentNodeBase);
-
 
 
