@@ -11,18 +11,17 @@ import { AppTabs } from "@/components/app/app-tabs";
 import { AppTextarea } from "@/components/app/app-textarea";
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
 
-const DRAFT_KEY = "politicoresto.post.draft.v3";
+const DRAFT_KEY = "politicoresto.post.draft.v4";
 
 type PostDraft = {
   title: string;
   body: string;
   source_url: string;
   category: string;
-  mode: "post" | "poll" | "bet";
+  mode: "post" | "poll";
   poll_question: string;
   poll_deadline_hours: string;
   poll_options: string[];
-  poll_context: string;
 };
 
 function buildDefaultDraft(): PostDraft {
@@ -34,8 +33,7 @@ function buildDefaultDraft(): PostDraft {
     mode: "post",
     poll_question: "",
     poll_deadline_hours: "24",
-    poll_options: ["", ""],
-    poll_context: ""
+    poll_options: ["", ""]
   };
 }
 
@@ -71,14 +69,13 @@ export function PostComposer({
         body: parsed.body ?? "",
         source_url: parsed.source_url ?? "",
         category: parsed.category ?? "",
-        mode: parsed.mode === "poll" ? "poll" : parsed.mode === "bet" ? "bet" : "post",
+        mode: parsed.mode === "poll" ? "poll" : "post",
         poll_question: parsed.poll_question ?? "",
         poll_deadline_hours: parsed.poll_deadline_hours ?? "24",
         poll_options:
           Array.isArray(parsed.poll_options) && parsed.poll_options.length >= 2
             ? parsed.poll_options.map((entry) => String(entry ?? ""))
-            : ["", ""],
-        poll_context: parsed.poll_context ?? ""
+            : ["", ""]
       });
     } catch {
       window.localStorage.removeItem(DRAFT_KEY);
@@ -201,25 +198,7 @@ export function PostComposer({
           Ajouter option
         </AppButton>
       </section>
-
-      <label className="block space-y-2">
-        <span className="text-xs font-medium text-muted-foreground">Commentaire / contextualisation</span>
-        <AppTextarea
-          name="poll_context"
-          rows={4}
-          value={draft.poll_context}
-          onChange={(event) => setDraft((prev) => ({ ...prev, poll_context: event.target.value }))}
-          placeholder="Contexte politique, hypothese ou limites du sondage"
-        />
-      </label>
     </div>
-  );
-
-  const betTab = (
-    <AppCard className="border-dashed bg-secondary/30">
-      <p className="text-sm font-semibold text-foreground">Paris (bientot)</p>
-      <p className="mt-1 text-sm text-muted-foreground">Onglet reserve, aucun workflow actif pour le moment.</p>
-    </AppCard>
   );
 
   return (
@@ -239,7 +218,7 @@ export function PostComposer({
 
       <form action={action} className="space-y-4">
         <input type="hidden" name="redirect_path" value={redirectPath} />
-        <input type="hidden" name="post_mode" value={draft.mode === "bet" ? "post" : draft.mode} />
+        <input type="hidden" name="post_mode" value={draft.mode} />
         <input type="hidden" name="body_format" value="markdown" />
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -283,11 +262,10 @@ export function PostComposer({
 
         <AppTabs
           value={draft.mode}
-          onValueChange={(mode) => setDraft((prev) => ({ ...prev, mode: mode === "poll" ? "poll" : mode === "bet" ? "bet" : "post" }))}
+          onValueChange={(mode) => setDraft((prev) => ({ ...prev, mode: mode === "poll" ? "poll" : "post" }))}
           items={[
             { key: "post", label: "Post", content: postTab },
-            { key: "poll", label: "Sondage", content: pollTab },
-            { key: "bet", label: "Paris (bientot)", content: betTab, disabled: true }
+            { key: "poll", label: "Sondage", content: pollTab }
           ]}
         />
 

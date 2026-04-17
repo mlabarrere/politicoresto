@@ -138,19 +138,6 @@ async function fetchPublicationRows(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
   userId: string
 ) {
-  const legacy = await supabase
-    .from("v_posts")
-    .select("id, post_id, type, title, status, entity_slug, entity_name, created_at")
-    .eq("created_by", userId)
-    .order("created_at", { ascending: false });
-
-  if (!legacy.error || !isCapabilityMissing(legacy.error)) {
-    return {
-      rows: legacy.data ?? [],
-      error: legacy.error
-    };
-  }
-
   const thread = await supabase
     .from("v_thread_posts")
     .select("id, thread_id, type, title, status, created_at")

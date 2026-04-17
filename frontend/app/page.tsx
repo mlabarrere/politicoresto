@@ -8,14 +8,13 @@ export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
   const user = await getCurrentUser(supabase);
   const currentUserId = user?.id ?? null;
-  const { data } = await getHomeScreenData(null, currentUserId);
+  const { data } = await getHomeScreenData(currentUserId);
 
   return (
     <PageContainer>
       <div className="space-y-4">
         <HomePageShell
           items={data.feed}
-          selectedBloc={null}
           isAuthenticated={Boolean(currentUserId)}
         />
       </div>

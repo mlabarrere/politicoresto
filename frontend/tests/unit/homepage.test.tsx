@@ -60,7 +60,6 @@ function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreen
 
   return {
     feed,
-    selectedBloc: null,
     ...overrides
   };
 }
@@ -86,8 +85,8 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(screen.getByText("Forum politique")).toBeInTheDocument();
-    expect(screen.getAllByText("Categories").length).toBeGreaterThan(0);
+    expect(screen.getByText("PoliticoResto")).toBeInTheDocument();
+    expect(screen.getAllByText("Couleur politique").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Gauche radicale a gauche").length).toBeGreaterThan(0);
   });
 

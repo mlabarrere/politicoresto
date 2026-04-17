@@ -7,7 +7,7 @@ const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
-  usePathname: () => "/polls"
+  usePathname: () => "/"
 }));
 
 describe("AppPrimaryCTA", () => {
@@ -26,6 +26,6 @@ describe("AppPrimaryCTA", () => {
     render(<AppPrimaryCTA isAuthenticated={false} />);
     fireEvent.click(screen.getByRole("button", { name: /Cr.+er/i }));
 
-    expect(pushMock).toHaveBeenCalledWith("/auth/login?next=%2Fpolls");
+    expect(pushMock).toHaveBeenCalledWith("/auth/login?next=%2F");
   });
 });

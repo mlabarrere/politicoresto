@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -12,23 +12,7 @@ const VALIDATION_ERRORS = new Set([
   "At least two poll options required"
 ]);
 
-type BackendError = {
-  message?: string;
-  code?: string;
-};
-
-function isMissingRpc(error: BackendError | null | undefined) {
-  if (!error) return false;
-  const message = String(error.message ?? "").toLowerCase();
-  const code = String(error.code ?? "").toLowerCase();
-  return (
-    message.includes("schema cache") ||
-    message.includes("could not find the function") ||
-    message.includes("undefined function") ||
-    code === "42883" ||
-    code === "pgrst202"
-  );
-}
+const GENERIC_ERROR_CODE = "publish_failed";
 
 function extractTopicId(result: unknown) {
   if (typeof result === "string") return result;
@@ -52,7 +36,7 @@ async function rollbackThreadCreation(
   }
 }
 
-async function createPostItemWithFallback({
+async function createPostItem({
   supabase,
   threadId,
   title,
@@ -64,27 +48,7 @@ async function createPostItemWithFallback({
   title: string;
   body: string;
   metadata: Record<string, unknown>;
-}): Promise<{ postItemId: string | null; method: "create_post_item" | "create_post" }> {
-  const createPostItemInput = {
-    p_post_id: threadId,
-    p_type: "article",
-    p_title: title,
-    p_content: body || null,
-    p_metadata: metadata
-  };
-
-  const createPostItemResult = await supabase.rpc("create_post_item", createPostItemInput);
-  if (!createPostItemResult.error) {
-    return {
-      postItemId: extractTopicId(createPostItemResult.data),
-      method: "create_post_item"
-    };
-  }
-
-  if (!isMissingRpc(createPostItemResult.error)) {
-    throw new Error(createPostItemResult.error.message);
-  }
-
+}): Promise<string | null> {
   const createPostResult = await supabase.rpc("create_post", {
     p_thread_id: threadId,
     p_type: "article",
@@ -94,13 +58,10 @@ async function createPostItemWithFallback({
   });
 
   if (createPostResult.error) {
-    throw new Error(createPostResult.error.message);
+    throw createPostResult.error;
   }
 
-  return {
-    postItemId: extractTopicId(createPostResult.data),
-    method: "create_post"
-  };
+  return extractTopicId(createPostResult.data);
 }
 
 export async function createPostAction(formData: FormData) {
@@ -136,36 +97,24 @@ export async function createPostAction(formData: FormData) {
     }
 
     const supabase = await createServerSupabaseClient();
-    const createThreadInput = {
+    const createThreadResult = await supabase.rpc("create_thread", {
       p_title: title,
       p_description: description,
       p_entity_id: null,
       p_space_id: null,
       p_close_at: null
-    };
+    });
 
-    const createThreadResult = await supabase.rpc("create_thread", createThreadInput);
-    let threadId = extractTopicId(createThreadResult.data);
-    let createMethod: "create_post_topic" | "create_thread" = "create_thread";
-    let createItemMethod: "create_post_item" | "create_post" | "none" = "none";
-
-    if (createThreadResult.error && isMissingRpc(createThreadResult.error)) {
-      const createTopicResult = await supabase.rpc("create_post_topic", createThreadInput);
-      if (createTopicResult.error) {
-        throw new Error(createTopicResult.error.message);
-      }
-      threadId = extractTopicId(createTopicResult.data);
-      createMethod = "create_post_topic";
-    } else if (createThreadResult.error) {
-      throw new Error(createThreadResult.error.message);
+    if (createThreadResult.error) {
+      throw createThreadResult.error;
     }
 
+    const threadId = extractTopicId(createThreadResult.data);
     if (!threadId) {
-      throw new Error("Creation du thread impossible.");
+      throw new Error("Publication impossible.");
     }
 
     const preview = sourceUrl ? await fetchUrlPreview(sourceUrl) : null;
-
     const postMetadata = {
       is_original_post: true,
       source_url: sourceUrl,
@@ -175,15 +124,13 @@ export async function createPostAction(formData: FormData) {
 
     let postItemId: string | null = null;
     try {
-      const createdPost = await createPostItemWithFallback({
+      postItemId = await createPostItem({
         supabase,
         threadId,
         title,
         body,
         metadata: postMetadata
       });
-      postItemId = createdPost.postItemId;
-      createItemMethod = createdPost.method;
     } catch (error) {
       await rollbackThreadCreation(supabase, threadId);
       throw error;
@@ -191,7 +138,7 @@ export async function createPostAction(formData: FormData) {
 
     if (!postItemId) {
       await rollbackThreadCreation(supabase, threadId);
-      throw new Error("Creation du post initial impossible.");
+      throw new Error("Publication impossible.");
     }
 
     if (mode === "poll") {
@@ -205,7 +152,7 @@ export async function createPostAction(formData: FormData) {
       });
 
       if (pollError) {
-        throw new Error(pollError.message);
+        throw pollError;
       }
 
       const { error: metadataError } = await supabase.rpc("rpc_update_thread_post", {
@@ -226,34 +173,32 @@ export async function createPostAction(formData: FormData) {
       });
 
       if (metadataError) {
-        throw new Error(metadataError.message);
+        throw metadataError;
       }
     }
 
     revalidatePath("/");
-    revalidatePath("/category/[slug]");
     if (redirectPath !== "/") {
       revalidatePath(redirectPath);
     }
     console.info("[createPostAction] post created", {
       mode,
       redirectPath,
-      createMethod,
       threadId,
-      createItemMethod,
       postItemId
     });
     redirect(redirectPath as never);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Creation du post impossible.";
+    const message = error instanceof Error ? error.message : "Publication impossible.";
     if (VALIDATION_ERRORS.has(message)) {
       throw error;
     }
+
     console.error("[createPostAction] failed", {
       message,
       error,
       context: { path: "/post/new" }
     });
-    redirect(`${fallbackErrorPath}?error=${encodeURIComponent(message)}`);
+    redirect(`${fallbackErrorPath}?error=${encodeURIComponent(GENERIC_ERROR_CODE)}`);
   }
 }

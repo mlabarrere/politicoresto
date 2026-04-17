@@ -26,17 +26,3 @@ export async function getPollSummariesByPostItemIds(
   }
   return map;
 }
-
-export async function getPollExplorerRows(): Promise<PostPollSummaryView[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("v_post_poll_summary")
-    .select("*")
-    .order("deadline_at", { ascending: true });
-
-  if (error) throw error;
-
-  return (data ?? [])
-    .map((row) => normalizePostPollSummary(row as Record<string, unknown>))
-    .filter((row): row is PostPollSummaryView => row !== null);
-}

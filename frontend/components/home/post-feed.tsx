@@ -10,10 +10,6 @@ function sortItems(items: PostFeedItemView[], sortMode: FeedSortMode) {
       return new Date(b.last_activity_at ?? b.open_at ?? 0).getTime() - new Date(a.last_activity_at ?? a.open_at ?? 0).getTime();
     }
 
-    if (sortMode === "most_comments") {
-      return Number((b.feed_comment_count ?? b.visible_post_count ?? 0) - (a.feed_comment_count ?? a.visible_post_count ?? 0));
-    }
-
     return Number((b.editorial_feed_score ?? 0) - (a.editorial_feed_score ?? 0));
   });
 

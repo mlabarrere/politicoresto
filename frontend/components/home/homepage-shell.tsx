@@ -12,13 +12,13 @@ import { RightSidebar } from "@/components/home/right-sidebar";
 import { PostFeed } from "@/components/home/post-feed";
 import type { FeedSortMode, HomePageShellProps } from "@/lib/types/homepage";
 
-export function HomePageShell({ items, isAuthenticated, selectedBloc }: HomePageShellProps) {
-  const [sortMode, setSortMode] = useState<FeedSortMode>("top");
+export function HomePageShell({ items, isAuthenticated }: HomePageShellProps) {
+  const [sortMode, setSortMode] = useState<FeedSortMode>("popular");
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2 lg:hidden">
-        <MobileNavDrawer selectedBloc={selectedBloc} />
+        <MobileNavDrawer />
         <MobileFiltersSheet
           sortMode={sortMode}
           onSortChange={setSortMode}
@@ -26,7 +26,7 @@ export function HomePageShell({ items, isAuthenticated, selectedBloc }: HomePage
       </div>
 
       <ResponsiveLayoutGrid
-        left={<LeftSidebar selectedBloc={selectedBloc} />}
+        left={<LeftSidebar />}
         right={<RightSidebar sortMode={sortMode} postCount={items.length} />}
       >
         <CompactForumHeader />

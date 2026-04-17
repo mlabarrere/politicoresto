@@ -1,49 +1,24 @@
-import Link from "next/link";
-import type { Route } from "next";
-
 import { AppCard } from "@/components/app/app-card";
 import { politicalBlocs } from "@/lib/data/political-taxonomy";
-import { cn } from "@/lib/utils";
 
-export function LeftSidebar({ selectedBloc }: { selectedBloc: string | null }) {
+export function LeftSidebar() {
   return (
     <aside className="hidden xl:block">
       <AppCard className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sondages</p>
+        <div className="mt-3 space-y-2 text-sm">
+          <p className="rounded-xl bg-muted px-3 py-2 text-foreground">En cours</p>
+          <p className="rounded-xl bg-muted px-3 py-2 text-foreground">Passes</p>
+        </div>
+
+        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Couleur politique</p>
         <div className="mt-3 space-y-2">
-          <Link
-            href={"/polls" as Route}
-            className="block rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          >
-            Sondages
-          </Link>
-
-          <Link
-            href="/"
-            className={cn(
-              "block rounded-xl px-3 py-2 text-sm transition hover:bg-muted hover:text-foreground",
-              !selectedBloc ? "bg-muted font-medium text-foreground" : "text-muted-foreground"
-            )}
-          >
-            Tous les sujets
-          </Link>
-
-          {politicalBlocs.map((bloc) => {
-            const active = selectedBloc === bloc.slug;
-            return (
-              <Link
-                key={bloc.slug}
-                href={`/category/${encodeURIComponent(bloc.slug)}` as Route}
-                className={cn(
-                  "block rounded-xl px-3 py-2 text-sm transition hover:bg-muted hover:text-foreground",
-                  active ? "bg-muted font-medium text-foreground" : "text-muted-foreground"
-                )}
-              >
-                <span className="block">{bloc.label}</span>
-                <span className="mt-1 block text-xs leading-5 text-muted-foreground">{bloc.description}</span>
-              </Link>
-            );
-          })}
+          {politicalBlocs.map((bloc) => (
+            <div key={bloc.slug} className="rounded-xl border border-border px-3 py-2">
+              <p className="text-sm text-foreground">{bloc.label}</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{bloc.description}</p>
+            </div>
+          ))}
         </div>
       </AppCard>
     </aside>

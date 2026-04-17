@@ -37,7 +37,7 @@ export async function upsertAccountIdentityAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error(userError?.message ?? "Authentication required");
+    throw new Error("Authentication required");
   }
 
   const duplicateResult = await supabase
@@ -48,7 +48,11 @@ export async function upsertAccountIdentityAction(formData: FormData) {
     .maybeSingle();
 
   if (duplicateResult.error) {
-    throw new Error(duplicateResult.error.message);
+    console.error("[account][upsertAccountIdentity] duplicate check failed", {
+      message: duplicateResult.error.message,
+      code: duplicateResult.error.code
+    });
+    throw new Error("Enregistrement impossible pour le moment.");
   }
 
   if (duplicateResult.data) {
@@ -67,7 +71,8 @@ export async function upsertAccountIdentityAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (error) {
-    throw new Error(error.message);
+    console.error("[account][upsertAccountIdentity] update failed", { message: error.message, code: error.code });
+    throw new Error("Enregistrement impossible pour le moment.");
   }
 
   revalidatePath("/me");
@@ -103,7 +108,8 @@ export async function upsertPrivateProfileAction(formData: FormData) {
   const { error } = await supabase.rpc("rpc_upsert_private_political_profile", rpcPayload);
 
   if (error) {
-    throw new Error(error.message);
+    console.error("[account][upsertPrivateProfile] rpc failed", { message: error.message, code: error.code });
+    throw new Error("Enregistrement impossible pour le moment.");
   }
 
   revalidatePath("/me");
@@ -117,7 +123,8 @@ export async function clearPrivateProfileAction(formData: FormData) {
   const { error } = await supabase.rpc("rpc_delete_private_political_profile");
 
   if (error) {
-    throw new Error(error.message);
+    console.error("[account][clearPrivateProfile] rpc failed", { message: error.message, code: error.code });
+    throw new Error("Operation impossible pour le moment.");
   }
 
   revalidatePath("/me");
@@ -137,7 +144,7 @@ export async function deactivateAccountAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error(userError?.message ?? "Authentication required");
+    throw new Error("Authentication required");
   }
 
   const { error } = await supabase
@@ -146,7 +153,8 @@ export async function deactivateAccountAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (error) {
-    throw new Error(error.message);
+    console.error("[account][deactivate] update failed", { message: error.message, code: error.code });
+    throw new Error("Operation impossible pour le moment.");
   }
 
   revalidatePath("/me");
@@ -166,7 +174,7 @@ export async function deleteAccountAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error(userError?.message ?? "Authentication required");
+    throw new Error("Authentication required");
   }
 
   const { error } = await supabase
@@ -175,7 +183,8 @@ export async function deleteAccountAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (error) {
-    throw new Error(error.message);
+    console.error("[account][delete] update failed", { message: error.message, code: error.code });
+    throw new Error("Operation impossible pour le moment.");
   }
 
   await supabase.auth.signOut();

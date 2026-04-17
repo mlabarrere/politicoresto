@@ -40,7 +40,7 @@ describe("poll vote route", () => {
     expect(response.status).toBe(400);
   });
 
-  it("returns rpc errors for duplicate or closed vote", async () => {
+  it("returns safe error message when vote rpc fails", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue({
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }) },
       rpc: vi.fn().mockResolvedValue({ error: { message: "Poll is closed" } })
@@ -48,7 +48,7 @@ describe("poll vote route", () => {
 
     const response = await POST(makeRequest({ postItemId: "p1", optionId: "o1" }));
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({ error: "Poll is closed" });
+    await expect(response.json()).resolves.toEqual({ error: "Poll vote failed" });
   });
 
   it("returns normalized poll payload on success", async () => {

@@ -180,7 +180,7 @@ describe("post page forum UX", () => {
   it("renders explicit forbidden state when backend denies access", async () => {
     mockedGetPostDetail.mockRejectedValue({
       code: "42501",
-      message: "permission denied for relation v_post_detail"
+      message: "permission denied for relation v_thread_detail"
     });
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "post-locked" }) }));

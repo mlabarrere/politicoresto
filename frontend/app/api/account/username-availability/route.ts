@@ -38,7 +38,14 @@ export async function GET(request: Request) {
   ]);
 
   if (currentError || duplicateError) {
-    return NextResponse.json({ available: false, reason: currentError?.message ?? duplicateError?.message ?? "Query error", normalized: username }, { status: 500 });
+    console.error("[username-availability] query failed", {
+      currentError: currentError?.message,
+      duplicateError: duplicateError?.message
+    });
+    return NextResponse.json(
+      { available: false, reason: "Verification impossible pour le moment.", normalized: username },
+      { status: 500 }
+    );
   }
 
   const currentUsername = String((current as { username?: string | null } | null)?.username ?? "").toLowerCase();

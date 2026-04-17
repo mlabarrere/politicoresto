@@ -55,14 +55,19 @@ describe("createPostAction", () => {
     mocks.fetchUrlPreviewMock.mockReset();
 
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      rpc: mocks.rpcMock
+      rpc: mocks.rpcMock,
+      from: vi.fn(() => ({
+        delete: vi.fn(() => ({
+          eq: vi.fn(async () => ({ error: null }))
+        }))
+      }))
     } as never);
   });
 
   it("creates thread then original post with URL preview metadata", async () => {
     mocks.rpcMock
       .mockResolvedValueOnce({ data: { id: "thread-1" }, error: null })
-      .mockResolvedValueOnce({ error: null });
+      .mockResolvedValueOnce({ data: { id: "post-item-1" }, error: null });
     mockedFetchUrlPreview.mockResolvedValue({
       url: "https://example.com",
       title: "Titre"
@@ -77,9 +82,9 @@ describe("createPostAction", () => {
       })
     );
 
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_post_topic", expect.any(Object));
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post_item", {
-      p_post_id: "thread-1",
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_thread", expect.any(Object));
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post", {
+      p_thread_id: "thread-1",
       p_type: "article",
       p_title: "Thread",
       p_content: "Body",
@@ -99,7 +104,7 @@ describe("createPostAction", () => {
   it("keeps raw URL when metadata fetch fails", async () => {
     mocks.rpcMock
       .mockResolvedValueOnce({ data: { id: "thread-2" }, error: null })
-      .mockResolvedValueOnce({ error: null });
+      .mockResolvedValueOnce({ data: { id: "post-item-2" }, error: null });
     mockedFetchUrlPreview.mockResolvedValue(null);
 
     await createPostAction(
@@ -111,8 +116,8 @@ describe("createPostAction", () => {
       })
     );
 
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post_item", {
-      p_post_id: "thread-2",
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post", {
+      p_thread_id: "thread-2",
       p_type: "article",
       p_title: "Thread 2",
       p_content: "Body 2",
@@ -146,9 +151,9 @@ describe("createPostAction", () => {
       })
     );
 
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_post_topic", expect.any(Object));
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post_item", {
-      p_post_id: "thread-3",
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_thread", expect.any(Object));
+    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post", {
+      p_thread_id: "thread-3",
       p_type: "article",
       p_title: "Budget 2026",
       p_content: "Contexte politique",
@@ -187,10 +192,10 @@ describe("createPostAction", () => {
     ).rejects.toThrow(/At least two poll options required/i);
   });
 
-  it("redirects back to composer with explicit error when post topic RPC fails", async () => {
+  it("redirects back to composer with safe error code when thread RPC fails", async () => {
     mocks.rpcMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "create_post_topic failed in db" }
+      error: { message: "create_thread failed in db" }
     });
 
     await createPostAction(
@@ -201,72 +206,10 @@ describe("createPostAction", () => {
       })
     );
 
-    expect(mocks.redirectMock).toHaveBeenCalledWith(
-      "/post/new?error=create_post_topic%20failed%20in%20db"
-    );
+    expect(mocks.redirectMock).toHaveBeenCalledWith("/post/new?error=publish_failed");
   });
 
-  it("falls back to create_thread when create_post_topic is missing in schema cache", async () => {
-    mocks.rpcMock
-      .mockResolvedValueOnce({
-        data: null,
-        error: {
-          message: "Could not find the function public.create_post_topic in the schema cache",
-          code: "PGRST202"
-        }
-      })
-      .mockResolvedValueOnce({ data: { id: "thread-fallback" }, error: null })
-      .mockResolvedValueOnce({ data: { id: "post-item-fallback" }, error: null });
-    mockedFetchUrlPreview.mockResolvedValue(null);
-
-    await createPostAction(
-      makeFormData({
-        title: "Thread fallback",
-        body: "Body",
-        redirect_path: "/"
-      })
-    );
-
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_post_topic", expect.any(Object));
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_thread", expect.any(Object));
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(3, "create_post_item", expect.objectContaining({
-      p_post_id: "thread-fallback"
-    }));
-    expect(mocks.redirectMock).toHaveBeenCalledWith("/");
-  });
-
-  it("falls back to create_post when create_post_item is missing in schema cache", async () => {
-    mocks.rpcMock
-      .mockResolvedValueOnce({ data: { id: "thread-fallback-item" }, error: null })
-      .mockResolvedValueOnce({
-        data: null,
-        error: {
-          message: "Could not find the function public.create_post_item in the schema cache",
-          code: "PGRST202"
-        }
-      })
-      .mockResolvedValueOnce({ data: { id: "post-item-from-create-post" }, error: null });
-    mockedFetchUrlPreview.mockResolvedValue(null);
-
-    await createPostAction(
-      makeFormData({
-        title: "Thread fallback item",
-        body: "Body",
-        redirect_path: "/"
-      })
-    );
-
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(1, "create_post_topic", expect.any(Object));
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(2, "create_post_item", expect.objectContaining({
-      p_post_id: "thread-fallback-item"
-    }));
-    expect(mocks.rpcMock).toHaveBeenNthCalledWith(3, "create_post", expect.objectContaining({
-      p_thread_id: "thread-fallback-item"
-    }));
-    expect(mocks.redirectMock).toHaveBeenCalledWith("/");
-  });
-
-  it("redirects back to composer with explicit error when poll RPC fails", async () => {
+  it("redirects back to composer with safe error code when poll RPC fails", async () => {
     mocks.rpcMock
       .mockResolvedValueOnce({ data: { id: "thread-4" }, error: null })
       .mockResolvedValueOnce({ data: { id: "post-item-4" }, error: null })
@@ -285,13 +228,6 @@ describe("createPostAction", () => {
       })
     );
 
-    expect(mocks.redirectMock).toHaveBeenCalledWith(
-      "/post/new?error=create_post_poll%20failed%20in%20db"
-    );
+    expect(mocks.redirectMock).toHaveBeenCalledWith("/post/new?error=publish_failed");
   });
 });
-
-
-
-
-

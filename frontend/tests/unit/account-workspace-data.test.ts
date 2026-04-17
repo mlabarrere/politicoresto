@@ -73,7 +73,7 @@ describe("account workspace data", () => {
             error: null
           },
           thread_post: { data: [], error: null },
-          v_posts: { data: [], error: null },
+          v_thread_posts: { data: [], error: null },
           v_post_comments: { data: [], error: null }
         },
         rpcs: {
@@ -115,9 +115,9 @@ describe("account workspace data", () => {
             error: { message: "Could not find the table 'public.user_visibility_settings' in the schema cache" }
           },
           thread_post: { data: [], error: null },
-          v_posts: {
+          v_thread_posts: {
             data: null,
-            error: { message: "Could not find the table 'public.v_posts' in the schema cache" }
+            error: { message: "Could not find the table 'public.v_thread_posts' in the schema cache" }
           },
           v_post_comments: { data: [], error: null }
         },
@@ -163,7 +163,7 @@ describe("account workspace data", () => {
           },
           user_visibility_settings: { data: null, error: null },
           thread_post: { data: [], error: null },
-          v_posts: { data: [], error: { message: "statement timeout", code: "57014" } },
+          v_thread_posts: { data: [], error: { message: "statement timeout", code: "57014" } },
           v_post_comments: { data: [], error: null }
         },
         rpcs: {

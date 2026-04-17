@@ -20,7 +20,6 @@ const bannedClassPatterns = [
 
 const sourceFiles = [
   "app/page.tsx",
-  "app/category/[slug]/page.tsx",
   "app/auth/login/page.tsx",
   "app/(public)/post/[slug]/page.tsx",
   "app/(authenticated)/me/page.tsx",

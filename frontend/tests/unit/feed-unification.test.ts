@@ -10,9 +10,4 @@ describe("Feed unification", () => {
     const source = fs.readFileSync(path.join(root, "components/home/post-feed.tsx"), "utf8");
     expect(source).toContain("AppFeedItem");
   });
-
-  it("uses AppPollFeedItem in PollExplorerList", () => {
-    const source = fs.readFileSync(path.join(root, "components/poll/poll-explorer-list.tsx"), "utf8");
-    expect(source).toContain("AppPollFeedItem");
-  });
 });

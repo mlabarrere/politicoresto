@@ -1,38 +1,9 @@
-﻿import type { PostDetailScreenData } from "@/lib/types/screens";
+import type { PostDetailScreenData } from "@/lib/types/screens";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toThreadRow } from "./canonical";
 import { getPollSummariesByPostItemIds } from "./polls";
-
-type BackendError = {
-  message?: string;
-  code?: string;
-};
-
-function isMissingScopeColumn(error: BackendError | null | undefined, scopeColumn: string) {
-  if (!error) return false;
-  const message = String(error.message ?? "").toLowerCase();
-  const code = String(error.code ?? "").toLowerCase();
-  return (
-    message.includes(`column ${scopeColumn}`) ||
-    message.includes(`could not find the '${scopeColumn}' column`) ||
-    code === "42703" ||
-    code === "pgrst204"
-  );
-}
-
-function isMissingRelation(error: BackendError | null | undefined) {
-  if (!error) return false;
-  const message = String(error.message ?? "").toLowerCase();
-  const code = String(error.code ?? "").toLowerCase();
-  return (
-    message.includes("could not find the table") ||
-    message.includes("relation") ||
-    code === "42p01" ||
-    code === "pgrst205"
-  );
-}
 
 async function fetchTopicDetail({
   supabase,
@@ -41,22 +12,8 @@ async function fetchTopicDetail({
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
   slug: string;
 }) {
-  try {
-    const primary = await supabase
-      .from("v_thread_detail")
-      .select("*")
-      .eq("slug", slug)
-      .maybeSingle();
-
-    if (!primary.error || !isMissingRelation(primary.error)) {
-      return primary;
-    }
-  } catch {
-    // Fallback to legacy views for mocked/test environments.
-  }
-
   return await supabase
-    .from("v_post_detail")
+    .from("v_thread_detail")
     .select("*")
     .eq("slug", slug)
     .maybeSingle();
@@ -69,78 +26,33 @@ async function fetchPostRows({
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
   topicId: string;
 }) {
-  try {
-    const result = await supabase
-      .from("v_thread_posts")
-      .select(
-        "id, thread_id, type, title, content, created_by, username, display_name, created_at, updated_at, status, gauche_count, droite_count, weighted_votes, comment_count"
-      )
-      .eq("thread_id", topicId)
-      .order("created_at", { ascending: true });
-
-    if (!result.error || !isMissingRelation(result.error)) {
-      if (result.error) throw result.error;
-      return result.data ?? [];
-    }
-  } catch {
-    // Fallback to legacy views for mocked/test environments.
-  }
-
-  const fallback = await supabase
-    .from("v_posts")
+  const result = await supabase
+    .from("v_thread_posts")
     .select(
-      "id, post_id, type, title, content, created_by, username, display_name, created_at, updated_at, status, gauche_count, droite_count, weighted_votes, comment_count"
+      "id, thread_id, type, title, content, created_by, username, display_name, created_at, updated_at, status, gauche_count, droite_count, weighted_votes, comment_count"
     )
-    .eq("post_id", topicId)
+    .eq("thread_id", topicId)
     .order("created_at", { ascending: true });
 
-  if (fallback.error) throw fallback.error;
-  return fallback.data ?? [];
+  if (result.error) throw result.error;
+  return result.data ?? [];
 }
 
-async function fetchScopedRowsWithFallback({
+async function fetchCommentRows({
   supabase,
-  table,
-  columns,
-  topicId,
-  orderColumn
+  topicId
 }: {
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
-  table: "v_post_comments";
-  columns: string;
   topicId: string;
-  orderColumn: string;
-}): Promise<{ rows: unknown[]; scope: "post_id" | "thread_id" }> {
-  const primary = await supabase
-    .from(table)
-    .select(columns)
+}) {
+  const result = await supabase
+    .from("v_post_comments")
+    .select("*")
     .eq("thread_id", topicId)
-    .order(orderColumn, { ascending: true });
+    .order("created_at", { ascending: true });
 
-  if (!primary.error) {
-    return { rows: primary.data ?? [], scope: "thread_id" as const };
-  }
-
-  if (!isMissingScopeColumn(primary.error, "thread_id")) {
-    throw primary.error;
-  }
-
-  const fallback = await supabase
-    .from(table)
-    .select(columns)
-    .eq("post_id", topicId)
-    .order(orderColumn, { ascending: true });
-
-  if (fallback.error) throw fallback.error;
-
-  console.info("[getPostDetail] scope fallback", {
-    table,
-    topicId,
-    from: "thread_id",
-    to: "post_id"
-  });
-
-  return { rows: fallback.data ?? [], scope: "post_id" as const };
+  if (result.error) throw result.error;
+  return result.data ?? [];
 }
 
 export async function getPostDetail(
@@ -165,17 +77,14 @@ export async function getPostDetail(
       supabase,
       topicId
     }),
-    fetchScopedRowsWithFallback({
+    fetchCommentRows({
       supabase,
-      table: "v_post_comments",
-      columns: "*",
-      topicId,
-      orderColumn: "created_at"
+      topicId
     })
   ]);
 
   const posts = postsResult as unknown as PostDetailScreenData["posts"];
-  const comments = commentsResult.rows as unknown as PostDetailScreenData["comments"];
+  const comments = commentsResult as unknown as PostDetailScreenData["comments"];
 
   const postIds = posts
     .map((post) => String(post.id ?? ""))
@@ -210,22 +119,20 @@ export async function getPostDetail(
 
   const postsWithMetadata = posts.map((post) => ({
     ...post,
-    post_id: String((post as { post_id?: string | null }).post_id ?? (post as { thread_id?: string | null }).thread_id ?? ""),
+    post_id: String((post as { thread_id?: string | null }).thread_id ?? ""),
     metadata: metadataById.get(String(post.id)) ?? null,
     poll_summary: null
   })) as PostDetailScreenData["posts"];
 
-  const pollByPostItemId = await getPollSummariesByPostItemIds(
-    postsWithMetadata.map((post) => post.id)
-  );
+  const pollByPostItemId = await getPollSummariesByPostItemIds(postsWithMetadata.map((post) => post.id));
   for (const post of postsWithMetadata) {
     post.poll_summary = pollByPostItemId.get(post.id) ?? null;
   }
 
   const commentsList = comments.map((comment) => ({
     ...comment,
-    post_id: String(comment.post_id ?? comment.thread_id ?? ""),
-    post_item_id: comment.post_item_id ?? comment.thread_post_id ?? null
+    post_id: String(comment.thread_id ?? ""),
+    post_item_id: comment.thread_post_id ?? null
   }));
 
   if (!resolvedCurrentUserId) {
@@ -250,25 +157,12 @@ export async function getPostDetail(
   const commentIds = commentsList.map((comment) => comment.id);
   const [postReactions, commentReactions] = await Promise.all([
     postIds.length
-      ? (async () => {
-          const primary = await supabase
-            .from("reaction")
-            .select("target_id, reaction_type")
-            .eq("target_type", "thread_post")
-            .eq("user_id", resolvedCurrentUserId)
-            .in("target_id", postIds);
-
-          if (!primary.error || !isMissingScopeColumn(primary.error, "target_type")) {
-            return primary;
-          }
-
-          return await supabase
-            .from("reaction")
-            .select("target_id, reaction_type")
-            .eq("target_type", "post")
-            .eq("user_id", resolvedCurrentUserId)
-            .in("target_id", postIds);
-        })()
+      ? supabase
+          .from("reaction")
+          .select("target_id, reaction_type")
+          .eq("target_type", "thread_post")
+          .eq("user_id", resolvedCurrentUserId)
+          .in("target_id", postIds)
       : Promise.resolve({ data: [], error: null }),
     commentIds.length
       ? supabase

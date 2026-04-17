@@ -32,8 +32,6 @@ function makeFeedRow(id: string, score: number, createdAt: string) {
     created_at: createdAt,
     last_activity_at: createdAt,
     latest_thread_post_at: createdAt,
-    latest_post_at: createdAt,
-    post_score: score,
     thread_score: score,
     editorial_feed_score: score,
     editorial_feed_rank: score
@@ -41,37 +39,27 @@ function makeFeedRow(id: string, score: number, createdAt: string) {
 }
 
 function makeSupabase({
-  primaryFeed,
-  fallbackFeed,
+  feed,
   postRows = []
 }: {
-  primaryFeed: QueryResult;
-  fallbackFeed: QueryResult;
+  feed: QueryResult;
   postRows?: Array<Record<string, unknown>>;
 }) {
   return {
     from: vi.fn((table: string) => {
-      if (table === "v_feed_global_post") {
+      if (table === "v_feed_global") {
         return {
           select: vi.fn(() => {
             const query = {
               order: vi.fn(() => query),
-              limit: vi.fn(async () => primaryFeed)
+              limit: vi.fn(async () => feed)
             };
             return query;
           })
         };
       }
 
-      if (table === "v_feed_global") {
-        return {
-          select: vi.fn(() => ({
-            limit: vi.fn(async () => fallbackFeed)
-          }))
-        };
-      }
-
-      if (table === "v_posts") {
+      if (table === "v_thread_posts") {
         return {
           select: vi.fn(() => ({
             in: vi.fn(() => ({
@@ -98,26 +86,22 @@ function makeSupabase({
   };
 }
 
-describe("getHomeScreenData fallback", () => {
+describe("getHomeScreenData", () => {
   beforeEach(() => {
     mockedCreateServerSupabaseClient.mockReset();
   });
 
-  it("uses v_feed_global_post when available", async () => {
+  it("uses v_feed_global as canonical feed source", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue(
       makeSupabase({
-        primaryFeed: {
+        feed: {
           data: [makeFeedRow("topic-primary", 10, "2026-04-16T10:00:00.000Z")],
-          error: null
-        },
-        fallbackFeed: {
-          data: [makeFeedRow("topic-fallback", 5, "2026-04-16T09:00:00.000Z")],
           error: null
         },
         postRows: [
           {
             id: "post-item-primary",
-            post_id: "topic-primary",
+            thread_id: "topic-primary",
             content: "Post body",
             gauche_count: 1,
             droite_count: 0,
@@ -128,78 +112,39 @@ describe("getHomeScreenData fallback", () => {
       }) as never
     );
 
-    const result = await getHomeScreenData(null, null);
+    const result = await getHomeScreenData(null);
 
     expect(result.error).toBeNull();
     expect(result.data.feed[0]?.topic_id).toBe("topic-primary");
   });
 
-  it("falls back to v_feed_global when v_feed_global_post is missing", async () => {
+  it("returns a generic feed error when canonical view fails", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue(
       makeSupabase({
-        primaryFeed: {
+        feed: {
           data: null,
-          error: { message: "Could not find the table 'public.v_feed_global_post' in the schema cache" }
-        },
-        fallbackFeed: {
-          data: [makeFeedRow("topic-fallback", 12, "2026-04-16T12:00:00.000Z")],
-          error: null
-        },
-        postRows: [
-          {
-            id: "post-item-fallback",
-            post_id: "topic-fallback",
-            content: "Post body fallback",
-            gauche_count: 0,
-            droite_count: 0,
-            comment_count: 0,
-            created_at: "2026-04-16T12:00:00.000Z"
-          }
-        ]
-      }) as never
-    );
-
-    const result = await getHomeScreenData(null, null);
-
-    expect(result.error).toBeNull();
-    expect(result.data.feed[0]?.topic_id).toBe("topic-fallback");
-  });
-
-  it("returns a silent empty feed when both feed views are unavailable", async () => {
-    mockedCreateServerSupabaseClient.mockResolvedValue(
-      makeSupabase({
-        primaryFeed: {
-          data: null,
-          error: { message: "Could not find the table 'public.v_feed_global_post' in the schema cache" }
-        },
-        fallbackFeed: {
-          data: null,
-          error: { message: "Could not find the table 'public.v_feed_global' in the schema cache" }
+          error: { message: "statement timeout", code: "57014" }
         }
       }) as never
     );
 
-    const result = await getHomeScreenData(null, null);
+    const result = await getHomeScreenData(null);
 
-    expect(result.error).toBeNull();
+    expect(result.error).toBe("Feed indisponible pour le moment.");
     expect(result.data.feed).toEqual([]);
   });
 
   it("does not expose feed entries without initial post rows", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue(
       makeSupabase({
-        primaryFeed: {
+        feed: {
           data: [makeFeedRow("topic-without-op", 9, "2026-04-16T09:00:00.000Z")],
-          error: null
-        },
-        fallbackFeed: {
-          data: [],
           error: null
         }
       }) as never
     );
 
-    const result = await getHomeScreenData(null, null);
+    const result = await getHomeScreenData(null);
 
     expect(result.error).toBeNull();
     expect(result.data.feed).toEqual([]);
