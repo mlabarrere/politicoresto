@@ -44,21 +44,23 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       .in("thread_id", postRootIds)
       .order("created_at", { ascending: true });
 
-    for (const post of threadPostsResult.data ?? []) {
-      if (typeof post.type === "string" && post.type !== "article") continue;
-      const key = String((post as { thread_id?: string }).thread_id ?? "");
-      if (!key || postByRootId.has(key)) continue;
+    if (!threadPostsResult.error) {
+      for (const post of threadPostsResult.data ?? []) {
+        if (typeof post.type === "string" && post.type !== "article") continue;
+        const key = String((post as { thread_id?: string }).thread_id ?? "");
+        if (!key || postByRootId.has(key)) continue;
 
-      postByRootId.set(key, {
-        id: String(post.id),
-        content: (post.content as string | null) ?? null,
-        username: (post.username as string | null) ?? null,
-        display_name: (post.display_name as string | null) ?? null,
-        gauche_count: (post.gauche_count as number | null) ?? 0,
-        droite_count: (post.droite_count as number | null) ?? 0,
-        comment_count: (post.comment_count as number | null) ?? 0,
-        created_at: String(post.created_at)
-      });
+        postByRootId.set(key, {
+          id: String(post.id),
+          content: (post.content as string | null) ?? null,
+          username: (post.username as string | null) ?? null,
+          display_name: (post.display_name as string | null) ?? null,
+          gauche_count: (post.gauche_count as number | null) ?? 0,
+          droite_count: (post.droite_count as number | null) ?? 0,
+          comment_count: (post.comment_count as number | null) ?? 0,
+          created_at: String(post.created_at)
+        });
+      }
     }
   }
 
@@ -76,9 +78,11 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       .eq("user_id", resolvedCurrentUserId)
       .in("target_id", postIds);
 
-    for (const reaction of ownReactionsResult.data ?? []) {
-      const reactionType = reaction.reaction_type as "upvote" | "downvote";
-      reactionByTarget.set(String(reaction.target_id), REACTION_TYPE_TO_SIDE[reactionType]);
+    if (!ownReactionsResult.error) {
+      for (const reaction of ownReactionsResult.data ?? []) {
+        const reactionType = reaction.reaction_type as "upvote" | "downvote";
+        reactionByTarget.set(String(reaction.target_id), REACTION_TYPE_TO_SIDE[reactionType]);
+      }
     }
   }
 
