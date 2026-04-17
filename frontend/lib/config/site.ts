@@ -1,7 +1,7 @@
 export const siteConfig = {
-  name: "Politicoresto",
+  name: "PoliticoResto",
   description:
-    "Forum politique minimal: categories, threads, commentaires, profil.",
+    "Forum public minimal: posts, commentaires et profil.",
   navigation: {
     primary: [
       { href: "/", label: "Accueil" }
@@ -11,5 +11,5 @@ export const siteConfig = {
       { href: "/me?section=security", label: "Compte & securite", hint: "Prive" }
     ]
   },
-  editorialTabs: ["A la une", "Categories", "Discussion"]
+  editorialTabs: ["Populaires", "Recents"]
 } as const;

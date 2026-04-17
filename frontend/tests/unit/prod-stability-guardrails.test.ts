@@ -8,12 +8,9 @@ const root = path.resolve(__dirname, "../..");
 describe("Prod stability guardrails", () => {
   it("does not leak technical feed errors on public pages", () => {
     const homeSource = fs.readFileSync(path.join(root, "app/page.tsx"), "utf8");
-    const categorySource = fs.readFileSync(path.join(root, "app/category/[slug]/page.tsx"), "utf8");
 
     expect(homeSource).not.toContain("Feed partiel");
     expect(homeSource).not.toContain("Lecture incomplete");
-    expect(categorySource).not.toContain("Feed partiel");
-    expect(categorySource).not.toContain("Lecture incomplete");
   });
 
   it("forces create CTA to dedicated page and removes drawer flow provider", () => {

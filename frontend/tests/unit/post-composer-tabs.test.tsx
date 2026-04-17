@@ -15,21 +15,20 @@ describe("Post composer tabs", () => {
       <PostComposer
         action={async () => undefined}
         redirectPath="/"
-        initialError="create_post_topic failed in db"
+        initialError="Publication impossible pour le moment. Reessayez."
       />
     );
 
     expect(screen.getByRole("tab", { name: "Post" })).toBeTruthy();
     expect(screen.getByRole("tab", { name: "Sondage" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Paris (bientot)" })).toBeTruthy();
     expect(screen.getByText("Publication impossible")).toBeTruthy();
-    expect(screen.getByText("create_post_topic failed in db")).toBeTruthy();
+    expect(screen.getByText("Publication impossible pour le moment. Reessayez.")).toBeTruthy();
     expect(screen.getByText("Mode sondage")).toBeTruthy();
     expect(screen.getByText(/version brute et version redressee automatiquement/)).toBeTruthy();
     expect(screen.getByText("Corps (Markdown)")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Enregistrer le brouillon" })).toBeTruthy();
     expect(consoleErrorSpy).toHaveBeenCalledWith("[PostComposer] initialError", {
-      message: "create_post_topic failed in db"
+      message: "Publication impossible pour le moment. Reessayez."
     });
 
     consoleErrorSpy.mockRestore();

@@ -5,9 +5,8 @@ import { AppFilterBar } from "@/components/app/app-filter-bar";
 import type { FeedSortMode, FeedToolbarProps } from "@/lib/types/homepage";
 
 const SORTS: Array<{ value: FeedSortMode; label: string }> = [
-  { value: "top", label: "Top" },
-  { value: "recent", label: "Recent" },
-  { value: "most_comments", label: "Commentaires" }
+  { value: "popular", label: "Populaires" },
+  { value: "recent", label: "Recents" }
 ];
 
 export function FeedToolbar({ sortMode, onSortChange }: FeedToolbarProps) {

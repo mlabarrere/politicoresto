@@ -4,6 +4,8 @@ import { REACTION_SIDE_TO_TYPE, REACTION_TYPE_TO_SIDE, type ReactionSide } from 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fromBackendVoteSide } from "@/lib/forum/vote";
 
+const REACTION_MUTATION_ERROR = "Reaction operation failed";
+
 type ReactionPayload = {
   targetType: "post" | "comment";
   targetId: string;
@@ -49,7 +51,11 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (existingReactionError) {
-    return NextResponse.json({ error: existingReactionError.message }, { status: 400 });
+    console.error("[reactions] fetch existing failed", {
+      message: existingReactionError.message,
+      code: existingReactionError.code
+    });
+    return NextResponse.json({ error: REACTION_MUTATION_ERROR }, { status: 400 });
   }
 
   const side = body.side === "left" ? "gauche" : body.side === "right" ? "droite" : body.side;
@@ -67,7 +73,8 @@ export async function POST(request: Request) {
   });
 
   if (rpcError) {
-    return NextResponse.json({ error: rpcError.message }, { status: 400 });
+    console.error("[reactions] rpc failed", { message: rpcError.message, code: rpcError.code });
+    return NextResponse.json({ error: REACTION_MUTATION_ERROR }, { status: 400 });
   }
 
   const countsResult =
@@ -84,7 +91,11 @@ export async function POST(request: Request) {
           .maybeSingle();
 
   if (countsResult.error) {
-    return NextResponse.json({ error: countsResult.error.message }, { status: 400 });
+    console.error("[reactions] read counts failed", {
+      message: countsResult.error.message,
+      code: countsResult.error.code
+    });
+    return NextResponse.json({ error: REACTION_MUTATION_ERROR }, { status: 400 });
   }
 
   const counts = countsResult.data ?? { gauche_count: 0, droite_count: 0 };

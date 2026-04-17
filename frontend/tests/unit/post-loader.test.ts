@@ -42,7 +42,7 @@ describe("post detail loader", () => {
     const posts = [
       {
         id: "p1",
-        post_id: "t1",
+        thread_id: "t1",
         type: "article",
         title: "Post",
         content: "Body",
@@ -62,8 +62,8 @@ describe("post detail loader", () => {
     const comments = [
       {
         id: "c1",
-        post_id: "t1",
-        post_item_id: "p1",
+        thread_id: "t1",
+        thread_post_id: "p1",
         parent_post_id: null,
         depth: 0,
         author_user_id: "u2",
@@ -82,8 +82,8 @@ describe("post detail loader", () => {
 
     mockedCreateServerSupabaseClient.mockResolvedValue({
       from: vi.fn((table: string) => {
-        if (table === "v_post_detail") return { select: vi.fn(() => makeSelectQuery({ data: topic, error: null })) };
-        if (table === "v_posts")
+        if (table === "v_thread_detail") return { select: vi.fn(() => makeSelectQuery({ data: topic, error: null })) };
+        if (table === "v_thread_posts")
           return { select: vi.fn(() => makeSelectQuery({ data: posts, error: null })) };
         if (table === "v_post_comments")
           return { select: vi.fn(() => makeSelectQuery({ data: comments, error: null })) };
@@ -109,8 +109,3 @@ describe("post detail loader", () => {
     expect(detail?.comments.length).toBe(1);
   });
 });
-
-
-
-
-

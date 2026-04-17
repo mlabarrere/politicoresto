@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { normalizePostPollSummary } from "@/lib/polls/summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
+const POLL_VOTE_ERROR = "Poll vote failed";
+
 type VotePayload = {
   postItemId: string;
   optionId: string;
@@ -40,7 +42,8 @@ export async function POST(request: Request) {
   });
 
   if (voteError) {
-    return NextResponse.json({ error: voteError.message }, { status: 400 });
+    console.error("[polls][vote] rpc failed", { message: voteError.message, code: voteError.code });
+    return NextResponse.json({ error: POLL_VOTE_ERROR }, { status: 400 });
   }
 
   const { data: pollRow, error: pollError } = await supabase
@@ -50,7 +53,10 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (pollError || !pollRow) {
-    return NextResponse.json({ error: pollError?.message ?? "Poll not found" }, { status: 404 });
+    if (pollError) {
+      console.error("[polls][vote] read summary failed", { message: pollError.message, code: pollError.code });
+    }
+    return NextResponse.json({ error: "Poll not found" }, { status: 404 });
   }
 
   const poll = normalizePostPollSummary(pollRow as Record<string, unknown>);

@@ -5,6 +5,8 @@ import { mapCommentViewToForumNode } from "@/lib/forum/mappers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CommentView } from "@/lib/types/views";
 
+const COMMENT_MUTATION_ERROR = "Comment operation failed";
+
 function checkRateLimit() {
   return true;
 }
@@ -109,7 +111,8 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      console.error("[comments][POST] rpc error", { message: error.message, code: error.code });
+      return NextResponse.json({ error: COMMENT_MUTATION_ERROR }, { status: 400 });
     }
 
     const insertedId = String((inserted as { id?: string } | null)?.id ?? "");
@@ -122,8 +125,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ comment: node });
   } catch (error) {
+    console.error("[comments][POST] failed", { error });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Create failed" },
+      { error: COMMENT_MUTATION_ERROR },
       { status: 400 }
     );
   }
@@ -157,7 +161,8 @@ export async function PATCH(request: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error("[comments][PATCH] rpc error", { message: error.message, code: error.code });
+    return NextResponse.json({ error: COMMENT_MUTATION_ERROR }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
@@ -189,7 +194,8 @@ export async function DELETE(request: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error("[comments][DELETE] rpc error", { message: error.message, code: error.code });
+    return NextResponse.json({ error: COMMENT_MUTATION_ERROR }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });

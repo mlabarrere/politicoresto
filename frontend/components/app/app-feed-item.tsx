@@ -91,19 +91,3 @@ export function AppFeedItem({
     </AppCard>
   );
 }
-
-export function AppPollFeedItem({ row }: { row: PostPollSummaryView }) {
-  return (
-    <AppCard className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-base font-semibold text-foreground">{row.question}</h3>
-        <AppBadge label={row.poll_status === "open" ? "Actif" : "Clos"} tone={row.poll_status === "open" ? "info" : "muted"} />
-      </div>
-      <p className="text-xs text-muted-foreground">Representativite {row.representativity_score.toFixed(1)} / 100 - Panel {row.sample_size}</p>
-      <div className="flex items-center gap-2">
-        <AppButton href={`/post/${row.post_slug}` as Route} variant="secondary" size="sm">Voir detail</AppButton>
-        <AppButton href={`/post/${row.post_slug}` as Route} variant="ghost" size="sm">Post source</AppButton>
-      </div>
-    </AppCard>
-  );
-}

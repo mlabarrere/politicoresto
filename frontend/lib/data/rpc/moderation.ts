@@ -18,7 +18,8 @@ export async function reportContent(input: {
   });
 
   if (error) {
-    throw new Error(error.message);
+    console.error("[moderation][reportContent] rpc failed", { message: error.message, code: error.code });
+    throw new Error("Signalement impossible pour le moment.");
   }
 
   return data;

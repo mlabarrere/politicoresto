@@ -12,7 +12,6 @@ export type LoadState<T> = {
 
 export type HomeScreenData = {
   feed: PostFeedItemView[];
-  selectedBloc: string | null;
 };
 
 export type PostDetailScreenData = {

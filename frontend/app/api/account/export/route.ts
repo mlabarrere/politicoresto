@@ -15,9 +15,10 @@ export async function GET() {
       }
     });
   } catch (error) {
+    console.error("[account][export] failed", { error });
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Export impossible"
+        error: "Export impossible"
       },
       { status: 500 }
     );

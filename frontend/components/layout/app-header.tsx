@@ -22,7 +22,7 @@ export function AppHeader({
           <div className="lg:hidden">
             <AppDrawer
               side="left"
-              title="Politicoresto"
+              title="PoliticoResto"
               trigger={<AppButton variant="secondary" size="sm" aria-label="Ouvrir la navigation" icon={<Menu />} />}
             >
               <div className="mt-3 flex flex-col gap-3">
@@ -50,7 +50,7 @@ export function AppHeader({
             />
             <div>
               <p className="text-xl font-semibold tracking-tight text-foreground">{siteConfig.name}</p>
-              <p className="mt-1 text-sm text-muted-foreground">Forum politique</p>
+              <p className="mt-1 text-sm text-muted-foreground">Forum public minimal</p>
             </div>
           </Link>
         </div>

@@ -22,12 +22,12 @@ function makeScopedQuery(getResult: (scope: string) => QueryResult) {
   };
 }
 
-describe("getPostDetail scope fallback", () => {
+describe("getPostDetail canonical scope", () => {
   beforeEach(() => {
     mockedCreateServerSupabaseClient.mockReset();
   });
 
-  it("falls back from post_id to thread_id for comments/public posts", async () => {
+  it("reads topic, posts and comments from thread-first views", async () => {
     const topic = {
       id: "topic-1",
       slug: "topic-1",
@@ -82,7 +82,7 @@ describe("getPostDetail scope fallback", () => {
 
     mockedCreateServerSupabaseClient.mockResolvedValue({
       from: vi.fn((table: string) => {
-        if (table === "v_post_detail") {
+        if (table === "v_thread_detail") {
           return {
             select: vi.fn(() => ({
               eq: vi.fn(() => ({
@@ -92,13 +92,13 @@ describe("getPostDetail scope fallback", () => {
           };
         }
 
-        if (table === "v_posts") {
+        if (table === "v_thread_posts") {
           return {
             select: vi.fn(() =>
               makeScopedQuery((scope) =>
-                scope === "post_id"
-                  ? { data: null, error: { code: "42703", message: 'column post_id does not exist' } }
-                  : { data: postRows, error: null }
+                scope === "thread_id"
+                  ? { data: postRows, error: null }
+                  : { data: null, error: { code: "42703", message: "Unexpected scope" } }
               )
             )
           };
@@ -108,9 +108,9 @@ describe("getPostDetail scope fallback", () => {
           return {
             select: vi.fn(() =>
               makeScopedQuery((scope) =>
-                scope === "post_id"
-                  ? { data: null, error: { code: "42703", message: 'column post_id does not exist' } }
-                  : { data: commentRows, error: null }
+                scope === "thread_id"
+                  ? { data: commentRows, error: null }
+                  : { data: null, error: { code: "42703", message: "Unexpected scope" } }
               )
             )
           };
