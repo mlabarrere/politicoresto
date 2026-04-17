@@ -3,16 +3,21 @@ import type { PostPollSummaryView } from "@/lib/types/views";
 import { normalizePostPollSummary } from "@/lib/polls/summary";
 
 export async function getPollSummariesByPostItemIds(
-  postItemIds: string[]
+  postItemIds: string[],
+  options?: {
+    supabase?: Awaited<ReturnType<typeof createServerSupabaseClient>>;
+  }
 ): Promise<Map<string, PostPollSummaryView>> {
   if (!postItemIds.length) {
     return new Map();
   }
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = options?.supabase ?? (await createServerSupabaseClient());
   const { data, error } = await supabase
     .from("v_post_poll_summary")
-    .select("*")
+    .select(
+      "post_item_id, post_id, post_slug, post_title, question, deadline_at, poll_status, sample_size, effective_sample_size, representativity_score, coverage_score, distance_score, stability_score, anti_brigading_score, raw_results, corrected_results, options, selected_option_id"
+    )
     .in("post_item_id", postItemIds);
 
   if (error) throw error;

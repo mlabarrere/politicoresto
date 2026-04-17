@@ -10,7 +10,9 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
 
   const feedResult = await supabase
     .from("v_feed_global")
-    .select("*")
+    .select(
+      "topic_id, topic_slug, topic_title, topic_description, topic_status, derived_lifecycle_state, visibility, is_sensitive, space_id, space_slug, space_name, primary_taxonomy_slug, primary_taxonomy_label, prediction_type, prediction_question_title, aggregate_payload, metrics_payload, discussion_payload, card_payload, resolution_payload, last_activity_at, open_at, close_at, resolve_deadline_at, resolved_at, visible_post_count, active_prediction_count, activity_score_raw, freshness_score_raw, participation_score_raw, resolution_proximity_score_raw, editorial_priority_score_raw, shift_score_raw, editorial_feed_score, feed_reason_code, feed_reason_label, editorial_feed_rank, topic_card_payload, latest_thread_post_at, thread_score"
+    )
     .order("thread_score", { ascending: false })
     .order("latest_thread_post_at", { ascending: false, nullsFirst: false })
     .order("editorial_feed_rank", { ascending: true })
@@ -36,11 +38,12 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   if (postRootIds.length > 0) {
     const threadPostsResult = await supabase
       .from("v_thread_posts")
-      .select("id, thread_id, content, gauche_count, droite_count, comment_count, created_at")
+      .select("id, thread_id, type, content, gauche_count, droite_count, comment_count, created_at")
       .in("thread_id", postRootIds)
       .order("created_at", { ascending: true });
 
     for (const post of threadPostsResult.data ?? []) {
+      if (typeof post.type === "string" && post.type !== "article") continue;
       const key = String((post as { thread_id?: string }).thread_id ?? "");
       if (!key || postByRootId.has(key)) continue;
 
@@ -95,7 +98,8 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   const pollByPostItemId = await getPollSummariesByPostItemIds(
     enrichedFeed
       .map((item) => item.feed_post_id)
-      .filter((value): value is string => typeof value === "string" && value.length > 0)
+      .filter((value): value is string => typeof value === "string" && value.length > 0),
+    { supabase }
   );
 
   const feedWithPoll = enrichedFeed.map((item) => ({
