@@ -85,46 +85,19 @@ export async function getPostDetail(
 
   const posts = postsResult as unknown as PostDetailScreenData["posts"];
   const comments = commentsResult as unknown as PostDetailScreenData["comments"];
-
-  const postIds = posts
-    .map((post) => String(post.id ?? ""))
-    .filter((id) => id.length > 0);
-  const metadataById = new Map<string, Record<string, unknown> | null>();
-
-  if (postIds.length > 0) {
-    const { data: rawPosts, error: rawPostsError } = await supabase
-      .from("post")
-      .select("id, metadata")
-      .in("id", postIds);
-
-    if (rawPostsError) {
-      const code = String((rawPostsError as { code?: string }).code ?? "");
-      const message = String((rawPostsError as { message?: string }).message ?? "").toLowerCase();
-      const isOptionalMetadataFailure =
-        code === "42501" ||
-        code === "42p01" ||
-        code === "42703" ||
-        code === "pgrst204" ||
-        message.includes("permission") ||
-        message.includes("column") ||
-        message.includes("not found");
-
-      if (!isOptionalMetadataFailure) throw rawPostsError;
-    } else {
-      for (const row of rawPosts ?? []) {
-        metadataById.set(String(row.id), (row.metadata as Record<string, unknown> | null) ?? null);
-      }
-    }
-  }
+  const postIds = posts.map((post) => String(post.id ?? "")).filter((id) => id.length > 0);
 
   const postsWithMetadata = posts.map((post) => ({
     ...post,
     post_id: String((post as { thread_id?: string | null }).thread_id ?? ""),
-    metadata: metadataById.get(String(post.id)) ?? null,
+    metadata: null,
     poll_summary: null
   })) as PostDetailScreenData["posts"];
 
-  const pollByPostItemId = await getPollSummariesByPostItemIds(postsWithMetadata.map((post) => post.id));
+  const pollByPostItemId = await getPollSummariesByPostItemIds(
+    postsWithMetadata.map((post) => post.id),
+    { supabase }
+  );
   for (const post of postsWithMetadata) {
     post.poll_summary = pollByPostItemId.get(post.id) ?? null;
   }

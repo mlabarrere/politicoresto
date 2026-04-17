@@ -2,14 +2,11 @@ import { NextResponse } from "next/server";
 
 import { parseNonEmptyString } from "@/lib/domain/comments/validation";
 import { mapCommentViewToForumNode } from "@/lib/forum/mappers";
+import { canCreateCommentToday, RATE_LIMIT_MESSAGES } from "@/lib/security/rate-limit";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CommentView } from "@/lib/types/views";
 
 const COMMENT_MUTATION_ERROR = "Comment operation failed";
-
-function checkRateLimit() {
-  return true;
-}
 
 async function getPostIdBySlug(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, postSlug: string) {
   const { data: postRoot, error: postRootError } = await supabase
@@ -76,10 +73,6 @@ async function fetchCommentView(
 }
 
 export async function POST(request: Request) {
-  if (!checkRateLimit()) {
-    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
-  }
-
   const supabase = await createServerSupabaseClient();
   const {
     data: { user }
@@ -87,6 +80,11 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const rateLimit = await canCreateCommentToday(supabase, user.id);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: RATE_LIMIT_MESSAGES.comment }, { status: 429 });
   }
 
   const body = (await request.json().catch(() => null)) as {
@@ -134,10 +132,6 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  if (!checkRateLimit()) {
-    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
-  }
-
   const supabase = await createServerSupabaseClient();
   const {
     data: { user }
@@ -169,10 +163,6 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!checkRateLimit()) {
-    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
-  }
-
   const supabase = await createServerSupabaseClient();
   const {
     data: { user }
@@ -200,6 +190,5 @@ export async function DELETE(request: Request) {
 
   return NextResponse.json({ ok: true });
 }
-
 
 
