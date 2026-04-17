@@ -1,4 +1,14 @@
-# Polls MVP
+﻿# Polls MVP (historique)
+
+Statut: document historique partiellement valide.
+
+Reference canonique actuelle:
+
+- `docs/metier.md` (rules produit)
+- `docs/front-back-contract.md` (contrat SQL)
+- `docs/testing-strategy.md` (tests de non-regression)
+
+## Snapshot historique
 
 ## Scope
 - Poll attached to original post item.

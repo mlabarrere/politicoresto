@@ -89,3 +89,11 @@ Les pages ne doivent pas parler directement a Supabase si une fonction dediee pe
 - si un besoin de detail manque cote frontend, verifier d'abord si le contrat Supabase doit evoluer
 - preserver le caractere deployable Vercel depuis `frontend/` comme Root Directory unique
 - maintenir une matrice de compatibilite front/back pour les objets critiques (feed, detail post, creation, commentaires, reactions, workspace `/me`)
+
+## Documentation (obligatoire)
+
+- toute evolution produit ou technique significative doit mettre a jour les docs canoniques:
+- `../docs/metier.md`
+- `../docs/technique.md`
+- `../docs/front-back-contract.md`
+- les docs `frontend/docs/*` sont des complements; elles ne doivent pas contredire les docs canoniques racine

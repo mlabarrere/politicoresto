@@ -1,112 +1,86 @@
-# Frontend politicoresto
+﻿# Frontend PoliticoResto
+
+Application Next.js 15 de PoliticoResto.
 
 ## Objectif
 
-Ce dossier contient le socle frontend déployable sur Vercel pour `politicoresto.com`.
-Le frontend est volontairement mince:
-- rendu SSR par défaut
-- consommation des vues publiques et authentifiées Supabase
-- consommation des RPC Supabase pour les mutations
-- aucune logique métier critique recodée côté React
+Le frontend est un thin client:
 
-## Prérequis
+- compose les ecrans et orchestre la navigation,
+- consomme les vues/RPC Supabase,
+- n'implemente pas les regles metier critiques.
+
+## Stack
+
+- Next.js App Router
+- React 19
+- Tailwind CSS v4
+- Catalyst UI + wrappers `components/app/*`
+- Supabase SSR client
+- Vitest + Playwright
+
+## Prerequis
 
 - Node.js 20+
-- npm 10+ ou équivalent
-- un projet Supabase configuré
-- Google configuré côté Supabase Auth si vous testez l’OAuth
+- npm 10+
+- environnement Supabase configure
 
 ## Installation
-
-Depuis la racine du repo:
 
 ```powershell
 cd frontend
 npm install
 ```
 
-## Variables d’environnement
+## Variables d'environnement
 
-Créer un fichier `.env.local` dans `frontend/` à partir de `.env.example`:
+Fichier `frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
-Ne jamais ajouter de `service_role` key dans ce projet frontend.
+Ne jamais exposer de `service_role` dans le frontend.
 
-## Lancement local
+## Commandes utiles
 
 ```powershell
-cd frontend
 npm run dev
-```
-
-## Build local
-
-```powershell
-cd frontend
 npm run typecheck
+npm run test:unit
+npm run test:e2e
 npm run build
 ```
 
-## Branchement à Supabase
+## Organisation des dossiers
 
-- Le navigateur utilise `@supabase/ssr` + `@supabase/supabase-js`.
-- Le serveur Next.js utilise un client Supabase SSR basé sur cookies.
-- Les lectures publiques consomment en priorité les vues publiques.
-- Les lectures authentifiées consomment les vues authentifiées.
-- Les mutations doivent passer par les RPC Supabase ou les primitives Auth officielles.
+- `app/`: routes Next.js.
+- `components/app/`: surface UI partagee obligatoire.
+- `components/catalyst/`: primitives encapsulees.
+- `lib/data/public`: lectures publiques.
+- `lib/data/authenticated`: lectures session.
+- `lib/actions`: mutations serveur.
+- `tests/`: unitaires + e2e.
 
-## Déploiement Vercel
+## Regles frontend
 
-Réglages manuels attendus:
+- Pas d'import direct `components/catalyst/*` hors wrappers.
+- Pas de recreation de primitives UI existantes.
+- Toute query/RPC passe par les modules `lib/data/*` ou `lib/actions/*`.
+- Toute evolution front doit etre alignee avec le contrat SQL.
 
-- `Vercel Project Root Directory = frontend/`
-- `Framework Preset = Next.js`
-- définir les variables d’environnement du projet:
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+Voir `frontend/AGENT.md` pour les regles detaillees.
 
-Après tout changement de variable d’environnement, un redéploiement est nécessaire.
+## Documentation frontend
 
-## Supabase Auth
+- Index: `frontend/docs/README.md`
+- Audit CTA global: `frontend/docs/create-cta-audit.md`
+- Audit UI Catalyst: `frontend/docs/ui-audit-catalyst.md`
+- Spec UI phase 1 (historique de conception): `frontend/docs/ui-spec-phase-1.md`
 
-Configurer dans le dashboard Supabase:
+## Deploiement Vercel
 
-- provider Google
-- les redirect URLs correspondant aux URLs Vercel preview et production
-
-## Répartition des responsabilités
-
-### Relève du frontend
-- composition des pages
-- rendu SSR/Client
-- navigation
-- appels vers vues, tables publiques autorisées, RPC et auth Supabase
-- robustesse UX en cas d’absence de données
-
-### Relève de Supabase
-- sécurité réelle
-- RLS
-- scoring
-- modération
-- règles métier
-- agrégations
-- workflows métier
-
-## Monorepo
-
-Le repo racine contient au moins:
-
-- `supabase/`
-- `frontend/`
-
-Vercel ne doit pas cibler la racine du repo pour ce projet. Il doit cibler `frontend/`.
-
-## Documentation UI
-
-La spécification UI exécutable de la phase 1 est disponible dans:
-
-- `docs/ui-spec-phase-1.md`
+- Project root directory: `frontend/`
+- Framework preset: Next.js
+- Variables configurees sur le projet Vercel

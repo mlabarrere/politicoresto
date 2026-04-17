@@ -1,4 +1,14 @@
-# Cleanup Architecture Map
+﻿# Cleanup Architecture Map (historique)
+
+Statut: document historique conserve pour contexte.
+
+Pour la version canonique actuelle:
+
+- `docs/technique.md`
+- `docs/front-back-contract.md`
+- `docs/metier.md`
+
+## Snapshot historique
 
 ## Canonical UI primitives
 - `AppButton`: variants `primary|secondary|ghost`.

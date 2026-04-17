@@ -1,4 +1,15 @@
-﻿# MVP Reset Audit Snapshot
+﻿# MVP Reset Audit Snapshot (historique)
+
+Statut: document historique.
+Date d'origine: 2026-04-14.
+
+Reference canonique actuelle:
+
+- `docs/metier.md`
+- `docs/technique.md`
+- `docs/front-back-contract.md`
+
+## Snapshot historique
 
 Date: 2026-04-14
 Project: PoliticoResto

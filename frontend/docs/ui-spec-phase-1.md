@@ -1,3 +1,10 @@
+# UI Spec Phase 1 (historique)
+
+Statut: document historique de conception large perimetre.
+Pour l'implementation courante, se referer a ../../docs/technique.md, ../../docs/front-back-contract.md et ../AGENT.md.
+
+---
+
 # Politicoresto — UI Spec Exécutable Phase 1
 
 ## Objectif

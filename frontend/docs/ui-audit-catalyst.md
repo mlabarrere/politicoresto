@@ -1,26 +1,32 @@
-# UI Audit and Replacement Plan - Catalyst Unification
+﻿# UI Audit and Replacement Plan - Catalyst Unification
 
-## Scope
-- Home page
+Statut: majoritairement applique, a maintenir en continu.
+
+## Scope couvert
+
+- Homepage
 - Category page
 - Polls list
 - Shared layout and interaction primitives
 
-## Matrix
-| Existing component/pattern | Usage | Catalyst target | Action |
-|---|---|---|---|
-| `components/ui/button` + local variants + raw buttons | CTA and interaction buttons | `CatalystButton` via `AppButton` | Replaced and consolidated |
-| `components/ui/input` + raw input usage | Forms and settings | `CatalystInput` via `AppInput` | Replaced and consolidated |
-| `components/ui/textarea` + raw textarea usage | Composer and settings | `CatalystTextarea` via `AppTextarea` | Replaced and consolidated |
-| `components/ui/select` | Sorting/filtering/forms | `CatalystSelect` via `AppSelect` | Replaced and consolidated |
-| `components/ui/tabs` | Post composer tabs | Headless UI tabs via `AppTabs` | Replaced |
-| `app-card` / `soft-panel` utility classes | Cards/panels across pages | `AppCard` wrapper | Replaced, utility classes removed |
-| `components/ui/alert` + local empty/screen states | Empty/error/info states | `CatalystAlert` via `AppBanner` + `AppEmptyState` | Replaced and merged |
-| `components/ui/sheet` and local drawers | Mobile nav/filter/auth prompts | `CatalystDialog` via `AppDrawer`/`AppModal` | Replaced and standardized |
-| ad hoc filter rows | Feed/forum/polls filters | `AppFilterBar` | Replaced and merged |
-| divergent feed cards (`domain/post-card`, polls list cards) | Home/category/polls cards | `AppFeedItem` and `AppPollFeedItem` | Unified |
-| ad hoc page intro blocks | Page headers/intros | `AppPageHeader` | Replaced |
+## Matrice de convergence
 
-## Cleanup
-- Removed dead `components/ui/*` primitives no longer used (`button`, `card`, `input`, `select`, `tabs`, `textarea`, `sheet`, `alert`, `button-variants`).
-- Updated tests to enforce wrapper usage and prevent regressions.
+| Existant | Cible | Action |
+|---|---|---|
+| `components/ui/button` + variantes locales | `AppButton` | Fusionne |
+| `components/ui/input` + inputs libres | `AppInput` | Fusionne |
+| `components/ui/textarea` + textareas libres | `AppTextarea` | Fusionne |
+| `components/ui/select` | `AppSelect` | Fusionne |
+| `components/ui/tabs` | `AppTabs` | Remplace |
+| classes `app-card`/`soft-*` | `AppCard` | Supprime |
+| `components/ui/alert` + etats locaux | `AppBanner`/`AppEmptyState` | Fusionne |
+| `components/ui/sheet` + drawers locaux | `AppDrawer`/`AppModal` | Standardise |
+| barres filtres ad hoc | `AppFilterBar` | Fusionne |
+| cartes feed divergentes | `AppFeedItem` | Unifie |
+| headers ad hoc | `AppPageHeader` | Remplace |
+
+## Guardrails
+
+- Interdit: imports directs `components/catalyst/*` hors wrappers.
+- Interdit: nouvelles primitives `components/ui/*` legacy.
+- Obligation: toute UI partagee passe par `components/app/*`.

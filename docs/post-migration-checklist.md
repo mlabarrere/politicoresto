@@ -1,4 +1,13 @@
-# Post Migration Checklist
+﻿# Post Migration Checklist (historique)
+
+Statut: checklist historique. A utiliser comme reference, pas comme source canonique.
+
+Version canonique:
+
+- `docs/front-back-contract.md`
+- `docs/runbook-prod.md`
+
+## Snapshot historique
 
 ## Pre-flight
 - Run `npm test` in `frontend`.
