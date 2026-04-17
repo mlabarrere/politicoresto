@@ -1,3 +1,10 @@
+# home-feed-calibration (historique)
+
+Statut: document historique de cadrage phase 2.
+Reference canonique runtime: ../../docs/front-back-contract.md.
+
+---
+
 # Politicoresto — Calibration du feed homepage cible
 
 ## Objectif

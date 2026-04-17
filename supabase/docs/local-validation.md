@@ -1,38 +1,44 @@
-# Local validation
+﻿# Local validation
 
 ## Prerequisites
-- Supabase CLI installed locally.
-- PostgreSQL client tooling available (`psql` or `supabase db` commands).
-- A local Supabase stack initialized for this repository.
 
-## Expected repository layout
-- `supabase/migrations/00000000000000_init_v1.sql`
+- Supabase CLI installee.
+- Outils PostgreSQL disponibles (`psql` ou `supabase db`).
+- Stack Supabase locale initialisee pour ce repository.
+
+## Structure attendue
+
+- `supabase/migrations/*.sql`
 - `supabase/tests/*.sql`
-- `supabase/seed/minimal_reference_data.sql`
+- `supabase/seed/*.sql`
 
-## Recommended flow
-1. Start the local Supabase stack.
-2. Reset the database so the monolithic migration is replayed from scratch.
-3. Apply `supabase/seed/minimal_reference_data.sql` if you want a compact France sample beyond the macro seeds.
-4. Run the pgTAP suite in lexical order.
+## Flow recommande
 
-## Example commands
+1. demarrer la stack locale
+2. reset base pour rejouer les migrations
+3. charger un seed si necessaire
+4. executer les tests SQL
+
+## Commandes exemple
+
 ```powershell
 supabase start
 supabase db reset
-psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/seed/minimal_reference_data.sql
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f supabase/seed/forum_minimal_seed.sql
 Get-ChildItem supabase/tests/*.sql | Sort-Object Name | ForEach-Object {
   psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f $_.FullName
 }
 ```
 
-## What to validate
-- The migration applies on a fresh database without manual edits.
-- The auth provisioning trigger creates `app_profile`, `user_visibility_settings`, and `user_private_political_profile`.
-- RLS blocks direct reads of sensitive tables from non-owners.
-- RPC paths are used for prediction submission, post creation, consent capture, moderation reporting, and topic resolution.
-- Territorial rollup views return rows after applying the France sample seed.
+## Verifications minimales
+
+- migrations rejouables from scratch sans patch manuel,
+- objets SQL critiques presents (`v_feed_global`, `v_thread_detail`, `v_thread_posts`, `v_post_comments`),
+- si compat active: alias `v_feed_global_post`, `v_post_detail`, `v_posts`, wrappers `create_post_*`,
+- RLS bloque les lectures non autorisees,
+- parcours ecriture critiques via RPC (create, react, comments, polls).
 
 ## Notes
-- Google and Facebook OAuth provider setup remains a Supabase dashboard task.
-- The migration seeds only macro territories plus taxonomy primitives. The France-wide exhaustive territorial import should be layered separately.
+
+- les providers OAuth se configurent dans le dashboard Supabase, pas en SQL,
+- les migrations de compatibilite doivent rester additives et tracees.

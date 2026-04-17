@@ -1,4 +1,4 @@
-# AGENT.md
+﻿# AGENT.md
 
 ## Target architecture
 - `supabase/` is the authoritative business layer for permissions, scoring, moderation, taxonomy, territorial aggregation, and gamification.
@@ -41,5 +41,12 @@
 
 ## MCP and platform guidance
 - Use official Supabase project tooling for resets, migrations, and auth inspection.
-- Use the official Supabase ↔ Vercel integration for environment synchronization.
+- Use the official Supabase <-> Vercel integration for environment synchronization.
 - OAuth client IDs, secrets, and redirect URLs belong in Supabase project configuration, not in SQL.
+
+## Documentation (obligatoire)
+- Every schema, RLS, or RPC change must update canonical docs when behavior changes:
+- `../docs/front-back-contract.md`
+- `../docs/technique.md`
+- `docs/local-validation.md`
+- Historical diagnostics in `docs/*` must be marked as non-canonical.

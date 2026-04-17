@@ -1,3 +1,10 @@
+# home-feed-static-diagnostic-minimal-ux (historique)
+
+Statut: document historique / diagnostic ponctuel.
+Reference canonique: ../../docs/README.md et ../../docs/front-back-contract.md.
+
+---
+
 # Diagnostic statique du feed `v_home_feed_topics` sur `minimal_ux_seed.sql`
 
 ## Resume

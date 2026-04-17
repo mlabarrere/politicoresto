@@ -1,4 +1,11 @@
-# Preproduction Seed Report — 2026-04-03
+﻿# preprod-seed-report-2026-04-03 (historique)
+
+Statut: document historique / diagnostic ponctuel.
+Reference canonique: ../../docs/README.md et ../../docs/front-back-contract.md.
+
+---
+
+# Preproduction Seed Report - 2026-04-03
 
 ## Scope
 
@@ -244,3 +251,4 @@ The current preproduction environment already satisfies the intended seed goals:
 - the repository now contains a versioned `massive_showcase_seed.sql`, but it focuses on the massive editorial layer and expects the minimal layer to be in place first
 - if the environment is reset from a truly empty state, the profile density currently visible in shared preproduction still depends on the pre-existing user corpus of that environment
 - if full reproducibility is required from a clean branch, the next step is to extend the showcase seed so it also provisions the larger public profile corpus
+

@@ -1,16 +1,24 @@
-# Create CTA Audit - Global Unification
+﻿# Create CTA Audit - Global Unification
 
-## Removed or redirected legacy entrypoints
+Statut: valide et applique.
 
-- `components/home/create-post-cta.tsx` -> removed; replaced by global `AppPrimaryCTA`.
-- `components/home/homepage-shell.tsx` floating CTA usage -> removed.
-- `components/home/right-sidebar.tsx` embedded CTA card -> removed.
-- `components/home/right-sidebar.tsx` link `Nouveau post` -> removed.
-- `components/home/right-sidebar.tsx` link `Brouillons` (`/post/new?draft=1`) -> removed.
-- `components/layout/site-header.tsx` -> replaced by `components/layout/app-header.tsx` with standard primary CTA.
+## Scope
 
-## Global entrypoints now
+Uniformiser l'acces a la creation de contenu avec un seul pattern CTA.
 
-- Desktop + mobile header: `AppPrimaryCTA` in `AppHeader`.
-- Mobile FAB: `AppPrimaryCTA` in `AppShell`.
-- Create flow: direct navigation to `/post/new` (no drawer global).
+## Legacy entrypoints supprimes ou rediriges
+
+- `components/home/create-post-cta.tsx` supprime.
+- floating CTA local homepage supprime.
+- CTA ad hoc sidebar supprimes.
+- ancien `site-header.tsx` remplace par `app-header.tsx`.
+
+## Entry points courants
+
+- Header desktop/mobile: `AppPrimaryCTA`.
+- FAB mobile: `AppPrimaryCTA`.
+- Flow creation: `/post/new` (page dediee).
+
+## Regle de gouvernance
+
+Aucun nouveau bouton de creation ad hoc n'est autorise hors `AppPrimaryCTA`.

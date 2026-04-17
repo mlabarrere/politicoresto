@@ -1,3 +1,10 @@
+# ui-data-contracts-phase-2 (historique)
+
+Statut: document historique de cadrage phase 2.
+Reference canonique runtime: ../../docs/front-back-contract.md.
+
+---
+
 # Politicoresto — PHASE 2 Contrats backend orientés UI
 
 ## Objectif
