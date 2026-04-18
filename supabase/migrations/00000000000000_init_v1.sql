@@ -1355,40 +1355,14 @@ begin
 end;
 $$;
 
-do $$ begin
-  if exists (
-    select 1 from information_schema.columns
-    where table_schema = 'public'
-      and table_name   = 'user_visibility_settings'
-      and column_name  = 'territory_visibility'
-  ) then
-    execute $view$
-      create or replace view public.v_public_profiles as
-      select
-        p.user_id,
-        case when vs.display_name_visibility = 'public' and p.is_public_profile_enabled then p.display_name else null end as display_name,
-        case when vs.bio_visibility          = 'public' and p.is_public_profile_enabled then p.bio          else null end as bio,
-        case when vs.territory_visibility    = 'public' and p.is_public_profile_enabled then p.public_territory_id else null end as public_territory_id,
-        p.created_at
-      from public.app_profile p
-      join public.user_visibility_settings vs on vs.user_id = p.user_id
-      where p.is_public_profile_enabled and p.profile_status = 'active';
-    $view$;
-  else
-    execute $view$
-      create or replace view public.v_public_profiles as
-      select
-        p.user_id,
-        case when vs.display_name_visibility = 'public' and p.is_public_profile_enabled then p.display_name else null end as display_name,
-        case when vs.bio_visibility          = 'public' and p.is_public_profile_enabled then p.bio          else null end as bio,
-        null::uuid as public_territory_id,
-        p.created_at
-      from public.app_profile p
-      join public.user_visibility_settings vs on vs.user_id = p.user_id
-      where p.is_public_profile_enabled and p.profile_status = 'active';
-    $view$;
-  end if;
-end $$;
+-- v_public_profiles: clean view without territory (dropped in 20260419000000).
+-- Use DROP + CREATE to avoid column-renaming errors on CREATE OR REPLACE.
+drop view if exists public.v_public_profiles;
+create view public.v_public_profiles as
+select ap.user_id, ap.display_name, ap.bio, ap.created_at
+from public.app_profile ap
+where ap.profile_status = 'active'
+  and ap.is_public_profile_enabled = true;
 
 create or replace view public.v_topic_public_summary as
 select
