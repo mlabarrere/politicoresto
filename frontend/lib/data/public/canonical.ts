@@ -1,16 +1,11 @@
 import type {
   HomeFeedTopicView,
   PostRow,
-  PredictionQuestionRow,
   SpaceRow,
-  PostPredictionAggregateView,
   PostRowView,
   PostSummaryView,
-  TopicAggregatePayload,
   TopicCardPayload,
   TopicDiscussionPayload,
-  TopicMetricsPayload,
-  TopicPredictionAggregateView,
   TopicResolutionPayload,
   TopicRow,
   TopicSummaryView
@@ -47,13 +42,7 @@ type ThreadDetailRow = JsonRecord & {
   space_name?: string | null;
   space_role?: string | null;
   visible_post_count?: number | null;
-  active_prediction_count?: number | null;
-  submission_count?: number | null;
-  prediction_type?: string | null;
   thread_post_count?: number | null;
-  article_post_count?: number | null;
-  poll_post_count?: number | null;
-  market_post_count?: number | null;
   latest_thread_post_at?: string | null;
   thread_score?: number | null;
   feed_reason_code?: string | null;
@@ -80,48 +69,11 @@ type LegacyPostRow = JsonRecord & {
   created_at: string;
 };
 
-
-function asAggregatePayload(value: unknown): TopicAggregatePayload {
-  const payload = isRecord(value) ? value : {};
-  const primaryValue =
-    typeof payload.primary_value === "string" || typeof payload.primary_value === "number"
-      ? payload.primary_value
-      : null;
-  const secondaryValue =
-    typeof payload.secondary_value === "string" || typeof payload.secondary_value === "number"
-      ? payload.secondary_value
-      : null;
-
-  return {
-    primary_value: primaryValue,
-    primary_label: asString(payload.primary_label),
-    secondary_value: secondaryValue,
-    secondary_label: asString(payload.secondary_label),
-    unit_label: asString(payload.unit_label),
-    submission_count: asNumber(payload.submission_count),
-    distribution_hint: asString(payload.distribution_hint)
-  };
-}
-
-function asMetricsPayload(value: unknown, fallback: Partial<TopicMetricsPayload> = {}): TopicMetricsPayload {
-  const payload = isRecord(value) ? value : {};
-
-  return {
-    active_prediction_count: asNumber(
-      payload.active_prediction_count ?? fallback.active_prediction_count,
-      0
-    ),
-    visible_post_count: asNumber(payload.visible_post_count ?? fallback.visible_post_count, 0),
-    time_label: asString(payload.time_label ?? fallback.time_label)
-  };
-}
-
 function asDiscussionPayload(
   value: unknown,
   fallback: Partial<TopicDiscussionPayload> = {}
 ): TopicDiscussionPayload {
   const payload = isRecord(value) ? value : {};
-
   return {
     excerpt_type: asString(payload.excerpt_type ?? fallback.excerpt_type),
     excerpt_title: asString(payload.excerpt_title ?? fallback.excerpt_title),
@@ -135,7 +87,6 @@ function asResolutionPayload(
   fallback: Partial<TopicResolutionPayload> = {}
 ): TopicResolutionPayload {
   const payload = isRecord(value) ? value : {};
-
   return {
     resolution_status: asString(payload.resolution_status ?? fallback.resolution_status),
     resolved_label: asString(payload.resolved_label ?? fallback.resolved_label),
@@ -146,44 +97,24 @@ function asResolutionPayload(
   };
 }
 
-function inferTimeLabel(row: FeedRow | ThreadDetailRow) {
-  const closeAt = asString(row.close_at);
-  if (!closeAt) {
-    return null;
-  }
-
-  return `Cloture le ${closeAt.slice(0, 10)}`;
-}
-
-function inferLifecycle(row: FeedRow | ThreadDetailRow) {
+function inferLifecycle(row: FeedRow | ThreadDetailRow): string {
   if ("derived_lifecycle_state" in row && typeof row.derived_lifecycle_state === "string") {
     return row.derived_lifecycle_state;
   }
-
-  if (row.topic_status === "resolved") {
-    return "resolved";
-  }
-
-  if (row.topic_status === "archived") {
-    return "archived";
-  }
-
-  if (row.topic_status === "locked") {
-    return "locked";
-  }
-
+  if (row.topic_status === "resolved") return "resolved";
+  if (row.topic_status === "archived") return "archived";
+  if (row.topic_status === "locked") return "locked";
   return "open";
+}
+
+export function inferTopicTimeLabel(closeAt: string | null | undefined): string | null {
+  if (!closeAt) return null;
+  return `Cloture le ${closeAt.slice(0, 10)}`;
 }
 
 export function toHomeFeedTopic(row: FeedRow, rank: number): HomeFeedTopicView {
   const nested: JsonRecord = isRecord(row.topic_card_payload) ? row.topic_card_payload : {};
-  const aggregatePayload = asAggregatePayload(row.aggregate_payload ?? nested.aggregate_payload);
-  const metricsPayload = asMetricsPayload(row.metrics_payload ?? nested.metrics_payload, {
-    active_prediction_count:
-      asNumber(row.active_prediction_count) || asNumber(row.thread_post_count),
-    visible_post_count: asNumber(row.visible_post_count) || asNumber(row.thread_post_count),
-    time_label: inferTimeLabel(row)
-  });
+
   const discussionPayload = asDiscussionPayload(
     row.discussion_payload ?? nested.discussion_payload,
     {
@@ -192,22 +123,7 @@ export function toHomeFeedTopic(row: FeedRow, rank: number): HomeFeedTopicView {
       excerpt_created_at: asString(row.latest_thread_post_at ?? row.last_activity_at ?? row.created_at)
     }
   );
-  const resolutionPayload = asResolutionPayload(
-    row.resolution_payload ?? nested.resolution_payload
-  );
-  const rawCardPayload = isRecord(row.card_payload)
-    ? row.card_payload
-    : isRecord(nested.card_payload)
-      ? nested.card_payload
-      : null;
-  const cardPayload = rawCardPayload
-    ? {
-        primary_card_slug: asString(rawCardPayload.primary_card_slug, "featured-observer")!,
-        primary_card_label: asString(rawCardPayload.primary_card_label, "Carte visible")!,
-        primary_card_rarity: asString(rawCardPayload.primary_card_rarity, "common")!,
-        additional_count: asNumber(rawCardPayload.additional_count, 0)
-      }
-    : null;
+  const resolutionPayload = asResolutionPayload(row.resolution_payload ?? nested.resolution_payload);
 
   const payload: TopicCardPayload = {
     topic_id: asString(row.topic_id ?? nested.topic_id, "")!,
@@ -223,14 +139,7 @@ export function toHomeFeedTopic(row: FeedRow, rank: number): HomeFeedTopicView {
     space_name: asString(row.space_name ?? nested.space_name),
     primary_taxonomy_slug: asString(row.primary_taxonomy_slug ?? nested.primary_taxonomy_slug),
     primary_taxonomy_label: asString(row.primary_taxonomy_label ?? nested.primary_taxonomy_label),
-    prediction_type: asString(row.prediction_type ?? nested.prediction_type),
-    prediction_question_title: asString(
-      row.prediction_question_title ?? nested.prediction_question_title ?? row.topic_title
-    ),
-    aggregate_payload: aggregatePayload,
-    metrics_payload: metricsPayload,
     discussion_payload: discussionPayload,
-    card_payload: cardPayload,
     resolution_payload: resolutionPayload,
     feed_reason_code: asString(row.feed_reason_code ?? nested.feed_reason_code, "high_activity")!,
     feed_reason_label: asString(
@@ -242,10 +151,7 @@ export function toHomeFeedTopic(row: FeedRow, rank: number): HomeFeedTopicView {
 
   return {
     ...payload,
-    aggregate_payload: aggregatePayload,
-    metrics_payload: metricsPayload,
     discussion_payload: discussionPayload,
-    card_payload: cardPayload,
     resolution_payload: resolutionPayload,
     last_activity_at: asString(row.last_activity_at ?? row.latest_thread_post_at ?? row.created_at),
     open_at: asString(row.open_at),
@@ -253,7 +159,6 @@ export function toHomeFeedTopic(row: FeedRow, rank: number): HomeFeedTopicView {
     resolve_deadline_at: asString(row.resolve_deadline_at),
     resolved_at: asString(row.resolved_at),
     visible_post_count: asNumber(row.visible_post_count ?? row.thread_post_count),
-    active_prediction_count: asNumber(row.active_prediction_count),
     activity_score_raw: asNumber(row.activity_score_raw, 0),
     freshness_score_raw: asNumber(row.freshness_score_raw, 0),
     participation_score_raw: asNumber(row.participation_score_raw, 0),
@@ -280,25 +185,7 @@ export function toTopicSummary(row: ThreadDetailRow): TopicSummaryView {
     open_at: row.open_at,
     close_at: row.close_at,
     created_at: row.created_at,
-    visible_post_count: asNumber(row.visible_post_count ?? row.thread_post_count),
-    active_prediction_count: asNumber(row.active_prediction_count)
-  };
-}
-
-export function toTopicAggregate(
-  row: JsonRecord & { id: string; prediction_type?: string | null; submission_count?: number | null }
-): TopicPredictionAggregateView | null {
-  if (!row.prediction_type) {
-    return null;
-  }
-
-  return {
-    topic_id: row.id,
-    prediction_type: row.prediction_type,
-    submission_count: asNumber(row.submission_count),
-    numeric_average: null,
-    numeric_median: null,
-    binary_yes_ratio: null
+    visible_post_count: asNumber(row.visible_post_count ?? row.thread_post_count)
   };
 }
 
@@ -338,12 +225,6 @@ export function toThreadSummary(row: ThreadDetailRow): PostSummaryView {
   return toTopicSummary(row);
 }
 
-export function toThreadAggregate(
-  row: JsonRecord & { id: string; prediction_type?: string | null; submission_count?: number | null }
-): PostPredictionAggregateView | null {
-  return toTopicAggregate(row);
-}
-
 export function toThreadRow(
   row: JsonRecord & {
     id: string;
@@ -359,20 +240,6 @@ export function toThreadRow(
   }
 ): PostRowView {
   return toTopicRow(row);
-}
-
-export function toPredictionQuestion(row: JsonRecord | null): PredictionQuestionRow | null {
-  if (!row) {
-    return null;
-  }
-
-  return {
-    topic_id: asString(row.topic_id, "")!,
-    prediction_type: asString(row.prediction_type, "binary")!,
-    title: asString(row.title, "")!,
-    unit_label: asString(row.unit_label),
-    allow_submission_update: asBoolean(row.allow_submission_update, true)
-  };
 }
 
 export function toThreadPost(row: ThreadPostRow): PostRow {
@@ -413,5 +280,3 @@ export function toSpaceRow(row: JsonRecord): SpaceRow {
     created_at: asString(row.created_at, new Date().toISOString())!
   };
 }
-
-

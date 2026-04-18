@@ -5,34 +5,11 @@ export type PublicProfileView = {
   created_at: string;
 };
 
-export type TopicAggregatePayload = {
-  primary_value: string | number | null;
-  primary_label: string | null;
-  secondary_value: string | number | null;
-  secondary_label: string | null;
-  unit_label: string | null;
-  submission_count: number;
-  distribution_hint: string | null;
-};
-
-export type TopicMetricsPayload = {
-  active_prediction_count: number;
-  visible_post_count: number;
-  time_label: string | null;
-};
-
 export type TopicDiscussionPayload = {
   excerpt_type: string | null;
   excerpt_title: string | null;
   excerpt_text: string | null;
   excerpt_created_at: string | null;
-};
-
-export type TopicCardRewardPayload = {
-  primary_card_slug: string;
-  primary_card_label: string;
-  primary_card_rarity: string;
-  additional_count: number;
 };
 
 export type TopicResolutionPayload = {
@@ -58,12 +35,7 @@ export type TopicCardPayload = {
   space_name: string | null;
   primary_taxonomy_slug: string | null;
   primary_taxonomy_label: string | null;
-  prediction_type: string | null;
-  prediction_question_title: string | null;
-  aggregate_payload: TopicAggregatePayload;
-  metrics_payload: TopicMetricsPayload;
   discussion_payload: TopicDiscussionPayload;
-  card_payload: TopicCardRewardPayload | null;
   resolution_payload: TopicResolutionPayload;
   feed_reason_code: string;
   feed_reason_label: string;
@@ -84,12 +56,7 @@ export type HomeFeedTopicView = {
   space_name: string | null;
   primary_taxonomy_slug: string | null;
   primary_taxonomy_label: string | null;
-  prediction_type: string | null;
-  prediction_question_title: string | null;
-  aggregate_payload: TopicAggregatePayload;
-  metrics_payload: TopicMetricsPayload;
   discussion_payload: TopicDiscussionPayload;
-  card_payload: TopicCardRewardPayload | null;
   resolution_payload: TopicResolutionPayload;
   last_activity_at: string | null;
   open_at: string | null;
@@ -97,7 +64,6 @@ export type HomeFeedTopicView = {
   resolve_deadline_at: string | null;
   resolved_at: string | null;
   visible_post_count: number | null;
-  active_prediction_count: number | null;
   activity_score_raw: number;
   freshness_score_raw: number;
   participation_score_raw: number;
@@ -132,16 +98,6 @@ export type TopicSummaryView = {
   close_at: string;
   created_at: string;
   visible_post_count: number | null;
-  active_prediction_count: number | null;
-};
-
-export type TopicPredictionAggregateView = {
-  topic_id: string;
-  prediction_type: string;
-  submission_count: number | null;
-  numeric_average: number | null;
-  numeric_median: number | null;
-  binary_yes_ratio: number | null;
 };
 
 export type PublicPollResultsView = {
@@ -188,60 +144,6 @@ export type PostPollSummaryView = {
   selected_option_id: string | null;
 };
 
-export type PublicCardShowcaseView = {
-  user_id: string;
-  card_id: string;
-  quantity: number;
-  first_granted_at: string;
-};
-
-export type TerritoryTopicRollupView = {
-  territory_id: string;
-  topic_count: number | null;
-};
-
-export type TerritoryPredictionRollupView = {
-  territory_id: string;
-  prediction_count: number | null;
-};
-
-export type MyPredictionHistoryView = {
-  id: string;
-  submission_id: string;
-  topic_id: string;
-  user_id: string;
-  submission_status: string;
-  answer_boolean: boolean | null;
-  answer_date: string | null;
-  answer_numeric: number | null;
-  answer_option_id: string | null;
-  answer_ordinal: number | null;
-  recorded_at: string;
-};
-
-export type PrivateVoteHistoryView = {
-  id: string;
-  vote_round: number | null;
-  declared_option_label: string;
-  declared_candidate_name: string | null;
-  declared_at: string;
-};
-
-export type MyReputationSummaryView = {
-  user_id: string;
-  total_reputation: number | null;
-  event_count: number | null;
-};
-
-export type MyCardInventoryView = {
-  id: string;
-  user_id: string;
-  card_id: string;
-  quantity: number;
-  first_granted_at: string;
-  last_granted_at: string;
-};
-
 export type SpaceRow = {
   id: string;
   slug: string;
@@ -264,23 +166,6 @@ export type TopicRow = {
   open_at: string;
   close_at: string;
   created_at: string;
-};
-
-export type PredictionQuestionRow = {
-  topic_id: string;
-  prediction_type: string;
-  title: string;
-  unit_label: string | null;
-  allow_submission_update: boolean;
-};
-
-export type PredictionOptionRow = {
-  id: string;
-  topic_id: string;
-  slug: string;
-  label: string;
-  sort_order: number;
-  is_active: boolean;
 };
 
 export type PostRow = {
@@ -319,17 +204,6 @@ export type PollOptionRow = {
   poll_question_id: string;
   label: string;
   sort_order: number;
-};
-
-export type CardCatalogRow = {
-  id: string;
-  family_id: string;
-  slug: string;
-  label: string;
-  description: string | null;
-  rarity: string;
-  is_stackable: boolean;
-  is_active: boolean;
 };
 
 export type PostView = {
@@ -393,9 +267,14 @@ export type LeaderboardEntryView = {
   updated_at?: string | null;
 };
 
+export type PrivateVoteHistoryView = {
+  id: string;
+  vote_round: number | null;
+  declared_option_label: string;
+  declared_candidate_name: string | null;
+  declared_at: string;
+};
+
 export type PostFeedItemView = HomeFeedTopicView;
 export type PostSummaryView = TopicSummaryView;
-export type PostPredictionAggregateView = TopicPredictionAggregateView;
 export type PostRowView = TopicRow;
-
-
