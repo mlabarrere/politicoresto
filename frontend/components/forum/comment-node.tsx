@@ -38,7 +38,7 @@ function CommentNodeBase({
   const canReply = depth < 1;
   const indentPx = getIndentPx(depth, maxInlineDepth, maxInlineDepth <= 3);
   const showDepthBadge = depth >= maxInlineDepth;
-  const childrenCollapsed =localCollapsed ?? collapsedAlll;
+  const childrenCollapsed = localCollapsed ?? collapsedAll;
 
   const modeLabel = useMemo(() => {
     if (mode === "replying" || mode === "submittingReply") return "reply";
