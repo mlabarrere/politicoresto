@@ -31,12 +31,12 @@ jobs:
         run: npm run build
 
       - name: Run unit tests with coverage
-        run: npx vitest run --coverage
+        run: ./node_modules/.bin/vitest run --coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: frontend/coverage
+          files: ./frontend/coverage/lcov.info
           flags: frontend
           fail_ci_if_error: false
