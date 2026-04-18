@@ -1,9 +1,3 @@
-@@ -41,1 +41,1 @@
--  const childrenCollapsed = localCollapsed !== null ? localCollapsed : collapsedAll;
-+  const childrenCollapsed =localCollapsed ?? collapsedAlll;
-@@ -145,1 +145,1 @@
--              onClick={() => setCollapsedChildren((previous) => !previous)}
-+              onClick={() =>{ setCollapsedChildren((previous) => !previous); })}
-@@ -153,1 +153,1 @@
--              onClick={() => setLocalCollapsed(childrenCollapsed ? false : true)}
-+              onClick={() =>{ setLocalCollapsed(childrenCollapsed ? false : true); })}
+@@ -12,1 +12,1 @@
+-type Pole = {
++  value: Exclude<VoteSide, null>;

@@ -5,7 +5,7 @@ import { politicalBlocs } from "@/lib/data/political-taxonomy";
 import { cn } from "@/lib/utils";
 import type { CategoryFilter } from "@/lib/types/homepage";
 
-type LeftSidebarProps = {
+interface LeftSidebarProps {
   activeFilter: CategoryFilter;
   onFilterChange: (filter: CategoryFilter) => void;
 };
@@ -33,8 +33,7 @@ function FilterButton({
   return (
     <button
       type="button"
-      onClick={() => onFilterChange(active ? null : filter)}
-      className={cn(
+      onClick={() => { onFilterChange(active ? null : filter); }}      className={cn(
         "w-full rounded-xl px-3 py-2 text-left text-sm transition-colors",
         active
           ? "bg-foreground text-background"
