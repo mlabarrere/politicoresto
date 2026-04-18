@@ -119,10 +119,10 @@ describe("post page forum UX", () => {
     expect(screen.queryByText(/\\n/)).not.toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Post principal" })).toBeInTheDocument();
     expect(screen.getByLabelText("Actions du post")).toBeInTheDocument();
-    expect(screen.getByLabelText("Outils du post")).toBeInTheDocument();
+    expect(screen.getByLabelText("Trier les commentaires")).toBeInTheDocument();
     expect(screen.getByTestId("comment-thread")).toBeInTheDocument();
-    expect(screen.getAllByLabelText("Classer gauche").length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText("Classer droite").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("C'est de gauche !").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("C'est de droite !").length).toBeGreaterThan(0);
     expect(
       screen.getByText((content) => content.includes("Commentaire parent") && content.includes("avec retour"))
     ).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe("post page forum UX", () => {
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "post-1" }) }));
 
-    fireEvent.click(screen.getAllByLabelText("Classer gauche")[0]);
+    fireEvent.click(screen.getAllByLabelText("C'est de gauche !")[0]);
 
     expect(screen.getByText("Se connecter")).toBeInTheDocument();
     expect(screen.getByText(/Cr.+er un compte/i)).toBeInTheDocument();

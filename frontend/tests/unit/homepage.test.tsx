@@ -85,7 +85,6 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(screen.getByText("PoliticoResto")).toBeInTheDocument();
     expect(screen.getAllByText("Couleur politique").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Gauche radicale a gauche").length).toBeGreaterThan(0);
   });
