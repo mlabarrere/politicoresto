@@ -1,0 +1,3 @@
+@@ -145,1 +145,1 @@
+-              onClick={() => setCollapsedChildren((previous) => !previous)}
++              onClick={() =>{ setCollapsedChildren((previous) => !previous); })}
