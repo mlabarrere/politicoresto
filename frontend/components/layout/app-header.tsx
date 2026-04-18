@@ -47,10 +47,7 @@ export function AppHeader({
               className="size-9"
               priority
             />
-            <div>
-              <p className="text-xl font-semibold tracking-tight text-foreground">{siteConfig.name}</p>
-              <p className="mt-1 text-sm text-muted-foreground">Forum public minimal</p>
-            </div>
+            <p className="text-xl font-semibold tracking-tight text-foreground">{siteConfig.name}</p>
           </Link>
         </div>
 
@@ -58,11 +55,12 @@ export function AppHeader({
           <MainNav />
           <AppPrimaryCTA isAuthenticated={isAuthenticated} />
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
-              <AppButton variant="secondary" size="sm" href="/me">Mon profil</AppButton>
-            </div>
+            <AppButton variant="secondary" size="sm" href="/me">Mon profil</AppButton>
           ) : (
-            <AppButton size="sm" href="/auth/login">Participer</AppButton>
+            <div className="flex items-center gap-2">
+              <AppButton variant="secondary" size="sm" href="/auth/login">Se connecter</AppButton>
+              <AppButton size="sm" href="/auth/login">Créer un compte</AppButton>
+            </div>
           )}
         </div>
       </div>

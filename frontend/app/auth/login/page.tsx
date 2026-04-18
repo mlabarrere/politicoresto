@@ -1,14 +1,15 @@
+import Image from "next/image";
+
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
-import { PageContainer } from "@/components/layout/page-container";
-import { SectionCard } from "@/components/layout/section-card";
 import { safeNextPath } from "@/lib/utils/safe-path";
+import { siteConfig } from "@/lib/config/site";
 
 function authErrorMessage(code?: string) {
   switch (code) {
     case "oauth_missing_code":
-      return "Le retour OAuth est incomplet. Recommencez la connexion Google.";
+      return "La connexion a echoue. Veuillez reessayer.";
     case "oauth_exchange_failed":
-      return "La session Google n'a pas pu etre finalisee. Recommencez ou rechargez la page.";
+      return "La session n'a pas pu etre creee. Veuillez reessayer.";
     default:
       return null;
   }
@@ -24,37 +25,35 @@ export default async function LoginPage({
   const errorMessage = authErrorMessage(auth_error);
 
   return (
-    <PageContainer>
-      <div className="mx-auto max-w-4xl">
-        <SectionCard title="Se connecter" eyebrow="Forum">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(260px,0.7fr)]">
-            <div className="space-y-4">
-              <p className="text-base leading-7 text-muted-foreground">
-                Connectez-vous pour ecrire, commenter et gerer votre profil prive. Le feed public
-                reste lisible sans connexion.
-              </p>
-              <div className="grid gap-3 text-sm text-muted-foreground">
-                <div className="rounded-lg border border-border bg-background p-4">
-                  Votre espace personnel reste prive.
-                </div>
-                <div className="rounded-lg border border-border bg-background p-4">
-                  Les options avancees de sondage pourront arriver plus tard.
-                </div>
-              </div>
-            </div>
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">Acces</p>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Connexion Google securisee. En cas d'indisponibilite, le message vous indique
-                l'action de configuration necessaire.
-              </p>
-              <div className="mt-5">
-                <OAuthButtons next={safeNext} initialError={errorMessage} />
-              </div>
-            </div>
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-sm space-y-8">
+        <div className="text-center">
+          <div className="flex justify-center">
+            <Image
+              src="/logo-politicoresto.svg"
+              alt="Logo PoliticoResto"
+              width={48}
+              height={48}
+              className="size-12"
+              priority
+            />
           </div>
-        </SectionCard>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
+            {siteConfig.name}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Se connecter ou créer un compte
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <OAuthButtons next={safeNext} initialError={errorMessage} />
+        </div>
+
+        <p className="text-center text-xs text-muted-foreground">
+          En continuant, vous acceptez nos conditions d&apos;utilisation.
+        </p>
       </div>
-    </PageContainer>
+    </div>
   );
 }

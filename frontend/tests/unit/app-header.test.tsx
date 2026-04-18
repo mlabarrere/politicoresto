@@ -72,6 +72,7 @@ describe("AppHeader", () => {
   it("renders auth entry when user is unauthenticated", () => {
     render(<AppHeader isAuthenticated={false} />);
 
-    expect(screen.getByRole("link", { name: "Participer" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Se connecter" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Créer un compte" })).toBeInTheDocument();
   });
 });
