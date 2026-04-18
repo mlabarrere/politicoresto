@@ -8,8 +8,7 @@ import type { CategoryFilter } from "@/lib/types/homepage";
 interface LeftSidebarProps {
   activeFilter: CategoryFilter;
   onFilterChange: (filter: CategoryFilter) => void;
-};
-
+}
 function isActive(filter: CategoryFilter, current: CategoryFilter): boolean {
   if (!filter || !current) return filter === current;
   if (filter.type !== current.type) return false;
