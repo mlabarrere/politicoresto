@@ -215,6 +215,7 @@ create table if not exists public.user_visibility_settings (
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+alter table public.user_visibility_settings add column if not exists territory_visibility public.visibility_level not null default 'authenticated';
 
 create table if not exists public.user_consent (
   id uuid primary key default gen_random_uuid(),
