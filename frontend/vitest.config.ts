@@ -12,6 +12,12 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"]
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      include: ["components/**", "lib/**", "app/**"],
+      exclude: ["**/*.test.*", "**/*.d.ts", "**/node_modules/**"]
+    }
   }
 });
