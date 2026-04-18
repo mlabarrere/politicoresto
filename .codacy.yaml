@@ -1,0 +1,17 @@
+version: "1.0"
+
+tools:
+  eslint:
+    enabled: true
+  pmd:
+    enabled: false
+  pmd-legacy:
+    enabled: false
+
+exclude_paths:
+  - "node_modules/**"
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.next/**"
+  - "frontend/coverage/**"
