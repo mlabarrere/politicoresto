@@ -40,7 +40,7 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   if (postRootIds.length > 0) {
     const threadPostsResult = await supabase
       .from("v_thread_posts")
-      .select("id, thread_id, type, content, gauche_count, droite_count, comment_count, created_at")
+      .select("id, thread_id, type, content, username, display_name, gauche_count, droite_count, comment_count, created_at")
       .in("thread_id", postRootIds)
       .order("created_at", { ascending: true });
 
@@ -52,6 +52,8 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       postByRootId.set(key, {
         id: String(post.id),
         content: (post.content as string | null) ?? null,
+        username: (post.username as string | null) ?? null,
+        display_name: (post.display_name as string | null) ?? null,
         gauche_count: (post.gauche_count as number | null) ?? 0,
         droite_count: (post.droite_count as number | null) ?? 0,
         comment_count: (post.comment_count as number | null) ?? 0,

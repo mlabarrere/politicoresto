@@ -46,11 +46,11 @@ export function normalizePostPollSummary(
   if (!row) return null;
 
   const post_item_id = asString(row.post_item_id);
-  const post_id = asString(row.post_id);
-  const post_slug = asString(row.post_slug);
-  const post_title = asString(row.post_title);
-  const question = asString(row.question);
-  const deadline_at = asString(row.deadline_at);
+  const post_id = asString(row.post_id, "")!;
+  const post_slug = asString(row.post_slug, "")!;
+  const post_title = asString(row.post_title, "")!;
+  const question = asString(row.question, "")!;
+  const deadline_at = asString(row.deadline_at, "")!;
 
   if (!post_item_id || !question) return null;
 
