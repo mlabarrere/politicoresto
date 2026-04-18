@@ -119,8 +119,9 @@ export const ReactionBar = memo(function ReactionBar({
         if (!isMountedRef.current || currentRequestId !== requestIdRef.current) return;
         setState(previousState);
       } finally {
-        if (!isMountedRef.current || currentRequestId !== requestIdRef.current) return;
-        setIsSubmitting(false);
+        if (isMountedRef.current && currentRequestId === requestIdRef.current) {
+          setIsSubmitting(false);
+        }
       }
     },
     [isSubmitting, state, targetId, targetType]

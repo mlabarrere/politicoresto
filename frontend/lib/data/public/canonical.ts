@@ -15,8 +15,7 @@ import type {
   TopicRow,
   TopicSummaryView
 } from "@/lib/types/views";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord, isRecord, asNumber, asString, asBoolean } from "@/lib/utils/type-coerce";
 
 type FeedRow = JsonRecord &
   Partial<HomeFeedTopicView> & {
@@ -81,21 +80,6 @@ type LegacyPostRow = JsonRecord & {
   created_at: string;
 };
 
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function asNumber(value: unknown, fallback = 0) {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
-
-function asString(value: unknown, fallback: string | null = null) {
-  return typeof value === "string" ? value : fallback;
-}
-
-function asBoolean(value: unknown, fallback = false) {
-  return typeof value === "boolean" ? value : fallback;
-}
 
 function asAggregatePayload(value: unknown): TopicAggregatePayload {
   const payload = isRecord(value) ? value : {};

@@ -1,0 +1,3 @@
+@@ -12,1 +12,1 @@
+-type Pole = {
++  value: Exclude<VoteSide, null>;

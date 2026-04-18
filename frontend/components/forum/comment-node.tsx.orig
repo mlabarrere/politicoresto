@@ -150,7 +150,7 @@ function CommentNodeBase({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => { setLocalCollapsed(childrenCollapsed ? false : true); }}
+              onClick={() =>{ setLocalCollapsed(childrenCollapsed ? false : true); })}
             >
               {childrenCollapsed ? `Afficher ${node.children.length}` : `Masquer ${node.children.length}`}
             </AppButton>

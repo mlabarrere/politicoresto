@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 
-import { CompactForumHeader } from "@/components/home/compact-forum-header";
 import { FeedToolbar } from "@/components/home/feed-toolbar";
 import { LeftSidebar } from "@/components/home/left-sidebar";
 import { MobileFiltersSheet } from "@/components/home/mobile-filters-sheet";
 import { MobileNavDrawer } from "@/components/home/mobile-nav-drawer";
 import { ResponsiveLayoutGrid } from "@/components/home/responsive-layout-grid";
 import { PostFeed } from "@/components/home/post-feed";
-import type { FeedSortMode, HomePageShellProps } from "@/lib/types/homepage";
+import type { CategoryFilter, FeedSortMode, HomePageShellProps } from "@/lib/types/homepage";
 
 export function HomePageShell({ items, isAuthenticated }: HomePageShellProps) {
   const [sortMode, setSortMode] = useState<FeedSortMode>("popular");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(null);
 
   return (
     <div className="space-y-4">
@@ -24,10 +24,11 @@ export function HomePageShell({ items, isAuthenticated }: HomePageShellProps) {
         />
       </div>
 
-      <ResponsiveLayoutGrid left={<LeftSidebar />}>
-        <CompactForumHeader />
+      <ResponsiveLayoutGrid left={
+        <LeftSidebar activeFilter={categoryFilter} onFilterChange={setCategoryFilter} />
+      }>
         <FeedToolbar sortMode={sortMode} onSortChange={setSortMode} />
-        <PostFeed items={items} isAuthenticated={isAuthenticated} sortMode={sortMode} />
+        <PostFeed items={items} isAuthenticated={isAuthenticated} sortMode={sortMode} categoryFilter={categoryFilter} />
       </ResponsiveLayoutGrid>
     </div>
   );

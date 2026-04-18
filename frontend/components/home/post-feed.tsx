@@ -6,13 +6,37 @@ import { AppButton } from "@/components/app/app-button";
 import { EmptyState } from "@/components/layout/empty-state";
 import { AppFeedItem } from "@/components/app/app-feed-item";
 import { HOME_STRINGS } from "@/lib/ui/strings";
-import type { FeedSortMode } from "@/lib/types/homepage";
+import type { CategoryFilter, FeedSortMode } from "@/lib/types/homepage";
 import type { PostFeedItemView } from "@/lib/types/views";
+import { politicalBlocs } from "@/lib/data/political-taxonomy";
 
 const INITIAL_VISIBLE_ITEMS = 20;
 const MAX_VISIBLE_ITEMS = 30;
 const LOAD_MORE_STEP = 10;
 const HOME_SCROLL_KEY = "politicoresto:home-scroll-y";
+
+function applyFilter(items: PostFeedItemView[], filter: CategoryFilter): PostFeedItemView[] {
+  if (!filter) return items;
+
+  if (filter.type === "sondage") {
+    return items.filter((item) => {
+      const poll = item.feed_poll_summary;
+      if (!poll) return false;
+      return filter.status === "open" ? poll.poll_status === "open" : poll.poll_status !== "open";
+    });
+  }
+
+  if (filter.type === "politique") {
+    const bloc = politicalBlocs.find((b) => b.slug === filter.blocSlug);
+    if (!bloc) return items;
+    const aliasSet = new Set([bloc.slug, ...bloc.aliases]);
+    return items.filter((item) =>
+      item.primary_taxonomy_slug != null && aliasSet.has(item.primary_taxonomy_slug)
+    );
+  }
+
+  return items;
+}
 
 function sortItems(items: PostFeedItemView[], sortMode: FeedSortMode) {
   const sorted = [...items];
@@ -30,14 +54,17 @@ function sortItems(items: PostFeedItemView[], sortMode: FeedSortMode) {
 export function PostFeed({
   items,
   isAuthenticated,
-  sortMode
+  sortMode,
+  categoryFilter = null
 }: {
   items: PostFeedItemView[];
   isAuthenticated: boolean;
   sortMode: FeedSortMode;
+  categoryFilter?: CategoryFilter;
 }) {
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
-  const sortedItems = useMemo(() => sortItems(items, sortMode), [items, sortMode]);
+  const filteredItems = useMemo(() => applyFilter(items, categoryFilter), [items, categoryFilter]);
+  const sortedItems = useMemo(() => sortItems(filteredItems, sortMode), [filteredItems, sortMode]);
   const cappedItems = sortedItems.slice(0, MAX_VISIBLE_ITEMS);
   const visibleItems = cappedItems.slice(0, visibleCount);
   const canLoadMore = visibleCount < cappedItems.length;

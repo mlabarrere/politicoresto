@@ -5,7 +5,6 @@
   ReplyDraft,
   VoteSide
 } from "@/lib/types/forum";
-import type { ReactNode } from "react";
 
 export type ForumPageState = {
   postStatus: "loading" | "ready" | "error";
@@ -35,21 +34,9 @@ export type PostActionsBarProps = {
   rightCount: number;
   isAuthenticated: boolean;
   redirectPath: string;
-  onVoteChange: (next: VoteSide) => Promise<void>;
   onReplyClick: () => void;
 };
 
-export type VoteBinaryLRProps = {
-  value: VoteSide;
-  leftCount: number;
-  rightCount: number;
-  disabled?: boolean;
-  size?: "sm" | "md";
-  entityType: "post" | "comment";
-  onChange: (next: VoteSide) => void;
-  isAuthenticated: boolean;
-  redirectPath: string;
-};
 
 export type CommentThreadProps = {
   comments: CommentTreeNode[];
@@ -61,7 +48,6 @@ export type CommentThreadProps = {
   onReplySubmit: (payload: ReplyDraft) => Promise<void>;
   onEditSubmit: (payload: EditDraft) => Promise<void>;
   onDeleteSubmit: (commentId: string) => Promise<void>;
-  onVoteChange: (commentId: string, next: VoteSide) => Promise<void>;
 };
 
 export type CommentNodeProps = {
@@ -74,7 +60,6 @@ export type CommentNodeProps = {
   onReplySubmit: (payload: ReplyDraft) => Promise<void>;
   onEditSubmit: (payload: EditDraft) => Promise<void>;
   onDeleteSubmit: (commentId: string) => Promise<void>;
-  onVoteChange: (commentId: string, next: VoteSide) => Promise<void>;
 };
 
 export type ReplyComposerProps = {
@@ -106,12 +91,5 @@ export type CommentActionsMenuProps = {
 
 export type PostToolbarProps = {
   sortMode: "top" | "recent" | "oldest";
-  collapsedAll: boolean;
-  compactMode: boolean;
-  showComposer: boolean;
-  composerSlot?: ReactNode;
   onSortChange: (next: "top" | "recent" | "oldest") => void;
-  onToggleCollapseAll: () => void;
-  onToggleCompactMode: () => void;
-  onToggleComposer: () => void;
 };

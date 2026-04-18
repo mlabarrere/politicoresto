@@ -16,7 +16,8 @@ export function mapPostViewToForumPost(
     title: post.title ?? fallbackTitle ?? undefined,
     author: {
       id: post.created_by,
-      username: toUsername(post.username, post.display_name)
+      username: toUsername(post.username, post.display_name),
+      slug: post.username ?? null
     },
     createdAt: post.created_at,
     body: normalizeMultilineText(post.content),
@@ -33,7 +34,8 @@ export function mapCommentViewToForumNode(comment: CommentView): CommentTreeNode
     id: comment.id,
     author: {
       id: comment.author_user_id,
-      username: toUsername(comment.username, comment.display_name)
+      username: toUsername(comment.username, comment.display_name),
+      slug: comment.username ?? null
     },
     createdAt: comment.created_at,
     updatedAt: comment.updated_at,
@@ -85,7 +87,8 @@ function buildNode(
     id: comment.id,
     author: {
       id: comment.author_user_id,
-      username: toUsername(comment.username, comment.display_name)
+      username: toUsername(comment.username, comment.display_name),
+      slug: comment.username ?? null
     },
     createdAt: comment.created_at,
     updatedAt: comment.updated_at,

@@ -3,7 +3,6 @@ import type { Route } from "next";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { AppButton } from "@/components/app/app-button";
 import { AppPrimaryCTA } from "@/components/app/app-primary-cta";
 import { AppDrawer } from "@/components/app/app-drawer";
@@ -45,7 +44,7 @@ export function AppHeader({
               alt="Logo PoliticoResto"
               width={36}
               height={36}
-              className="size-9 rounded-md border border-border bg-background p-1"
+              className="size-9"
               priority
             />
             <div>
@@ -61,7 +60,6 @@ export function AppHeader({
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <AppButton variant="secondary" size="sm" href="/me">Mon profil</AppButton>
-              <SignOutButton />
             </div>
           ) : (
             <AppButton size="sm" href="/auth/login">Participer</AppButton>
