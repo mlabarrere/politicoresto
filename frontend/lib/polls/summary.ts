@@ -3,20 +3,7 @@ import type {
   PostPollResultPoint,
   PostPollSummaryView
 } from "@/lib/types/views";
-
-type JsonRecord = Record<string, unknown>;
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function asNumber(value: unknown, fallback = 0) {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
-
-function asString(value: unknown, fallback = "") {
-  return typeof value === "string" ? value : fallback;
-}
+import { isRecord, asNumber, asString } from "@/lib/utils/type-coerce";
 
 function normalizeOption(value: unknown): PostPollOptionSummary | null {
   if (!isRecord(value)) return null;

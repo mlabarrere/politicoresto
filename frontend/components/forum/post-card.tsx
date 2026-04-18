@@ -1,11 +1,13 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import type { Route } from "next";
 
 import { AppAvatar, AppAvatarFallback, AppAvatarImage } from "@/components/app/app-avatar";
 import { AppButton } from "@/components/app/app-button";
 import { AppCard } from "@/components/app/app-card";
-import { PollDetailBlock } from "@/components/poll/poll-detail-block";
+import { PollCardInline } from "@/components/poll/poll-card-inline";
 import type { PostCardProps } from "@/lib/types/forum-components";
 import { formatDate } from "@/lib/utils/format";
 
@@ -33,7 +35,13 @@ export function PostCard({
           <AppAvatarFallback>{initials}</AppAvatarFallback>
         </AppAvatar>
         <div>
-          <p className="text-sm font-semibold text-foreground">{post.author.username}</p>
+          {post.author.slug ? (
+            <Link href={`/user/${post.author.slug}` as Route} className="text-sm font-semibold text-foreground hover:underline">
+              @{post.author.username}
+            </Link>
+          ) : (
+            <p className="text-sm font-semibold text-foreground">@{post.author.username}</p>
+          )}
           <p className="text-xs text-muted-foreground">{formatDate(post.createdAt)}</p>
         </div>
       </header>
@@ -55,7 +63,7 @@ export function PostCard({
         ) : null}
       </div>
 
-      {post.pollSummary ? <PollDetailBlock poll={post.pollSummary} isAuthenticated={isAuthenticated} /> : null}
+      {post.pollSummary ? <PollCardInline poll={post.pollSummary} isAuthenticated={isAuthenticated} /> : null}
     </AppCard>
   );
 }

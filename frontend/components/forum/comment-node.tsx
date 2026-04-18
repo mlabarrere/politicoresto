@@ -1,11 +1,14 @@
 ﻿"use client";
 
-import { memo, useMemo, useState } from "react";
+import { memo, useState } from "react";
+import Link from "next/link";
+import type { Route } from "next";
 
 import { CommentActionsMenu } from "@/components/forum/comment-actions-menu";
 import { EditComposer } from "@/components/forum/edit-composer";
 import { ReplyComposer } from "@/components/forum/reply-composer";
-import { VoteBinaryLR } from "@/components/forum/vote-binary-lr";
+import { ReactionBar } from "@/components/social/reaction-bar";
+import { toBackendVoteSide } from "@/lib/forum/vote";
 import { CornerDownLeft } from "lucide-react";
 import { AppAvatar, AppAvatarFallback } from "@/components/app/app-avatar";
 import { AppButton } from "@/components/app/app-button";
@@ -25,18 +28,17 @@ function CommentNodeBase({
   redirectPath,
   onReplySubmit,
   onEditSubmit,
-  onDeleteSubmit,
-  onVoteChange
+  onDeleteSubmit
 }: CommentNodeProps) {
   const [mode, setMode] = useState<CommentNodeMode>("read");
-  const [collapsedChildren, setCollapsedChildren] = useState(false);
+  const [localCollapsed, setLocalCollapsed] = useState<boolean | null>(null);
 
   const isSubmitting = mode === "submittingReply" || mode === "submittingEdit";
   const canEdit = currentUserId === node.author.id;
   const canReply = depth < 1;
   const indentPx = getIndentPx(depth, maxInlineDepth, maxInlineDepth <= 3);
   const showDepthBadge = depth >= maxInlineDepth;
-  const childrenCollapsed = collapsedAll || collapsedChildren;
+  const childrenCollapsed = localCollapsed !== null ? localCollapsed : collapsedAll;
 
   const modeLabel = useMemo(() => {
     if (mode === "replying" || mode === "submittingReply") return "reply";
@@ -92,7 +94,13 @@ function CommentNodeBase({
               <AppAvatarFallback>{node.author.username.slice(0, 2).toUpperCase()}</AppAvatarFallback>
             </AppAvatar>
             <div>
-              <p className="text-sm font-semibold text-foreground">{node.author.username}</p>
+              {node.author.slug ? (
+                <Link href={`/user/${node.author.slug}` as Route} className="text-sm font-semibold text-foreground hover:underline">
+                  @{node.author.username}
+                </Link>
+              ) : (
+                <p className="text-sm font-semibold text-foreground">@{node.author.username}</p>
+              )}
               <p className="mt-1 text-xs text-muted-foreground">
                 {formatDate(node.createdAt)} {node.isEdited ? "• modifié" : ""}
               </p>
@@ -126,15 +134,15 @@ function CommentNodeBase({
             </AppButton>
           ) : null}
 
-          <VoteBinaryLR
-            entityType="comment"
-            value={node.currentUserVote}
-            leftCount={node.leftCount}
-            rightCount={node.rightCount}
-            disabled={isSubmitting}
-            onChange={(next) => void onVoteChange(node.id, next)}
-            isAuthenticated={Boolean(currentUserId)}
+          <ReactionBar
+            targetType="comment"
+            targetId={node.id}
             redirectPath={redirectPath}
+            leftVotes={node.leftCount}
+            rightVotes={node.rightCount}
+            currentVote={toBackendVoteSide(node.currentUserVote)}
+            isAuthenticated={Boolean(currentUserId)}
+            compact
           />
 
           {node.children.length ? (
@@ -142,7 +150,7 @@ function CommentNodeBase({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => setCollapsedChildren((previous) => !previous)}
+              onClick={() => setLocalCollapsed(childrenCollapsed ? false : true)}
             >
               {childrenCollapsed ? `Afficher ${node.children.length}` : `Masquer ${node.children.length}`}
             </AppButton>
@@ -189,7 +197,6 @@ function CommentNodeBase({
               onReplySubmit={onReplySubmit}
               onEditSubmit={onEditSubmit}
               onDeleteSubmit={onDeleteSubmit}
-              onVoteChange={onVoteChange}
             />
           ))}
         </div>

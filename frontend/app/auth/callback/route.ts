@@ -2,22 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 import { supabaseEnv } from "@/lib/supabase/env";
-
-function safeNextPath(next: string | null) {
-  const fallback = "/";
-  if (!next) return fallback;
-  if (!next.startsWith("/")) return fallback;
-  if (next.startsWith("//")) return fallback;
-  if (next.includes("://")) return fallback;
-
-  try {
-    const url = new URL(next, "http://localhost");
-    if (url.origin !== "http://localhost") return fallback;
-    return `${url.pathname}${url.search}${url.hash}` || fallback;
-  } catch {
-    return fallback;
-  }
-}
+import { safeNextPath } from "@/lib/utils/safe-path";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
