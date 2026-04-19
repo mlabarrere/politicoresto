@@ -1,4 +1,4 @@
-﻿begin;
+begin;
 
 alter table public.space
   add column if not exists is_user_facing boolean not null default true,

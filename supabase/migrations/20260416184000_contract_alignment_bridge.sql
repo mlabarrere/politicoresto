@@ -1,6 +1,9 @@
-﻿-- Contract alignment bridge: post-first aliases on top of thread-first schema
+-- Contract alignment bridge: post-first aliases on top of thread-first schema
 
-create or replace view public.v_posts as
+-- v_posts may already exist with different column types (text vs citext).
+-- Drop and recreate to avoid "cannot change data type of view column" errors.
+drop view if exists public.v_posts cascade;
+create view public.v_posts as
 select
   tp.id,
   tp.thread_id as post_id,
@@ -38,7 +41,18 @@ select
   fg.latest_thread_post_at as latest_post_at
 from public.v_feed_global fg;
 
-create or replace view public.user_visibility_settings as
+-- user_visibility_settings is a TABLE on fresh install, a VIEW on remote.
+-- Convert to VIEW safely regardless of current relation type.
+do $$ begin
+  if exists (
+    select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'user_visibility_settings' and c.relkind = 'r'
+  ) then
+    drop table public.user_visibility_settings cascade;
+  end if;
+end $$;
+drop view if exists public.user_visibility_settings;
+create view public.user_visibility_settings as
 select
   ap.user_id,
   'public'::text as display_name_visibility,
@@ -98,9 +112,9 @@ language sql
 security definer
 set search_path = public
 as $$
-  select * from public.create_post(
+  select id from public.create_post(
     p_thread_id => p_post_id,
-    p_type => p_type,
+    p_type => p_type::public.thread_post_type,
     p_title => p_title,
     p_content => p_content,
     p_metadata => p_metadata

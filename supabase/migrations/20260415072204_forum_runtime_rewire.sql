@@ -1,4 +1,4 @@
-﻿-- placeholder migration to reconcile remote Supabase migration history
+-- placeholder migration to reconcile remote Supabase migration history
 -- version: 20260415072204
 -- name: forum_runtime_rewire
 -- rationale: this version exists in remote history and must be present locally for CI history checks.

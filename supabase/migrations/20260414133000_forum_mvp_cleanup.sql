@@ -1,4 +1,4 @@
-﻿-- Forum MVP cleanup: disable execute grants for non-MVP product endpoints.
+-- Forum MVP cleanup: disable execute grants for non-MVP product endpoints.
 -- Keep schema/auth/RLS structures untouched.
 
 revoke execute on function public.place_bet(uuid, uuid, boolean, date, numeric, uuid, integer, text) from authenticated;

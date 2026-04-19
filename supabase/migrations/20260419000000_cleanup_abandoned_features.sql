@@ -38,8 +38,12 @@ drop view if exists public.v_public_profiles cascade;
 -- 2. DROP TRIGGERS ON DEAD TABLES (pre-drop safety)
 -- =========================================================
 
-drop trigger if exists validate_prediction_submission_before_write on public.prediction_submission;
-drop trigger if exists snapshot_prediction_submission_after_write on public.prediction_submission;
+do $$ begin
+  if exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname = 'prediction_submission' and c.relkind = 'r') then
+    drop trigger if exists validate_prediction_submission_before_write on public.prediction_submission;
+    drop trigger if exists snapshot_prediction_submission_after_write on public.prediction_submission;
+  end if;
+end $$;
 drop trigger if exists capture_post_revision_before_update on public.post;
 
 -- =========================================================
@@ -247,7 +251,7 @@ select * from public.v_feed_global where entity_id is not null;
 -- =========================================================
 
 grant select on public.v_public_profiles to anon, authenticated;
-grant select on public.v_topic_public_summary, public.v_poll_public_results to anon, authenticated;
+grant select on public.v_topic_public_summary to anon, authenticated;
 grant select on public.v_feed_global, public.v_feed_entity to anon, authenticated;
 
 commit;

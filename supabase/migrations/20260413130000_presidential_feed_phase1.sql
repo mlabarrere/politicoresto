@@ -169,7 +169,7 @@ select 'global', 'Feed global', 'Vue transverse des conversations et rapports de
 where not exists (select 1 from public.space where slug = 'global');
 
 insert into public.space(slug, name, description, space_type, space_role, primary_entity_id, visibility)
-select pe.slug, pe.name, 'Espace partisan dedie a ' || pe.name || ' dans le cycle presidentiel.', 'editorial', case when pe.type = 'bloc' then 'bloc' else 'party' end, pe.id, 'public'
+select pe.slug, pe.name, 'Espace partisan dedie a ' || pe.name || ' dans le cycle presidentiel.', 'editorial'::public.space_type, case when pe.type = 'bloc' then 'bloc'::public.space_role else 'party'::public.space_role end, pe.id, 'public'::public.visibility_level
 from public.political_entity pe
 where pe.slug in ('rn', 'lfi', 'lr', 'ecologistes', 'bloc-central', 'renaissance')
   and not exists (select 1 from public.space s where s.slug = pe.slug);
@@ -180,7 +180,7 @@ where s.slug = 'global' and s.space_role = 'legacy';
 
 update public.space s
 set primary_entity_id = pe.id,
-    space_role = case when pe.type = 'bloc' then 'bloc' else 'party' end,
+    space_role = case when pe.type = 'bloc' then 'bloc'::public.space_role else 'party'::public.space_role end,
     updated_at = timezone('utc', now())
 from public.political_entity pe
 where s.slug = pe.slug

@@ -210,7 +210,6 @@ create table if not exists public.user_visibility_settings (
   territory_visibility public.visibility_level not null default 'authenticated',
   political_affinity_visibility public.visibility_level not null default 'private',
   vote_history_visibility public.visibility_level not null default 'private',
-  card_inventory_visibility public.visibility_level not null default 'public',
   prediction_history_visibility public.visibility_level not null default 'authenticated',
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
@@ -1425,14 +1424,6 @@ from public.reputation_ledger
 where user_id = auth.uid()
 group by user_id;
 
-create or replace view public.v_my_card_inventory as
-select * from public.user_card_inventory where user_id = auth.uid();
-
-create or replace view public.v_public_user_card_showcase as
-select uci.user_id, uci.card_id, uci.quantity, uci.first_granted_at
-from public.user_card_inventory uci
-join public.user_visibility_settings vs on vs.user_id = uci.user_id
-where vs.card_inventory_visibility = 'public';
 
 create or replace view public.v_territory_rollup_topic_count as
 select tc.ancestor_id as territory_id, count(distinct ttl.topic_id) as topic_count
@@ -1696,8 +1687,8 @@ grant select on public.user_consent, public.prediction_submission, public.predic
 grant insert, update, select on public.user_declared_vote_record to authenticated;
 grant insert, update, select on public.post to authenticated;
 grant insert, update, select on public.moderation_report to authenticated;
-grant select on public.v_public_profiles, public.v_topic_public_summary, public.v_topic_prediction_aggregate, public.v_poll_public_results, public.v_public_user_card_showcase, public.v_territory_rollup_topic_count, public.v_territory_rollup_prediction_activity to anon, authenticated;
-grant select on public.v_my_prediction_history, public.v_my_reputation_summary, public.v_my_card_inventory, public.v_moderation_queue, public.v_abuse_signals_recent, public.v_resolution_audit_trail to authenticated;
+grant select on public.v_public_profiles, public.v_topic_public_summary, public.v_topic_prediction_aggregate, public.v_poll_public_results, public.v_territory_rollup_topic_count, public.v_territory_rollup_prediction_activity to anon, authenticated;
+grant select on public.v_my_prediction_history, public.v_my_reputation_summary, public.v_moderation_queue, public.v_abuse_signals_recent, public.v_resolution_audit_trail to authenticated;
 grant execute on function public.rpc_record_consent(public.consent_type, public.consent_status, text, text) to authenticated;
 grant execute on function public.rpc_submit_prediction(uuid, boolean, date, numeric, uuid, integer, text) to authenticated;
 grant execute on function public.rpc_create_post(uuid, uuid, public.post_type, text, text) to authenticated;
