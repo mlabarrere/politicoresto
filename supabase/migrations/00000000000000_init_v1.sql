@@ -1481,10 +1481,21 @@ create trigger app_profile_touch_updated_at
 before update on public.app_profile
 for each row execute function public.touch_updated_at();
 
-drop trigger if exists visibility_settings_touch_updated_at on public.user_visibility_settings;
-create trigger visibility_settings_touch_updated_at
-before update on public.user_visibility_settings
-for each row execute function public.touch_updated_at();
+-- user_visibility_settings may already be a VIEW on existing DBs (converted by later migrations).
+-- Row-level triggers cannot be placed on views, so skip if not a base table.
+do $$ begin
+  if exists (
+    select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'user_visibility_settings' and c.relkind = 'r'
+  ) then
+    drop trigger if exists visibility_settings_touch_updated_at on public.user_visibility_settings;
+    execute $t$
+      create trigger visibility_settings_touch_updated_at
+      before update on public.user_visibility_settings
+      for each row execute function public.touch_updated_at()
+    $t$;
+  end if;
+end $$;
 
 drop trigger if exists private_profile_touch_updated_at on public.user_private_political_profile;
 create trigger private_profile_touch_updated_at
