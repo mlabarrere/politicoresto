@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getHomeScreenData } from "@/lib/data/public/home";
+import { resolveCurrentUserId } from "@/lib/supabase/auth-user";
+import { getPollSummariesByPostItemIds } from "@/lib/data/public/polls";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -21,6 +23,8 @@ vi.mock("@/lib/data/public/polls", () => ({
 }));
 
 const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
+const mockedResolveCurrentUserId = vi.mocked(resolveCurrentUserId);
+const mockedGetPollSummaries = vi.mocked(getPollSummariesByPostItemIds);
 
 type QueryResult = {
   data: Array<Record<string, unknown>> | null;
@@ -43,12 +47,27 @@ function makeFeedRow(id: string, score: number, createdAt: string) {
   };
 }
 
+function makePostRow(id: string, threadId: string) {
+  return {
+    id,
+    thread_id: threadId,
+    type: "article",
+    content: "Post body",
+    gauche_count: 1,
+    droite_count: 0,
+    comment_count: 0,
+    created_at: "2026-04-16T10:00:00.000Z"
+  };
+}
+
 function makeSupabase({
   feed,
-  postRows = []
+  postRows = [],
+  reactionRows = []
 }: {
   feed: QueryResult;
   postRows?: Array<Record<string, unknown>>;
+  reactionRows?: Array<{ target_id: string; reaction_type: string }>;
 }) {
   return {
     from: vi.fn((table: string) => {
@@ -79,7 +98,7 @@ function makeSupabase({
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               eq: vi.fn(() => ({
-                in: vi.fn(async () => ({ data: [], error: null }))
+                in: vi.fn(async () => ({ data: reactionRows, error: null }))
               }))
             }))
           }))
@@ -94,6 +113,10 @@ function makeSupabase({
 describe("getHomeScreenData", () => {
   beforeEach(() => {
     mockedCreateServerSupabaseClient.mockReset();
+    mockedResolveCurrentUserId.mockReset();
+    mockedResolveCurrentUserId.mockResolvedValue(null);
+    mockedGetPollSummaries.mockReset();
+    mockedGetPollSummaries.mockResolvedValue(new Map());
   });
 
   it("uses v_feed_global as canonical feed source", async () => {
@@ -103,17 +126,7 @@ describe("getHomeScreenData", () => {
           data: [makeFeedRow("topic-primary", 10, "2026-04-16T10:00:00.000Z")],
           error: null
         },
-        postRows: [
-          {
-            id: "post-item-primary",
-            thread_id: "topic-primary",
-            content: "Post body",
-            gauche_count: 1,
-            droite_count: 0,
-            comment_count: 0,
-            created_at: "2026-04-16T10:00:00.000Z"
-          }
-        ]
+        postRows: [makePostRow("post-item-primary", "topic-primary")]
       }) as never
     );
 
@@ -153,5 +166,37 @@ describe("getHomeScreenData", () => {
 
     expect(result.error).toBeNull();
     expect(result.data.feed).toEqual([]);
+  });
+
+  it("attaches the authenticated user's reaction side to each feed item", async () => {
+    mockedResolveCurrentUserId.mockResolvedValue("user-123");
+    mockedCreateServerSupabaseClient.mockResolvedValue(
+      makeSupabase({
+        feed: { data: [makeFeedRow("topic-1", 10, "2026-04-16T10:00:00.000Z")], error: null },
+        postRows: [makePostRow("post-1", "topic-1")],
+        reactionRows: [{ target_id: "post-1", reaction_type: "upvote" }]
+      }) as never
+    );
+
+    const result = await getHomeScreenData("user-123");
+
+    expect(result.data.feed[0]?.feed_user_reaction_side).toBe("gauche");
+  });
+
+  it("attaches poll summaries to feed items that have polls", async () => {
+    const pollSummary = { post_item_id: "post-1", question: "Who wins?" };
+    mockedGetPollSummaries.mockResolvedValue(
+      new Map([["post-1", pollSummary]]) as never
+    );
+    mockedCreateServerSupabaseClient.mockResolvedValue(
+      makeSupabase({
+        feed: { data: [makeFeedRow("topic-1", 10, "2026-04-16T10:00:00.000Z")], error: null },
+        postRows: [makePostRow("post-1", "topic-1")]
+      }) as never
+    );
+
+    const result = await getHomeScreenData(null);
+
+    expect(result.data.feed[0]?.feed_poll_summary).toEqual(pollSummary);
   });
 });
