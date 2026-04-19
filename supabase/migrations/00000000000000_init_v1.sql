@@ -1476,50 +1476,62 @@ as $$
   do update set depth = excluded.depth;
 $$;
 
+drop trigger if exists app_profile_touch_updated_at on public.app_profile;
 create trigger app_profile_touch_updated_at
 before update on public.app_profile
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists visibility_settings_touch_updated_at on public.user_visibility_settings;
 create trigger visibility_settings_touch_updated_at
 before update on public.user_visibility_settings
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists private_profile_touch_updated_at on public.user_private_political_profile;
 create trigger private_profile_touch_updated_at
 before update on public.user_private_political_profile
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists declared_vote_touch_updated_at on public.user_declared_vote_record;
 create trigger declared_vote_touch_updated_at
 before update on public.user_declared_vote_record
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists space_touch_updated_at on public.space;
 create trigger space_touch_updated_at
 before update on public.space
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists topic_touch_updated_at on public.topic;
 create trigger topic_touch_updated_at
 before update on public.topic
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists post_touch_updated_at on public.post;
 create trigger post_touch_updated_at
 before update on public.post
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists validate_topic_visibility_before_write on public.topic;
 create trigger validate_topic_visibility_before_write
 before insert or update on public.topic
 for each row execute function public.validate_topic_visibility();
 
+drop trigger if exists validate_poll_visibility_before_write on public.poll;
 create trigger validate_poll_visibility_before_write
 before insert or update on public.poll
 for each row execute function public.validate_poll_visibility();
 
+drop trigger if exists validate_prediction_submission_before_write on public.prediction_submission;
 create trigger validate_prediction_submission_before_write
 before insert or update on public.prediction_submission
 for each row execute function public.validate_prediction_submission();
 
+drop trigger if exists snapshot_prediction_submission_after_write on public.prediction_submission;
 create trigger snapshot_prediction_submission_after_write
 after insert or update on public.prediction_submission
 for each row execute function public.snapshot_prediction_submission();
 
+drop trigger if exists capture_post_revision_before_update on public.post;
 create trigger capture_post_revision_before_update
 before update on public.post
 for each row execute function public.capture_post_revision();

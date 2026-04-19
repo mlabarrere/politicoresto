@@ -1,11 +1,24 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { PostComposer } from "@/components/home/post-composer";
 
 vi.mock("@/lib/data/political-taxonomy", () => ({
   politicalBlocs: []
 }));
+
+// Ensure localStorage is available in jsdom environment
+beforeAll(() => {
+  if (typeof window.localStorage === "undefined" || typeof window.localStorage.getItem !== "function") {
+    const store: Record<string, string> = {};
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store[key] ?? null,
+      setItem: (key: string, value: string) => { store[key] = value; },
+      removeItem: (key: string) => { delete store[key]; },
+      clear: () => { Object.keys(store).forEach(k => delete store[k]); }
+    });
+  }
+});
 
 describe("Post composer tabs", () => {
   it("renders 3 tabs and poll info block", () => {
