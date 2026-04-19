@@ -5,27 +5,41 @@ import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
 
 import { cn } from "@/lib/utils"
 
+type AvatarSize = "default" | "sm" | "lg"
+
+const AVATAR_SIZE_PX: Record<AvatarSize, number> = {
+  sm: 24,
+  default: 32,
+  lg: 40,
+}
+
+const AvatarSizeContext = React.createContext<AvatarSize>("default")
+
 function Avatar({
   className,
   size = "default",
   ...props
 }: AvatarPrimitive.Root.Props & {
-  size?: "default" | "sm" | "lg"
+  size?: AvatarSize
 }) {
   return (
-    <AvatarPrimitive.Root
-      data-slot="avatar"
-      data-size={size}
-      className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
-        className
-      )}
-      {...props}
-    />
+    <AvatarSizeContext.Provider value={size}>
+      <AvatarPrimitive.Root
+        data-slot="avatar"
+        data-size={size}
+        className={cn(
+          "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+          className
+        )}
+        {...props}
+      />
+    </AvatarSizeContext.Provider>
   )
 }
 
-function AvatarImage({ className, width = 32, height = 32, ...props }: AvatarPrimitive.Image.Props) {
+function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+  const size = React.useContext(AvatarSizeContext)
+  const px = AVATAR_SIZE_PX[size]
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
@@ -33,9 +47,9 @@ function AvatarImage({ className, width = 32, height = 32, ...props }: AvatarPri
         "aspect-square size-full rounded-full object-cover",
         className
       )}
-      width={width}
-      height={height}
       {...props}
+      width={px}
+      height={px}
     />
   )
 }
