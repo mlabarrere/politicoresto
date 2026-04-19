@@ -25,7 +25,7 @@ function Avatar({
   )
 }
 
-function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+function AvatarImage({ className, width = 32, height = 32, ...props }: AvatarPrimitive.Image.Props) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
@@ -33,6 +33,8 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
         "aspect-square size-full rounded-full object-cover",
         className
       )}
+      width={width}
+      height={height}
       {...props}
     />
   )

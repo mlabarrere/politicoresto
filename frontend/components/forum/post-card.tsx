@@ -31,7 +31,7 @@ export function PostCard({
     <AppCard as="article" className="space-y-4 p-4" aria-label="Post principal">
       <header className="flex items-start gap-3">
         <AppAvatar size="sm">
-          <AppAvatarImage src={post.author.avatarUrl} alt={post.author.username} />
+          <AppAvatarImage src={post.author.avatarUrl} alt={post.author.username} width={24} height={24} />
           <AppAvatarFallback>{initials}</AppAvatarFallback>
         </AppAvatar>
         <div>
