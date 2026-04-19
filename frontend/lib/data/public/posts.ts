@@ -14,7 +14,7 @@ async function fetchTopicDetail({
 }) {
   return await supabase
     .from("v_thread_detail")
-    .select("*")
+    .select("id, slug, title, description, topic_status, effective_visibility, open_at, close_at, created_at, space_id")
     .eq("slug", slug)
     .maybeSingle();
 }
@@ -47,7 +47,7 @@ async function fetchCommentRows({
 }) {
   const result = await supabase
     .from("v_post_comments")
-    .select("*")
+    .select("id, thread_id, thread_post_id, parent_post_id, depth, author_user_id, username, display_name, title, body_markdown, created_at, updated_at, post_status, gauche_count, droite_count, comment_score")
     .eq("thread_id", topicId)
     .order("created_at", { ascending: true });
 
@@ -60,13 +60,14 @@ export async function getPostDetail(
   currentUserId?: string | null
 ): Promise<PostDetailScreenData | null> {
   const supabase = await createServerSupabaseClient();
-  const resolvedCurrentUserId =
-    currentUserId !== undefined ? currentUserId : (await getCurrentUser(supabase))?.id ?? null;
 
-  const { data: topic, error } = await fetchTopicDetail({
-    supabase,
-    slug
-  });
+  // Resolve user identity and topic detail in parallel — neither depends on the other
+  const [{ data: topic, error }, resolvedCurrentUserId] = await Promise.all([
+    fetchTopicDetail({ supabase, slug }),
+    currentUserId !== undefined
+      ? Promise.resolve(currentUserId)
+      : getCurrentUser(supabase).then((u) => u?.id ?? null)
+  ]);
 
   if (error) throw error;
   if (!topic) return null;

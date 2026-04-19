@@ -8,6 +8,7 @@ import { getPollSummariesByPostItemIds } from "./polls";
 export async function getHomeScreenData(currentUserId?: string | null): Promise<LoadState<HomeScreenData>> {
   const supabase = await createServerSupabaseClient();
 
+  // Step 1: feed topics (required first — subsequent queries depend on topic IDs)
   const feedResult = await supabase
     .from("v_feed_global")
     .select(
@@ -23,6 +24,21 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   const feed = feedRows.map((row, index) => toHomeFeedTopic(row as Record<string, unknown>, index + 1));
 
   const postRootIds = feed.map((item) => item.topic_id).filter(Boolean);
+
+  // Step 2: thread posts + user identity in parallel (getCurrentUser has no dependency on feed data)
+  const [threadPostsResult, resolvedCurrentUserId] = await Promise.all([
+    postRootIds.length > 0
+      ? supabase
+          .from("v_thread_posts")
+          .select("id, thread_id, type, content, username, display_name, gauche_count, droite_count, comment_count, created_at")
+          .in("thread_id", postRootIds)
+          .order("created_at", { ascending: true })
+      : Promise.resolve({ data: [] as Record<string, unknown>[], error: null }),
+    currentUserId !== undefined
+      ? Promise.resolve(currentUserId)
+      : getCurrentUser(supabase).then((u) => u?.id ?? null)
+  ]);
+
   const postByRootId = new Map<
     string,
     {
@@ -37,54 +53,50 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     }
   >();
 
-  if (postRootIds.length > 0) {
-    const threadPostsResult = await supabase
-      .from("v_thread_posts")
-      .select("id, thread_id, type, content, username, display_name, gauche_count, droite_count, comment_count, created_at")
-      .in("thread_id", postRootIds)
-      .order("created_at", { ascending: true });
+  for (const post of threadPostsResult.data ?? []) {
+    if (typeof post.type === "string" && post.type !== "article") continue;
+    const key = String((post as { thread_id?: string }).thread_id ?? "");
+    if (!key || postByRootId.has(key)) continue;
 
-    for (const post of threadPostsResult.data ?? []) {
-      if (typeof post.type === "string" && post.type !== "article") continue;
-      const key = String((post as { thread_id?: string }).thread_id ?? "");
-      if (!key || postByRootId.has(key)) continue;
-
-      postByRootId.set(key, {
-        id: String(post.id),
-        content: (post.content as string | null) ?? null,
-        username: (post.username as string | null) ?? null,
-        display_name: (post.display_name as string | null) ?? null,
-        gauche_count: (post.gauche_count as number | null) ?? 0,
-        droite_count: (post.droite_count as number | null) ?? 0,
-        comment_count: (post.comment_count as number | null) ?? 0,
-        created_at: String(post.created_at)
-      });
-    }
+    postByRootId.set(key, {
+      id: String(post.id),
+      content: (post.content as string | null) ?? null,
+      username: (post.username as string | null) ?? null,
+      display_name: (post.display_name as string | null) ?? null,
+      gauche_count: (post.gauche_count as number | null) ?? 0,
+      droite_count: (post.droite_count as number | null) ?? 0,
+      comment_count: (post.comment_count as number | null) ?? 0,
+      created_at: String(post.created_at)
+    });
   }
 
-  const resolvedCurrentUserId =
-    currentUserId !== undefined ? currentUserId : (await getCurrentUser(supabase))?.id ?? null;
+  const postIds = Array.from(postByRootId.values()).map((post) => post.id);
+  const feedWithOp = feed.filter((item) => postByRootId.has(item.topic_id));
+
+  const pollPostIds = feedWithOp
+    .map((item) => postByRootId.get(item.topic_id)?.id)
+    .filter((id): id is string => typeof id === "string" && id.length > 0);
+
+  // Step 3: reactions + poll summaries in parallel (both depend on post IDs, independent of each other)
+  const [ownReactionsResult, pollByPostItemId] = await Promise.all([
+    resolvedCurrentUserId && postIds.length > 0
+      ? supabase
+          .from("reaction")
+          .select("target_id, reaction_type")
+          .eq("target_type", "thread_post")
+          .eq("user_id", resolvedCurrentUserId)
+          .in("target_id", postIds)
+      : Promise.resolve({ data: [] as { target_id: string; reaction_type: string }[], error: null }),
+    getPollSummariesByPostItemIds(pollPostIds, { supabase })
+  ]);
 
   const reactionByTarget = new Map<string, "gauche" | "droite">();
-  const postIds = Array.from(postByRootId.values()).map((post) => post.id);
-
-  if (resolvedCurrentUserId && postIds.length > 0) {
-    const ownReactionsResult = await supabase
-      .from("reaction")
-      .select("target_id, reaction_type")
-      .eq("target_type", "thread_post")
-      .eq("user_id", resolvedCurrentUserId)
-      .in("target_id", postIds);
-
-    if (!ownReactionsResult.error) {
-      for (const reaction of ownReactionsResult.data ?? []) {
-        const reactionType = reaction.reaction_type as "upvote" | "downvote";
-        reactionByTarget.set(String(reaction.target_id), REACTION_TYPE_TO_SIDE[reactionType]);
-      }
+  if (!ownReactionsResult.error) {
+    for (const reaction of ownReactionsResult.data ?? []) {
+      const reactionType = reaction.reaction_type as "upvote" | "downvote";
+      reactionByTarget.set(String(reaction.target_id), REACTION_TYPE_TO_SIDE[reactionType]);
     }
   }
-
-  const feedWithOp = feed.filter((item) => postByRootId.has(item.topic_id));
 
   const enrichedFeed = feedWithOp.map((item) => {
     const post = postByRootId.get(item.topic_id);
@@ -102,13 +114,6 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       feed_user_reaction_side: reactionByTarget.get(post.id) ?? null
     };
   });
-
-  const pollByPostItemId = await getPollSummariesByPostItemIds(
-    enrichedFeed
-      .map((item) => item.feed_post_id)
-      .filter((value): value is string => typeof value === "string" && value.length > 0),
-    { supabase }
-  );
 
   const feedWithPoll = enrichedFeed.map((item) => ({
     ...item,
