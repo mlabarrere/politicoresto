@@ -1,6 +1,7 @@
 import type { HomeScreenData, LoadState } from "@/lib/types/screens";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/supabase/auth-user";
+import { resolveCurrentUserId } from "@/lib/supabase/auth-user";
+import { emptyQueryResult } from "@/lib/supabase/query-utils";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { toHomeFeedTopic } from "./canonical";
 import { getPollSummariesByPostItemIds } from "./polls";
@@ -26,17 +27,15 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   const postRootIds = feed.map((item) => item.topic_id).filter(Boolean);
 
   // Step 2: thread posts + user identity in parallel (getCurrentUser has no dependency on feed data)
-  const [threadPostsResult, resolvedCurrentUserId] = await Promise.all([
+  const [threadPostsResult, resolvedUserId] = await Promise.all([
     postRootIds.length > 0
       ? supabase
           .from("v_thread_posts")
           .select("id, thread_id, type, content, username, display_name, gauche_count, droite_count, comment_count, created_at")
           .in("thread_id", postRootIds)
           .order("created_at", { ascending: true })
-      : Promise.resolve({ data: [] as Record<string, unknown>[], error: null }),
-    currentUserId !== undefined
-      ? Promise.resolve(currentUserId)
-      : getCurrentUser(supabase).then((u) => u?.id ?? null)
+      : emptyQueryResult<Record<string, unknown>>(),
+    resolveCurrentUserId(supabase, currentUserId)
   ]);
 
   const postByRootId = new Map<
@@ -73,21 +72,27 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   const postIds = Array.from(postByRootId.values()).map((post) => post.id);
   const feedWithOp = feed.filter((item) => postByRootId.has(item.topic_id));
 
+  // pollPostIds === future feed_post_id values: both are post.id from postByRootId,
+  // assigned to feed_post_id in enrichedFeed below and used as the poll map key.
   const pollPostIds = feedWithOp
     .map((item) => postByRootId.get(item.topic_id)?.id)
     .filter((id): id is string => typeof id === "string" && id.length > 0);
 
+  type ReactionRow = { target_id: string; reaction_type: string };
+
   // Step 3: reactions + poll summaries in parallel (both depend on post IDs, independent of each other)
   const [ownReactionsResult, pollByPostItemId] = await Promise.all([
-    resolvedCurrentUserId && postIds.length > 0
+    resolvedUserId && postIds.length > 0
       ? supabase
           .from("reaction")
           .select("target_id, reaction_type")
           .eq("target_type", "thread_post")
-          .eq("user_id", resolvedCurrentUserId)
+          .eq("user_id", resolvedUserId)
           .in("target_id", postIds)
-      : Promise.resolve({ data: [] as { target_id: string; reaction_type: string }[], error: null }),
-    getPollSummariesByPostItemIds(pollPostIds, { supabase })
+      : emptyQueryResult<ReactionRow>(),
+    pollPostIds.length > 0
+      ? getPollSummariesByPostItemIds(pollPostIds, { supabase })
+      : Promise.resolve(new Map())
   ]);
 
   const reactionByTarget = new Map<string, "gauche" | "droite">();

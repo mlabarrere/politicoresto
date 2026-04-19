@@ -18,3 +18,11 @@ export async function getCurrentUser(client: AuthCapableClient): Promise<{ id: s
 
   return null;
 }
+
+export async function resolveCurrentUserId(
+  client: AuthCapableClient,
+  currentUserId?: string | null
+): Promise<string | null> {
+  if (currentUserId !== undefined) return currentUserId;
+  return getCurrentUser(client).then((u) => u?.id ?? null);
+}

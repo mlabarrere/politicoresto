@@ -7,9 +7,14 @@ vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn()
 }));
 
-vi.mock("@/lib/supabase/auth-user", () => ({
-  getCurrentUser: vi.fn(async () => null)
-}));
+vi.mock("@/lib/supabase/auth-user", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/supabase/auth-user")>();
+  return {
+    ...actual,
+    getCurrentUser: vi.fn(async () => null),
+    resolveCurrentUserId: vi.fn(async () => null)
+  };
+});
 
 vi.mock("@/lib/data/public/polls", () => ({
   getPollSummariesByPostItemIds: vi.fn(async () => new Map())

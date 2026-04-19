@@ -1,6 +1,7 @@
 import type { PostDetailScreenData } from "@/lib/types/screens";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
-import { getCurrentUser } from "@/lib/supabase/auth-user";
+import { resolveCurrentUserId } from "@/lib/supabase/auth-user";
+import { emptyQueryResult } from "@/lib/supabase/query-utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toThreadRow } from "./canonical";
 import { getPollSummariesByPostItemIds } from "./polls";
@@ -64,9 +65,7 @@ export async function getPostDetail(
   // Resolve user identity and topic detail in parallel — neither depends on the other
   const [{ data: topic, error }, resolvedCurrentUserId] = await Promise.all([
     fetchTopicDetail({ supabase, slug }),
-    currentUserId !== undefined
-      ? Promise.resolve(currentUserId)
-      : getCurrentUser(supabase).then((u) => u?.id ?? null)
+    resolveCurrentUserId(supabase, currentUserId)
   ]);
 
   if (error) throw error;
@@ -129,6 +128,8 @@ export async function getPostDetail(
   }
 
   const commentIds = commentsList.map((comment) => comment.id);
+  type ReactionRow = { target_id: string; reaction_type: string };
+
   const [postReactions, commentReactions] = await Promise.all([
     postIds.length
       ? supabase
@@ -137,7 +138,7 @@ export async function getPostDetail(
           .eq("target_type", "thread_post")
           .eq("user_id", resolvedCurrentUserId)
           .in("target_id", postIds)
-      : Promise.resolve({ data: [], error: null }),
+      : emptyQueryResult<ReactionRow>(),
     commentIds.length
       ? supabase
           .from("reaction")
@@ -145,7 +146,7 @@ export async function getPostDetail(
           .eq("target_type", "comment")
           .eq("user_id", resolvedCurrentUserId)
           .in("target_id", commentIds)
-      : Promise.resolve({ data: [], error: null })
+      : emptyQueryResult<ReactionRow>()
   ]);
 
   if (postReactions.error) throw postReactions.error;
