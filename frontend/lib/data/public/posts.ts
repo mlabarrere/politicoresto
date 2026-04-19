@@ -1,6 +1,7 @@
 import type { PostDetailScreenData } from "@/lib/types/screens";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
-import { getCurrentUser } from "@/lib/supabase/auth-user";
+import { resolveCurrentUserId } from "@/lib/supabase/auth-user";
+import { emptyQueryResult } from "@/lib/supabase/query-utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toThreadRow } from "./canonical";
 import { getPollSummariesByPostItemIds } from "./polls";
@@ -14,7 +15,7 @@ async function fetchTopicDetail({
 }) {
   return await supabase
     .from("v_thread_detail")
-    .select("*")
+    .select("id, slug, title, description, topic_status, effective_visibility, open_at, close_at, created_at, space_id")
     .eq("slug", slug)
     .maybeSingle();
 }
@@ -47,7 +48,7 @@ async function fetchCommentRows({
 }) {
   const result = await supabase
     .from("v_post_comments")
-    .select("*")
+    .select("id, thread_id, thread_post_id, parent_post_id, depth, author_user_id, username, display_name, title, body_markdown, created_at, updated_at, post_status, gauche_count, droite_count, comment_score")
     .eq("thread_id", topicId)
     .order("created_at", { ascending: true });
 
@@ -60,13 +61,12 @@ export async function getPostDetail(
   currentUserId?: string | null
 ): Promise<PostDetailScreenData | null> {
   const supabase = await createServerSupabaseClient();
-  const resolvedCurrentUserId =
-    currentUserId !== undefined ? currentUserId : (await getCurrentUser(supabase))?.id ?? null;
 
-  const { data: topic, error } = await fetchTopicDetail({
-    supabase,
-    slug
-  });
+  // Resolve user identity and topic detail in parallel — neither depends on the other
+  const [{ data: topic, error }, resolvedCurrentUserId] = await Promise.all([
+    fetchTopicDetail({ supabase, slug }),
+    resolveCurrentUserId(supabase, currentUserId)
+  ]);
 
   if (error) throw error;
   if (!topic) return null;
@@ -128,6 +128,8 @@ export async function getPostDetail(
   }
 
   const commentIds = commentsList.map((comment) => comment.id);
+  type ReactionRow = { target_id: string; reaction_type: string };
+
   const [postReactions, commentReactions] = await Promise.all([
     postIds.length
       ? supabase
@@ -136,7 +138,7 @@ export async function getPostDetail(
           .eq("target_type", "thread_post")
           .eq("user_id", resolvedCurrentUserId)
           .in("target_id", postIds)
-      : Promise.resolve({ data: [], error: null }),
+      : emptyQueryResult<ReactionRow>(),
     commentIds.length
       ? supabase
           .from("reaction")
@@ -144,7 +146,7 @@ export async function getPostDetail(
           .eq("target_type", "comment")
           .eq("user_id", resolvedCurrentUserId)
           .in("target_id", commentIds)
-      : Promise.resolve({ data: [], error: null })
+      : emptyQueryResult<ReactionRow>()
   ]);
 
   if (postReactions.error) throw postReactions.error;
