@@ -105,6 +105,32 @@ function makeSupabase({
         };
       }
 
+      if (table === "thread_post_subject") {
+        return {
+          select: vi.fn(() => ({
+            in: vi.fn(async () => ({ data: [], error: null }))
+          }))
+        };
+      }
+
+      if (table === "thread_post") {
+        return {
+          select: vi.fn(() => ({
+            in: vi.fn(async () => ({ data: [], error: null }))
+          }))
+        };
+      }
+
+      if (table === "subject") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              order: vi.fn(async () => ({ data: [], error: null }))
+            }))
+          }))
+        };
+      }
+
       throw new Error(`Unexpected table: ${table}`);
     })
   };

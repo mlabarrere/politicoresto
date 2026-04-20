@@ -15,16 +15,15 @@ describe("LeftSidebar", () => {
     expect(screen.getByText("Passé")).toBeTruthy();
   });
 
-  it("renders political blocs section", () => {
+  it("renders partis section", () => {
     render(<LeftSidebar activeFilter={null} onFilterChange={vi.fn()} />);
-    expect(screen.getByText("Couleur politique")).toBeTruthy();
+    expect(screen.getByText("Partis")).toBeTruthy();
   });
 
-  it("renders all political bloc labels", () => {
+  it("renders party filter labels", () => {
     render(<LeftSidebar activeFilter={null} onFilterChange={vi.fn()} />);
-    // At least gauche radicale and RN bloc should be there
-    expect(screen.getByText("Gauche radicale a gauche")).toBeTruthy();
-    expect(screen.getByText("Droite a extreme droite")).toBeTruthy();
+    expect(screen.getByText("🔴 LFI")).toBeTruthy();
+    expect(screen.getByText("⬛ RN")).toBeTruthy();
   });
 
   it("calls onFilterChange with sondage filter on click", () => {
@@ -46,13 +45,13 @@ describe("LeftSidebar", () => {
     expect(onChange).toHaveBeenCalledWith(null);
   });
 
-  it("calls onFilterChange with politique filter on bloc click", () => {
+  it("calls onFilterChange with parti filter on party click", () => {
     const onChange = vi.fn();
     render(<LeftSidebar activeFilter={null} onFilterChange={onChange} />);
-    fireEvent.click(screen.getByText("Gauche radicale a gauche"));
+    fireEvent.click(screen.getByText("🔴 LFI"));
     expect(onChange).toHaveBeenCalledWith({
-      type: "politique",
-      blocSlug: "gauche-radicale"
+      type: "parti",
+      slug: "lfi"
     });
   });
 

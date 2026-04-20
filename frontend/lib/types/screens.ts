@@ -10,8 +10,17 @@ export type LoadState<T> = {
   error: string | null;
 };
 
+export type SubjectView = {
+  id: string;
+  slug: string;
+  name: string;
+  emoji: string | null;
+  sort_order: number;
+};
+
 export type HomeScreenData = {
   feed: PostFeedItemView[];
+  subjects: SubjectView[];
 };
 
 export type PostDetailScreenData = {

@@ -84,6 +84,8 @@ export type HomeFeedTopicView = {
   feed_comment_count?: number | null;
   feed_user_reaction_side?: "gauche" | "droite" | null;
   feed_poll_summary?: PostPollSummaryView | null;
+  feed_subjects?: { slug: string; name: string; emoji: string | null }[] | null;
+  feed_party_tags?: string[] | null;
 };
 
 export type TopicSummaryView = {

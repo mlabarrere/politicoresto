@@ -35,10 +35,28 @@ function applyFilter(items: PostFeedItemView[], filter: CategoryFilter): PostFee
     );
   }
 
+  if (filter.type === "subject") {
+    return items.filter((item) =>
+      item.feed_subjects?.some((s) => s.slug === filter.slug) ?? false
+    );
+  }
+
+  if (filter.type === "parti") {
+    return items.filter((item) =>
+      item.feed_party_tags?.includes(filter.slug) ?? false
+    );
+  }
+
   return items;
 }
 
 function sortItems(items: PostFeedItemView[], sortMode: FeedSortMode) {
+  if (sortMode === "sondages") {
+    return items
+      .filter((item) => item.feed_poll_summary != null)
+      .sort((a, b) => Number((b.editorial_feed_score ?? 0) - (a.editorial_feed_score ?? 0)));
+  }
+
   const sorted = [...items];
   sorted.sort((a, b) => {
     if (sortMode === "recent") {

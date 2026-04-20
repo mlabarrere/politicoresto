@@ -9,15 +9,30 @@ import { AppInput } from "@/components/app/app-input";
 import { AppSelect } from "@/components/app/app-select";
 import { AppTabs } from "@/components/app/app-tabs";
 import { AppTextarea } from "@/components/app/app-textarea";
-import { politicalBlocs } from "@/lib/data/political-taxonomy";
+import { cn } from "@/lib/utils";
+import type { SubjectView } from "@/lib/types/screens";
 
-const DRAFT_KEY = "politicoresto.post.draft.v4";
+const DRAFT_KEY = "politicoresto.post.draft.v5";
+
+const PARTY_OPTIONS = [
+  { slug: "lfi", label: "🔴 LFI" },
+  { slug: "ps", label: "🌹 PS" },
+  { slug: "ecologistes", label: "🌿 Écologistes" },
+  { slug: "renaissance", label: "🟡 Renaissance" },
+  { slug: "modem", label: "🟡 MoDem" },
+  { slug: "horizons", label: "🟡 Horizons" },
+  { slug: "lr", label: "🔵 LR" },
+  { slug: "udr", label: "🔵 UDR" },
+  { slug: "rn", label: "⬛ RN" },
+  { slug: "reconquete", label: "⬛ Reconquête" },
+];
 
 type PostDraft = {
   title: string;
   body: string;
   source_url: string;
-  category: string;
+  subject_ids: string[];
+  party_tags: string[];
   mode: "post" | "poll";
   poll_question: string;
   poll_deadline_hours: string;
@@ -29,7 +44,8 @@ function buildDefaultDraft(): PostDraft {
     title: "",
     body: "",
     source_url: "",
-    category: "",
+    subject_ids: [],
+    party_tags: [],
     mode: "post",
     poll_question: "",
     poll_deadline_hours: "24",
@@ -40,11 +56,13 @@ function buildDefaultDraft(): PostDraft {
 export function PostComposer({
   action,
   redirectPath = "/",
-  initialError = null
+  initialError = null,
+  subjects = []
 }: {
   action: (formData: FormData) => Promise<void>;
   redirectPath?: string;
   initialError?: string | null;
+  subjects?: SubjectView[];
 }) {
   const [draft, setDraft] = useState<PostDraft>(buildDefaultDraft);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
@@ -68,7 +86,8 @@ export function PostComposer({
         title: parsed.title ?? "",
         body: parsed.body ?? "",
         source_url: parsed.source_url ?? "",
-        category: parsed.category ?? "",
+        subject_ids: Array.isArray(parsed.subject_ids) ? parsed.subject_ids.map(String) : [],
+        party_tags: Array.isArray(parsed.party_tags) ? parsed.party_tags.map(String) : [],
         mode: parsed.mode === "poll" ? "poll" : "post",
         poll_question: parsed.poll_question ?? "",
         poll_deadline_hours: parsed.poll_deadline_hours ?? "24",
@@ -97,6 +116,25 @@ export function PostComposer({
     const prefix = draftSaveMode === "manual" ? "Sauvegarde manuelle" : "Sauvegarde auto";
     return `${prefix} ${lastSavedAt ?? ""}`.trim();
   }, [draft.body, draft.poll_question, draft.title, draftSaveMode, lastSavedAt]);
+
+  function toggleSubject(id: string) {
+    setDraft((prev) => ({
+      ...prev,
+      subject_ids: prev.subject_ids.includes(id)
+        ? prev.subject_ids.filter((s) => s !== id)
+        : [...prev.subject_ids, id]
+    }));
+  }
+
+  function toggleParty(slug: string) {
+    setDraft((prev) => {
+      if (prev.party_tags.includes(slug)) {
+        return { ...prev, party_tags: prev.party_tags.filter((p) => p !== slug) };
+      }
+      if (prev.party_tags.length >= 3) return prev;
+      return { ...prev, party_tags: [...prev.party_tags, slug] };
+    });
+  }
 
   const postTab = (
     <div className="space-y-4">
@@ -220,6 +258,12 @@ export function PostComposer({
         <input type="hidden" name="redirect_path" value={redirectPath} />
         <input type="hidden" name="post_mode" value={draft.mode} />
         <input type="hidden" name="body_format" value="markdown" />
+        {draft.subject_ids.map((id) => (
+          <input key={id} type="hidden" name="subject_ids" value={id} />
+        ))}
+        {draft.party_tags.map((slug) => (
+          <input key={slug} type="hidden" name="party_tags" value={slug} />
+        ))}
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
@@ -244,21 +288,61 @@ export function PostComposer({
           </label>
         </div>
 
-        <label className="block space-y-2">
-          <span className="text-xs font-medium text-muted-foreground">Categorie</span>
-          <AppSelect
-            name="category"
-            value={draft.category}
-            onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))}
-          >
-            <option value="">Selectionner</option>
-            {politicalBlocs.map((bloc) => (
-              <option key={bloc.slug} value={bloc.slug}>
-                {bloc.label}
-              </option>
-            ))}
-          </AppSelect>
-        </label>
+        {subjects.length > 0 ? (
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-muted-foreground">Sujets</span>
+            <div className="flex flex-wrap gap-2">
+              {subjects.map((subject) => {
+                const active = draft.subject_ids.includes(subject.id);
+                return (
+                  <button
+                    key={subject.id}
+                    type="button"
+                    onClick={() => toggleSubject(subject.id)}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                      active
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-foreground hover:bg-muted/70"
+                    )}
+                  >
+                    {subject.emoji} {subject.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="space-y-2">
+          <span className="text-xs font-medium text-muted-foreground">
+            Partis mentionnés{" "}
+            <span className="text-muted-foreground/60">(max 3)</span>
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {PARTY_OPTIONS.map((party) => {
+              const active = draft.party_tags.includes(party.slug);
+              const disabled = !active && draft.party_tags.length >= 3;
+              return (
+                <button
+                  key={party.slug}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => toggleParty(party.slug)}
+                  className={cn(
+                    "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                    active
+                      ? "bg-foreground text-background"
+                      : "bg-muted text-foreground hover:bg-muted/70",
+                    disabled && "cursor-not-allowed opacity-40"
+                  )}
+                >
+                  {party.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <AppTabs
           value={draft.mode}

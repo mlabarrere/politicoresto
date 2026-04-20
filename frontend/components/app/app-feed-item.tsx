@@ -63,6 +63,16 @@ export function AppFeedItem({
         <h3 className="text-xl font-semibold tracking-tight text-foreground hover:underline">{item.topic_title}</h3>
       </Link>
 
+      {item.feed_subjects?.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {item.feed_subjects.map((s) => (
+            <span key={s.slug} className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+              {s.emoji} {s.name}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
       {previewText ? (
         <div className="relative">
           <Link href={postHref} className="group block">

@@ -12,6 +12,57 @@ function safeRedirectPath(value: string) {
   return value;
 }
 
+export async function setUsernameAction(formData: FormData) {
+  const nextPath = safeRedirectPath(String(formData.get("next") ?? "/").trim() || "/");
+  const usernameInput = String(formData.get("username") ?? "").trim();
+
+  console.info("[account][setUsername] start", { usernameInput, nextPath });
+
+  const username = normalizeUsername(usernameInput);
+  const usernameError = validateUsername(username);
+  if (usernameError) {
+    console.warn("[account][setUsername] validation failed", { usernameError });
+    throw new Error(usernameError);
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error("[account][setUsername] no authenticated user", { message: userError?.message });
+    throw new Error("Authentication required");
+  }
+
+  const duplicateResult = await supabase
+    .from("app_profile")
+    .select("user_id")
+    .eq("username", username)
+    .neq("user_id", user.id)
+    .maybeSingle();
+
+  if (duplicateResult.data) {
+    console.warn("[account][setUsername] username taken", { username });
+    throw new Error("Ce username est deja pris.");
+  }
+
+  const { error } = await supabase
+    .from("app_profile")
+    .update({ username })
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("[account][setUsername] update failed", { message: error.message });
+    throw new Error("Enregistrement impossible pour le moment.");
+  }
+
+  console.info("[account][setUsername] username set OK", { userId: user.id, username, nextPath });
+  revalidatePath("/");
+  redirect(nextPath as never);
+}
+
 export async function upsertAccountIdentityAction(formData: FormData) {
   const redirectPath = safeRedirectPath(String(formData.get("redirect_path") ?? "/me").trim() || "/me");
   const displayName = String(formData.get("display_name") ?? "").trim();

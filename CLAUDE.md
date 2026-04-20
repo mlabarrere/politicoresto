@@ -8,11 +8,42 @@
 # 1. Build must succeed with zero errors
 cd frontend && npm run build
 
-# 2. All tests must pass (498 tests across 79 files)
+# 2. All tests must pass
 cd frontend && ./node_modules/.bin/vitest run
 ```
 
 If either command fails, fix the issue before committing. No exceptions.
+
+## MANDATORY: Production-level logging
+
+Every server-side operation **must** emit structured `console.info/warn/error` logs so Vercel logs are useful.
+
+Rules:
+- **Server Actions** — log start (inputs sans PII), success (IDs + redirect path), and every error branch
+- **Route Handlers** — log each request entry point and all error returns
+- **Data fetchers** (`lib/data/`) — log query start, row count on success, and full error on failure
+- **Middleware / proxy** — log auth redirects and `getUser` failures
+- Format: `[module][operation] message`, structured object second arg, e.g.:
+  ```ts
+  console.info("[auth/callback] session exchanged OK", { userId: user.id });
+  console.error("[home] v_feed_global query failed", { message: error.message, code: error.code });
+  ```
+- Never log passwords, full tokens, or raw cookie values
+
+## ⚠️ Missing config / tool / CLI / MCP — READ THIS
+
+When a required environment variable, CLI tool, MCP server, or external service is **missing or misconfigured**, STOP and display a prominent notice with emojis so the developer reads it:
+
+```
+🚨 CONFIGURATION MANQUANTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ NEXT_PUBLIC_SUPABASE_URL is not set
+👉 Add it to .env.local and to Vercel environment variables
+📖 See: https://supabase.com/dashboard/project/_/settings/api
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Never silently swallow a missing-config error. Always surface it with instructions.
 
 ## Project structure
 

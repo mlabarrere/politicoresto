@@ -3,7 +3,11 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   exchangeCodeForSession: vi.fn(),
-  createServerClient: vi.fn()
+  createServerClient: vi.fn(),
+  cookieStore: {
+    getAll: vi.fn(() => []),
+    set: vi.fn(),
+  },
 }));
 
 vi.mock("@supabase/ssr", () => ({
@@ -17,6 +21,11 @@ vi.mock("@/lib/supabase/env", () => ({
   }
 }));
 
+// Mock next/headers cookies() — used by the new cookie-safe implementation
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => mocks.cookieStore),
+}));
+
 import { GET } from "@/app/auth/callback/route";
 
 function makeRequest(url: string) {
@@ -26,14 +35,24 @@ function makeRequest(url: string) {
 function makeSupabaseClient(error: unknown = null) {
   return {
     auth: {
-      exchangeCodeForSession: mocks.exchangeCodeForSession.mockResolvedValue({ error })
-    }
+      exchangeCodeForSession: mocks.exchangeCodeForSession.mockResolvedValue({ error }),
+      getUser: vi.fn().mockResolvedValue({ data: { user: null } })
+    },
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: vi.fn(async () => ({ data: { username: "existing-user" }, error: null }))
+        }))
+      }))
+    }))
   };
 }
 
 describe("GET /auth/callback", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.cookieStore.getAll.mockReturnValue([]);
+    mocks.cookieStore.set.mockReset();
     mocks.createServerClient.mockReturnValue(makeSupabaseClient(null));
   });
 
