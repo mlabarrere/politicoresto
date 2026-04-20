@@ -35,10 +35,21 @@ export async function updateSession(request: NextRequest) {
   );
 
   const {
-    data: { user }
+    data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
+  if (userError) {
+    console.warn("[proxy] getUser failed", {
+      message: userError.message,
+      pathname: request.nextUrl.pathname,
+    });
+  }
+
   if (!user && request.nextUrl.pathname.startsWith("/me")) {
+    console.info("[proxy] unauthenticated access to /me — redirecting to login", {
+      pathname: request.nextUrl.pathname,
+    });
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set("next", request.nextUrl.pathname);

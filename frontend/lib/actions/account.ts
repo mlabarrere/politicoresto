@@ -16,9 +16,12 @@ export async function setUsernameAction(formData: FormData) {
   const nextPath = safeRedirectPath(String(formData.get("next") ?? "/").trim() || "/");
   const usernameInput = String(formData.get("username") ?? "").trim();
 
+  console.info("[account][setUsername] start", { usernameInput, nextPath });
+
   const username = normalizeUsername(usernameInput);
   const usernameError = validateUsername(username);
   if (usernameError) {
+    console.warn("[account][setUsername] validation failed", { usernameError });
     throw new Error(usernameError);
   }
 
@@ -29,6 +32,7 @@ export async function setUsernameAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
+    console.error("[account][setUsername] no authenticated user", { message: userError?.message });
     throw new Error("Authentication required");
   }
 
@@ -40,6 +44,7 @@ export async function setUsernameAction(formData: FormData) {
     .maybeSingle();
 
   if (duplicateResult.data) {
+    console.warn("[account][setUsername] username taken", { username });
     throw new Error("Ce username est deja pris.");
   }
 
@@ -53,6 +58,7 @@ export async function setUsernameAction(formData: FormData) {
     throw new Error("Enregistrement impossible pour le moment.");
   }
 
+  console.info("[account][setUsername] username set OK", { userId: user.id, username, nextPath });
   revalidatePath("/");
   redirect(nextPath as never);
 }

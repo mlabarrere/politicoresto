@@ -6,6 +6,9 @@ import { toHomeFeedTopic } from "./canonical";
 import { getPollSummariesByPostItemIds } from "./polls";
 
 export async function getHomeScreenData(currentUserId?: string | null): Promise<LoadState<HomeScreenData>> {
+  const t0 = Date.now();
+  console.info("[home] getHomeScreenData start", { currentUserId: currentUserId ?? "anonymous" });
+
   const supabase = await createServerSupabaseClient();
 
   const feedResult = await supabase
@@ -17,6 +20,12 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     .order("latest_thread_post_at", { ascending: false, nullsFirst: false })
     .order("editorial_feed_rank", { ascending: true })
     .limit(24);
+
+  if (feedResult.error) {
+    console.error("[home] v_feed_global query failed", { message: feedResult.error.message, code: feedResult.error.code });
+  } else {
+    console.info("[home] v_feed_global fetched", { rows: feedResult.data?.length ?? 0, ms: Date.now() - t0 });
+  }
 
   const safeError = feedResult.error ? "Feed indisponible pour le moment." : null;
   const feedRows = (feedResult.data ?? []) as Record<string, unknown>[];
@@ -169,6 +178,12 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     .eq("is_active", true)
     .order("sort_order");
 
+  if (allSubjectsResult.error) {
+    console.error("[home] subjects fetch failed", { message: allSubjectsResult.error.message });
+  } else {
+    console.info("[home] subjects fetched", { count: allSubjectsResult.data?.length ?? 0 });
+  }
+
   const allSubjects: SubjectView[] = (allSubjectsResult.data ?? []).map((row) => ({
     id: String((row as { id?: string }).id ?? ""),
     slug: String((row as { slug?: string }).slug ?? ""),
@@ -176,6 +191,13 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     emoji: ((row as { emoji?: string | null }).emoji) ?? null,
     sort_order: Number((row as { sort_order?: number }).sort_order ?? 0)
   }));
+
+  console.info("[home] getHomeScreenData done", {
+    feedItems: feedWithSubjects.length,
+    subjects: allSubjects.length,
+    ms: Date.now() - t0,
+    error: safeError ?? null,
+  });
 
   return {
     data: {

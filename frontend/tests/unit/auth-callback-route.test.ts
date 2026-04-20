@@ -3,7 +3,11 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   exchangeCodeForSession: vi.fn(),
-  createServerClient: vi.fn()
+  createServerClient: vi.fn(),
+  cookieStore: {
+    getAll: vi.fn(() => []),
+    set: vi.fn(),
+  },
 }));
 
 vi.mock("@supabase/ssr", () => ({
@@ -15,6 +19,11 @@ vi.mock("@/lib/supabase/env", () => ({
     url: () => "https://example.supabase.co",
     publishableKey: () => "anon-key"
   }
+}));
+
+// Mock next/headers cookies() — used by the new cookie-safe implementation
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => mocks.cookieStore),
 }));
 
 import { GET } from "@/app/auth/callback/route";
@@ -42,6 +51,8 @@ function makeSupabaseClient(error: unknown = null) {
 describe("GET /auth/callback", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.cookieStore.getAll.mockReturnValue([]);
+    mocks.cookieStore.set.mockReset();
     mocks.createServerClient.mockReturnValue(makeSupabaseClient(null));
   });
 
