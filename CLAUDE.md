@@ -66,19 +66,22 @@ The following tools are installed on the developer Mac and can be used by Claude
 
 ### CI/CD pipeline — `.github/workflows/`
 
-Three separate workflow files with distinct responsibilities:
+GitHub Actions est **l'unique source de vérité** pour les déploiements. Aucun `vercel deploy` manuel en prod/staging.
 
 | File | Trigger | Jobs |
 |------|---------|------|
 | `ci.yml` | PR → main, push → main | quality (typecheck) + coverage (vitest) → build |
-| `deploy-preview.yml` | After `ci.yml` succeeds on main | Vercel preview deploy |
-| `deploy-production.yml` | GitHub Release published | build + tests → Vercel production deploy |
+| `deploy-preview.yml` | After `ci.yml` succeeds on main | **migrate-staging → Vercel preview** (séquentiel) |
+| `deploy-production.yml` | GitHub Release published | **migrate-production → build + tests → Vercel prod** |
+| `migrate-staging.yml` | `workflow_dispatch` only | hotfix DB staging sans redéploiement |
+| `migrate-production.yml` | `workflow_dispatch` only | hotfix DB prod sans redéploiement |
 
-**Key rules:**
-- Vercel auto-deploys disabled via `frontend/vercel.json` (`github.enabled: false`)
-- Preview deploys only when CI is green (gated by `workflow_run.conclusion == 'success'`)
-- Production deploys only from a GitHub Release — never from a direct push
-- Required GitHub secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `CODECOV_TOKEN`
+**Règles clés :**
+- Vercel Git integration désactivée via `frontend/vercel.json` (`github.enabled: false`)
+- Preview déploie uniquement si **CI vert ET migration staging OK** (sinon on servirait une preview sur une DB stale)
+- Production déploie uniquement depuis une GitHub Release — jamais sur push direct, et migration prod gate le build
+- Les workflows `migrate-*` standalone sont `workflow_dispatch` only (pas de race avec les déploiements)
+- Secrets requis : `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `CODECOV_TOKEN`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_STAGING_DB_PASSWORD`, `SUPABASE_PROD_DB_PASSWORD`
 
 ### Testing
 - **vitest** — unit tests in `frontend/tests/unit/` (503 tests, 79 files)

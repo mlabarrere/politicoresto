@@ -31,6 +31,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Claude Code ephemeral worktrees + runtime state
+.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

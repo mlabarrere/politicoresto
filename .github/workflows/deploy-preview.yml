@@ -1,28 +1,73 @@
-name: Deploy — Preview
+name: Deploy — Preview (staging)
 
-# Triggered automatically after CI passes on main.
-# Never triggered by PRs — Vercel PR auto-deploys are disabled via vercel.json.
+# Chaîne unique déclenchée après CI sur main :
+#   1. migrate-staging : applique les migrations à la DB staging
+#   2. deploy-preview  : build + déploie la preview Vercel (consomme staging)
+#
+# Deploy est bloqué si migrate échoue → pas de preview sur une DB stale.
+# Jamais déclenché par une PR ; auto-deploys Vercel désactivés via vercel.json.
+# Rejouable manuellement via workflow_dispatch.
+
 on:
   workflow_run:
     workflows: ["CI"]
     branches: [main]
     types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-jobs:
-  deploy-preview:
-    name: Vercel Preview
-    runs-on: ubuntu-latest
-    # Only deploy when CI succeeded
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+concurrency:
+  group: deploy-preview
+  cancel-in-progress: false
 
+jobs:
+  # ────────────────────────────────────────────────────────────
+  # 1. Applique les migrations sur staging (avant le deploy)
+  # ────────────────────────────────────────────────────────────
+  migrate-staging:
+    name: supabase db push → staging
+    runs-on: ubuntu-latest
+    # Sur workflow_run on gate sur le succès du CI. Sur workflow_dispatch on laisse passer.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    env:
+      STAGING_PROJECT_REF: nvwpvckjsvicsyzpzjfi
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
-      - name: Checkout (exact commit that triggered CI)
+      - name: Checkout (exact SHA that triggered CI)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link staging project
+        run: supabase link --project-ref "$STAGING_PROJECT_REF"
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_STAGING_DB_PASSWORD }}
+
+      - name: Push migrations
+        run: supabase db push --include-all
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_STAGING_DB_PASSWORD }}
+
+  # ────────────────────────────────────────────────────────────
+  # 2. Deploy Vercel preview (gaté sur migrate OK)
+  # ────────────────────────────────────────────────────────────
+  deploy-preview:
+    name: Vercel Preview
+    needs: migrate-staging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (exact SHA that triggered CI)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
