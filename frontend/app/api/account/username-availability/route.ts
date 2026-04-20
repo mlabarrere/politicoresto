@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from "next/server";
 
 import { normalizeUsername, validateUsername } from "@/lib/account/username";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -14,12 +15,8 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     return NextResponse.json({ available: false, reason: "Authentication required", normalized: username }, { status: 401 });
   }
 
@@ -27,13 +24,13 @@ export async function GET(request: Request) {
     supabase
       .from("app_profile")
       .select("username")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle(),
     supabase
       .from("app_profile")
       .select("user_id")
       .eq("username", username)
-      .neq("user_id", user.id)
+      .neq("user_id", userId)
       .maybeSingle()
   ]);
 

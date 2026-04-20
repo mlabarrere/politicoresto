@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { normalizeUsername, validateUsername } from "@/lib/account/username";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function safeRedirectPath(value: string) {
@@ -26,13 +27,9 @@ export async function setUsernameAction(formData: FormData) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    console.error("[account][setUsername] no authenticated user", { message: userError?.message });
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
+    console.error("[account][setUsername] no authenticated user");
     throw new Error("Authentication required");
   }
 
@@ -40,7 +37,7 @@ export async function setUsernameAction(formData: FormData) {
     .from("app_profile")
     .select("user_id")
     .eq("username", username)
-    .neq("user_id", user.id)
+    .neq("user_id", userId)
     .maybeSingle();
 
   if (duplicateResult.data) {
@@ -51,14 +48,14 @@ export async function setUsernameAction(formData: FormData) {
   const { error } = await supabase
     .from("app_profile")
     .update({ username })
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   if (error) {
     console.error("[account][setUsername] update failed", { message: error.message });
     throw new Error("Enregistrement impossible pour le moment.");
   }
 
-  console.info("[account][setUsername] username set OK", { userId: user.id, username, nextPath });
+  console.info("[account][setUsername] username set OK", { userId, username, nextPath });
   revalidatePath("/");
   redirect(nextPath as never);
 }
@@ -82,12 +79,8 @@ export async function upsertAccountIdentityAction(formData: FormData) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     throw new Error("Authentication required");
   }
 
@@ -95,7 +88,7 @@ export async function upsertAccountIdentityAction(formData: FormData) {
     .from("app_profile")
     .select("user_id")
     .eq("username", username)
-    .neq("user_id", user.id)
+    .neq("user_id", userId)
     .maybeSingle();
 
   if (duplicateResult.error) {
@@ -119,7 +112,7 @@ export async function upsertAccountIdentityAction(formData: FormData) {
       avatar_url: avatarUrl,
       is_public_profile_enabled: isPublicProfileEnabled
     })
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   if (error) {
     console.error("[account][upsertAccountIdentity] update failed", { message: error.message, code: error.code });
@@ -189,19 +182,15 @@ export async function deactivateAccountAction(formData: FormData) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     throw new Error("Authentication required");
   }
 
   const { error } = await supabase
     .from("app_profile")
     .update({ profile_status: "limited", is_public_profile_enabled: false })
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   if (error) {
     console.error("[account][deactivate] update failed", { message: error.message, code: error.code });
@@ -219,19 +208,15 @@ export async function deleteAccountAction(formData: FormData) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     throw new Error("Authentication required");
   }
 
   const { error } = await supabase
     .from("app_profile")
     .update({ profile_status: "deleted", is_public_profile_enabled: false, bio: null })
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   if (error) {
     console.error("[account][delete] update failed", { message: error.message, code: error.code });

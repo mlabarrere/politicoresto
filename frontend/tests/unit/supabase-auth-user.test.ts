@@ -1,69 +1,73 @@
 import { describe, expect, it } from "vitest";
 
-import { getCurrentUser } from "@/lib/supabase/auth-user";
+import { getAuthUserId, getCurrentUser } from "@/lib/supabase/auth-user";
 
-describe("getCurrentUser", () => {
-  it("returns user from getUser() when available", async () => {
-    const user = { id: "user-123" };
+describe("getAuthUserId", () => {
+  it("returns sub from getClaims() when available (fast path, no round-trip)", async () => {
     const client = {
       auth: {
-        getUser: async () => ({ data: { user } })
+        getClaims: async () => ({ data: { claims: { sub: "user-123" } } })
       }
     };
-    const result = await getCurrentUser(client);
-    expect(result).toEqual(user);
+    expect(await getAuthUserId(client)).toBe("user-123");
   });
 
-  it("returns null when getUser returns null user", async () => {
+  it("falls back to getSession when getClaims returns no sub", async () => {
     const client = {
       auth: {
-        getUser: async () => ({ data: { user: null } })
+        getClaims: async () => ({ data: { claims: null } }),
+        getSession: async () => ({ data: { session: { user: { id: "session-user-456" } } } })
       }
     };
-    const result = await getCurrentUser(client);
-    expect(result).toBeNull();
+    expect(await getAuthUserId(client)).toBe("session-user-456");
   });
 
-  it("falls back to getSession when getUser is absent", async () => {
-    const user = { id: "session-user-456" };
+  it("falls back to getSession when getClaims throws", async () => {
     const client = {
       auth: {
-        getSession: async () => ({ data: { session: { user } } })
+        getClaims: async () => {
+          throw new Error("jwks unavailable");
+        },
+        getSession: async () => ({ data: { session: { user: { id: "session-user-789" } } } })
       }
     };
-    const result = await getCurrentUser(client);
-    expect(result).toEqual(user);
+    expect(await getAuthUserId(client)).toBe("session-user-789");
   });
 
-  it("returns null when getSession returns null session", async () => {
+  it("uses getSession directly when getClaims is absent", async () => {
+    const client = {
+      auth: {
+        getSession: async () => ({ data: { session: { user: { id: "only-session" } } } })
+      }
+    };
+    expect(await getAuthUserId(client)).toBe("only-session");
+  });
+
+  it("returns null when no session is available", async () => {
     const client = {
       auth: {
         getSession: async () => ({ data: { session: null } })
       }
     };
-    const result = await getCurrentUser(client);
-    expect(result).toBeNull();
+    expect(await getAuthUserId(client)).toBeNull();
   });
 
-  it("returns null when auth has no getUser or getSession", async () => {
-    const client = { auth: {} };
-    const result = await getCurrentUser(client);
-    expect(result).toBeNull();
+  it("returns null when auth is absent", async () => {
+    expect(await getAuthUserId({})).toBeNull();
   });
+});
 
-  it("returns null when auth is undefined", async () => {
-    const client = {};
-    const result = await getCurrentUser(client);
-    expect(result).toBeNull();
-  });
-
-  it("returns null when getUser returns undefined data", async () => {
+describe("getCurrentUser", () => {
+  it("wraps getAuthUserId into a {id} object", async () => {
     const client = {
       auth: {
-        getUser: async () => ({ data: {} })
+        getClaims: async () => ({ data: { claims: { sub: "user-xyz" } } })
       }
     };
-    const result = await getCurrentUser(client);
-    expect(result).toBeNull();
+    expect(await getCurrentUser(client)).toEqual({ id: "user-xyz" });
+  });
+
+  it("returns null when no user is available", async () => {
+    expect(await getCurrentUser({})).toBeNull();
   });
 });

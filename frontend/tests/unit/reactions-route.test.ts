@@ -71,8 +71,11 @@ function makeClient({
 
   return {
     auth: {
-      getUser: async () => ({
-        data: { user: userNull ? null : { id: userId } }
+      getClaims: async () => ({
+        data: { claims: userNull ? null : { sub: userId } }
+      }),
+      getSession: async () => ({
+        data: { session: userNull ? null : { user: { id: userId } } }
       })
     },
     from: fromMock,

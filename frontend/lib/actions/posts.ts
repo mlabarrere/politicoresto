@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { canCreatePostToday, RATE_LIMIT_MESSAGES } from "@/lib/security/rate-limit";
 import { fetchUrlPreview, normalizeSourceUrl } from "@/lib/utils/url-preview";
@@ -99,14 +100,10 @@ export async function createPostAction(formData: FormData) {
     }
 
     const supabase = await createServerSupabaseClient();
-    const userResult =
-      typeof (supabase as { auth?: { getUser?: () => Promise<{ data: { user: { id: string } | null } }> } }).auth
-        ?.getUser === "function"
-        ? await supabase.auth.getUser()
-        : null;
+    const userId = await getAuthUserId(supabase);
 
-    if (userResult?.data.user) {
-      const postRateLimit = await canCreatePostToday(supabase, userResult.data.user.id);
+    if (userId) {
+      const postRateLimit = await canCreatePostToday(supabase, userId);
       if (!postRateLimit.allowed) {
         throw new Error(RATE_LIMIT_MESSAGES.post);
       }
