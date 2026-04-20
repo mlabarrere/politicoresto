@@ -16,19 +16,18 @@ import { deleteVoteHistoryAction, upsertVoteHistoryAction } from "@/lib/actions/
 
 function authedClient(rpcResult: { data?: unknown; error?: unknown }) {
   return {
-    auth: {
-      getUser: async () => ({ data: { user: { id: "user-1" } }, error: null })
-    },
     rpc: vi.fn(async () => rpcResult)
   };
 }
 
+// Auth est verifiee cote RPC (security definer + errcode 28000), pas cote action.
+// On simule donc l'echec auth en faisant renvoyer le RPC avec ce code.
 function anonClient() {
   return {
-    auth: {
-      getUser: async () => ({ data: { user: null }, error: { message: "no session" } })
-    },
-    rpc: vi.fn()
+    rpc: vi.fn(async () => ({
+      data: null,
+      error: { message: "authentication required", code: "28000" }
+    }))
   };
 }
 
