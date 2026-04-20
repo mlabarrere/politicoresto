@@ -10,12 +10,14 @@ export async function GET(request: NextRequest) {
   const next = safeNextPath(requestUrl.searchParams.get("next"));
   const loginUrl = new URL("/auth/login", request.url);
   loginUrl.searchParams.set("next", next);
-  let response = NextResponse.redirect(new URL(next, request.url));
 
   if (!code) {
     loginUrl.searchParams.set("auth_error", "oauth_missing_code");
     return NextResponse.redirect(loginUrl);
   }
+
+  // Capture cookies so we can apply them to whichever redirect we return
+  const capturedCookies: Array<{ name: string; value: string; options: CookieOptions }> = [];
 
   const supabase = createServerClient(
     supabaseEnv.url(),
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
         ) {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value);
-            response.cookies.set(name, value, options);
+            capturedCookies.push({ name, value, options });
           });
         }
       }
@@ -48,5 +50,30 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  return response;
+  // Helper: build a redirect response with session cookies applied
+  function redirectWithSession(url: URL): NextResponse {
+    const res = NextResponse.redirect(url);
+    capturedCookies.forEach(({ name, value, options }) => {
+      res.cookies.set(name, value, options);
+    });
+    return res;
+  }
+
+  // Check if the user already has a username; if not, send to onboarding
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase
+      .from("app_profile")
+      .select("username")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!profile?.username) {
+      const onboardingUrl = new URL("/onboarding", request.url);
+      if (next !== "/") onboardingUrl.searchParams.set("next", next);
+      return redirectWithSession(onboardingUrl);
+    }
+  }
+
+  return redirectWithSession(new URL(next, request.url));
 }

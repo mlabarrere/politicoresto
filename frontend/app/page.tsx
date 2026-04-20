@@ -15,6 +15,7 @@ export default async function HomePage() {
       <div className="space-y-4">
         <HomePageShell
           items={data.feed}
+          subjects={data.subjects}
           isAuthenticated={Boolean(currentUserId)}
         />
       </div>

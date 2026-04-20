@@ -192,6 +192,35 @@ export async function createPostAction(formData: FormData) {
       }
     }
 
+    const subjectIds = formData
+      .getAll("subject_ids")
+      .map((v) => String(v).trim())
+      .filter((v) => v.length > 0);
+    const partyTags = formData
+      .getAll("party_tags")
+      .map((v) => String(v).trim())
+      .filter((v) => v.length > 0)
+      .slice(0, 3);
+
+    if (subjectIds.length > 0) {
+      const { error: subjectError } = await supabase.from("thread_post_subject").insert(
+        subjectIds.map((id) => ({ thread_post_id: postItemId, subject_id: id }))
+      );
+      if (subjectError) {
+        console.warn("[createPostAction] subject insert failed", { message: subjectError.message });
+      }
+    }
+
+    if (partyTags.length > 0) {
+      const { error: partyError } = await supabase
+        .from("thread_post")
+        .update({ party_tags: partyTags })
+        .eq("id", postItemId);
+      if (partyError) {
+        console.warn("[createPostAction] party_tags update failed", { message: partyError.message });
+      }
+    }
+
     revalidatePath("/");
     if (redirectPath !== "/") {
       revalidatePath(redirectPath);

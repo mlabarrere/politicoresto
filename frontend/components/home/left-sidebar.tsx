@@ -1,9 +1,17 @@
 "use client";
 
 import { AppCard } from "@/components/app/app-card";
-import { politicalBlocs } from "@/lib/data/political-taxonomy";
 import { cn } from "@/lib/utils";
 import type { CategoryFilter } from "@/lib/types/homepage";
+
+const PARTY_FILTERS = [
+  { slug: "lfi", label: "🔴 LFI" },
+  { slug: "ps", label: "🌹 PS" },
+  { slug: "ecologistes", label: "🌿 Écologistes" },
+  { slug: "renaissance", label: "🟡 Renaissance" },
+  { slug: "lr", label: "🔵 LR" },
+  { slug: "rn", label: "⬛ RN" },
+];
 
 interface LeftSidebarProps {
   activeFilter: CategoryFilter;
@@ -14,6 +22,8 @@ function isActive(filter: CategoryFilter, current: CategoryFilter): boolean {
   if (filter.type !== current.type) return false;
   if (filter.type === "sondage" && current.type === "sondage") return filter.status === current.status;
   if (filter.type === "politique" && current.type === "politique") return filter.blocSlug === current.blocSlug;
+  if (filter.type === "parti" && current.type === "parti") return filter.slug === current.slug;
+  if (filter.type === "subject" && current.type === "subject") return filter.slug === current.slug;
   return false;
 }
 
@@ -64,13 +74,13 @@ export function LeftSidebar({ activeFilter, onFilterChange }: LeftSidebarProps) 
           />
         </div>
 
-        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Couleur politique</p>
+        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Partis</p>
         <div className="mt-3 space-y-2">
-          {politicalBlocs.map((bloc) => (
+          {PARTY_FILTERS.map((party) => (
             <FilterButton
-              key={bloc.slug}
-              label={bloc.label}
-              filter={{ type: "politique", blocSlug: bloc.slug }}
+              key={party.slug}
+              label={party.label}
+              filter={{ type: "parti", slug: party.slug }}
               activeFilter={activeFilter}
               onFilterChange={onFilterChange}
             />

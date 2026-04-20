@@ -26,8 +26,16 @@ function makeRequest(url: string) {
 function makeSupabaseClient(error: unknown = null) {
   return {
     auth: {
-      exchangeCodeForSession: mocks.exchangeCodeForSession.mockResolvedValue({ error })
-    }
+      exchangeCodeForSession: mocks.exchangeCodeForSession.mockResolvedValue({ error }),
+      getUser: vi.fn().mockResolvedValue({ data: { user: null } })
+    },
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: vi.fn(async () => ({ data: { username: "existing-user" }, error: null }))
+        }))
+      }))
+    }))
   };
 }
 

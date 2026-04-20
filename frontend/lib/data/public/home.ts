@@ -1,4 +1,4 @@
-import type { HomeScreenData, LoadState } from "@/lib/types/screens";
+import type { HomeScreenData, LoadState, SubjectView } from "@/lib/types/screens";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/auth-user";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
@@ -116,9 +116,71 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       typeof item.feed_post_id === "string" ? (pollByPostItemId.get(item.feed_post_id) ?? null) : null
   }));
 
+  // Fetch subjects per post item
+  const feedPostItemIds = feedWithPoll
+    .map((item) => item.feed_post_id)
+    .filter((id): id is string => typeof id === "string" && id.length > 0);
+
+  const subjectsByPostItemId = new Map<string, { slug: string; name: string; emoji: string | null }[]>();
+  if (feedPostItemIds.length > 0) {
+    const subjectsResult = await supabase
+      .from("thread_post_subject")
+      .select("thread_post_id, subject(slug, name, emoji)")
+      .in("thread_post_id", feedPostItemIds);
+
+    for (const row of subjectsResult.data ?? []) {
+      const r = row as unknown as { thread_post_id?: string; subject?: { slug: string; name: string; emoji: string | null } | null };
+      const postId = String(r.thread_post_id ?? "");
+      const subject = r.subject;
+      if (!postId || !subject) continue;
+      const existing = subjectsByPostItemId.get(postId) ?? [];
+      existing.push(subject);
+      subjectsByPostItemId.set(postId, existing);
+    }
+  }
+
+  // Fetch party_tags per post item
+  const partyTagsByPostItemId = new Map<string, string[]>();
+  if (feedPostItemIds.length > 0) {
+    const partyResult = await supabase
+      .from("thread_post")
+      .select("id, party_tags")
+      .in("id", feedPostItemIds);
+
+    for (const row of partyResult.data ?? []) {
+      const id = String((row as { id?: string }).id ?? "");
+      const tags = (row as { party_tags?: string[] }).party_tags;
+      if (id && Array.isArray(tags) && tags.length > 0) {
+        partyTagsByPostItemId.set(id, tags);
+      }
+    }
+  }
+
+  const feedWithSubjects = feedWithPoll.map((item) => ({
+    ...item,
+    feed_subjects: typeof item.feed_post_id === "string" ? (subjectsByPostItemId.get(item.feed_post_id) ?? null) : null,
+    feed_party_tags: typeof item.feed_post_id === "string" ? (partyTagsByPostItemId.get(item.feed_post_id) ?? null) : null
+  }));
+
+  // Fetch all active subjects for filter bar
+  const allSubjectsResult = await supabase
+    .from("subject")
+    .select("id, slug, name, emoji, sort_order")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const allSubjects: SubjectView[] = (allSubjectsResult.data ?? []).map((row) => ({
+    id: String((row as { id?: string }).id ?? ""),
+    slug: String((row as { slug?: string }).slug ?? ""),
+    name: String((row as { name?: string }).name ?? ""),
+    emoji: ((row as { emoji?: string | null }).emoji) ?? null,
+    sort_order: Number((row as { sort_order?: number }).sort_order ?? 0)
+  }));
+
   return {
     data: {
-      feed: feedWithPoll
+      feed: feedWithSubjects,
+      subjects: allSubjects
     },
     error: safeError
   };

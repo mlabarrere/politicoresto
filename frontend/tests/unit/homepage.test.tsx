@@ -60,6 +60,7 @@ function makeHomeScreenData(overrides: Partial<HomeScreenData> = {}): HomeScreen
 
   return {
     feed,
+    subjects: [],
     ...overrides
   };
 }
@@ -85,8 +86,8 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(screen.getAllByText("Couleur politique").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Gauche radicale a gauche").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Partis").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/LFI/).length).toBeGreaterThan(0);
   });
 
   it("renders an empty state when the feed is empty", async () => {
