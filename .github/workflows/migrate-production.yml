@@ -1,0 +1,41 @@
+name: Migrate — Production DB
+
+# Manual-only : les releases déclenchent la migration via deploy-production.yml
+# (job `migrate` → `deploy-production` avec needs). Ce workflow sert uniquement
+# aux hotfix DB-only qu'on ne veut pas coupler à un déploiement applicatif.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate-production:
+    name: supabase db push → production
+    runs-on: ubuntu-latest
+    env:
+      PROD_PROJECT_REF: gzdpisxkavpyfmhsktcg
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link production project
+        run: supabase link --project-ref "$PROD_PROJECT_REF"
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PROD_DB_PASSWORD }}
+
+      - name: Push migrations
+        run: supabase db push --include-all
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PROD_DB_PASSWORD }}
