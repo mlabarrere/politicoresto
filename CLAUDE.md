@@ -90,6 +90,14 @@ cd frontend && npm run build && ./node_modules/.bin/vitest run
 act -j build -n   # dry-run from repo root
 ```
 
+## Environnements Supabase
+
+Deux projets Supabase permanents :
+- **Production** (ref prod) — consommé par Vercel Production
+- **Staging** (`nvwpvckjsvicsyzpzjfi`) — consommé par Vercel Preview + dev local habituel
+
+Vercel injecte les env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) selon le scope (Production/Preview). Pas de logique conditionnelle côté code. Les migrations sont poussées auto vers staging via `.github/workflows/migrate-staging.yml` sur push `main`. Détails complets dans le README racine (section "Environnements").
+
 ## Project structure
 
 - `frontend/` — Next.js 16 app (TypeScript, Tailwind v4, Supabase SSR)
