@@ -13,6 +13,7 @@ import { AppPrivacyBadge } from "@/components/app/app-privacy-badge";
 import { AppPrivateNotice } from "@/components/app/app-private-notice";
 import { AppTextarea } from "@/components/app/app-textarea";
 import { AppUsernameField } from "@/components/app/app-username-field";
+import { AppVoteHistoryEditor } from "@/components/app/app-vote-history-editor";
 import { AppVoteHistoryList } from "@/components/app/app-vote-history-list";
 import {
   clearPrivateProfileAction,
@@ -23,6 +24,7 @@ import {
 } from "@/lib/actions/account";
 import { ACCOUNT_SECTIONS, resolveAccountSection } from "@/lib/account/sections";
 import { getAccountWorkspaceData } from "@/lib/data/authenticated/account-workspace";
+import { getVoteHistoryEditorData } from "@/lib/data/authenticated/vote-history";
 
 type SearchParams = Promise<{ section?: string; error?: string }>;
 
@@ -34,6 +36,7 @@ export default async function MePage({
   const params = await searchParams;
   const section = resolveAccountSection(params.section);
   const data = await getAccountWorkspaceData();
+  const voteEditor = section === "votes" ? await getVoteHistoryEditorData() : null;
 
   const heading = ACCOUNT_SECTIONS.find((item) => item.key === section)?.label ?? "Profil";
 
@@ -131,13 +134,28 @@ export default async function MePage({
         ) : null}
 
         {section === "votes" ? (
-          <div className="space-y-3">
-            <AppPrivateNotice message="Historique prive. Visible uniquement par vous." />
-            <AppVoteHistoryList
-              items={data.voteHistory}
-              status={data.sectionStatus.votes.state}
-              message={data.sectionStatus.votes.message}
-            />
+          <div className="space-y-4">
+            <AppPrivateNotice message="Historique prive. Visible uniquement par vous. Sert au redressement anonymise des sondages." />
+            {voteEditor ? (
+              <AppVoteHistoryEditor
+                elections={voteEditor.elections}
+                votesByElectionId={voteEditor.votesByElectionId}
+                status={voteEditor.status}
+                message={voteEditor.message}
+              />
+            ) : null}
+            <details className="rounded-2xl border border-border bg-card p-4">
+              <summary className="cursor-pointer text-sm font-semibold text-foreground">
+                Journal brut
+              </summary>
+              <div className="mt-3">
+                <AppVoteHistoryList
+                  items={data.voteHistory}
+                  status={data.sectionStatus.votes.state}
+                  message={data.sectionStatus.votes.message}
+                />
+              </div>
+            </details>
           </div>
         ) : null}
 
