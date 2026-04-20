@@ -8,7 +8,7 @@
 # 1. Build must succeed with zero errors
 cd frontend && npm run build
 
-# 2. All tests must pass (502 tests across 79 files)
+# 2. All tests must pass (503 tests across 79 files)
 cd frontend && ./node_modules/.bin/vitest run
 ```
 
@@ -23,7 +23,7 @@ Rules:
 - **Route Handlers** — log each request entry point and all error returns
 - **Data fetchers** (`lib/data/`) — log query start, row count on success, and full error on failure
 - **Middleware / proxy** — log auth redirects and `getUser` failures
-- Format: `[module][operation] message`, structured object second arg, e.g.:
+- Format: `[module][operation] message`, structured object second arg:
   ```ts
   console.info("[auth/callback] session exchanged OK", { userId: user.id });
   console.error("[home] v_feed_global query failed", { message: error.message, code: error.code });
@@ -32,7 +32,7 @@ Rules:
 
 ## ⚠️ Missing config / tool / CLI / MCP — READ THIS
 
-When a required environment variable, CLI tool, MCP server, or external service is **missing or misconfigured**, STOP and display a prominent notice with emojis so the developer reads it:
+When a required environment variable, CLI tool, MCP server, or external service is **missing or misconfigured**, STOP and display a prominent notice:
 
 ```
 🚨 CONFIGURATION MANQUANTE
@@ -43,50 +43,56 @@ When a required environment variable, CLI tool, MCP server, or external service 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Never silently swallow a missing-config error. Always surface it with instructions.
+Never silently swallow a missing-config error.
 
 ## Local tooling available
 
-The following tools are installed on the developer Mac and can be used by Claude directly — no need to ask the user to run them:
+The following tools are installed on the developer Mac and can be used by Claude directly:
 
 ### Core runtime & package management
-- **node** v25.9.0 — Next.js 16 runtime (note: CI runs on Node LTS; watch for version drift)
+- **node** v25.9.0 — Next.js 16 runtime (CI runs Node 20 LTS; watch for version drift)
 - **npm** 11.12.1 — scripts: `dev`, `build`, `start`, `typecheck`, `test`, `test:unit`, `test:e2e`, `test:e2e:ui`
 - **git** 2.50.1, **brew** 5.1.6
 
 ### Deployment & backend
 - **vercel** 51.7.0 — `vercel dev`, `vercel deploy`, `vercel logs`, `vercel env pull`
 - **supabase** 2.90.0 — `supabase start/stop/status`, `supabase db reset`, `supabase gen types`, `supabase migration new`
-- **psql** 14.22 — direct DB access (local DB: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`)
+- **psql** 14.22 — direct DB access (local: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`)
 - **docker** 27.4.0 — required by Supabase local (ports 54321-54324) and by `act`
 
 ### GitHub & CI
 - **gh** 2.90.0 — `gh pr create/view/checks`, `gh run list/view`, `gh workflow run`
-- **act** 0.2.87 — runs GitHub Actions locally. Config at `~/Library/Application Support/act/actrc` uses `catthehacker/ubuntu:act-latest` with `--container-architecture linux/amd64`. Run from repo root (NOT `frontend/`): `act -j build-and-test` or dry-run with `-n`.
+- **act** 0.2.87 — runs GitHub Actions locally. Config at `~/Library/Application Support/act/actrc` uses `catthehacker/ubuntu:act-latest` with `--container-architecture linux/amd64`. Run from repo root: `act -j build -n` (dry-run).
 
-### Workflows present in `.github/workflows/`
-- `ci.yml` → Full pipeline on **PR** and **push to main**:
-  - Jobs 1–3 in parallel: Security (Codacy SARIF), Code Quality (typecheck), Tests & Coverage (vitest + Codecov)
-  - Job 4: Build (waits for all 3)
-  - Job 5: Deploy Preview to Vercel (main push only, waits for build)
-- `release.yml` → On **GitHub Release published**: Build → Deploy Production to Vercel
+### CI/CD pipeline — `.github/workflows/`
 
-Vercel auto-deploys are disabled via `frontend/vercel.json` (`github.enabled: false`).
-Required GitHub secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `CODECOV_TOKEN`, `CODACY_PROJECT_TOKEN`.
+Three separate workflow files with distinct responsibilities:
+
+| File | Trigger | Jobs |
+|------|---------|------|
+| `ci.yml` | PR → main, push → main | quality (typecheck) + coverage (vitest) → build |
+| `deploy-preview.yml` | After `ci.yml` succeeds on main | Vercel preview deploy |
+| `deploy-production.yml` | GitHub Release published | build + tests → Vercel production deploy |
+
+**Key rules:**
+- Vercel auto-deploys disabled via `frontend/vercel.json` (`github.enabled: false`)
+- Preview deploys only when CI is green (gated by `workflow_run.conclusion == 'success'`)
+- Production deploys only from a GitHub Release — never from a direct push
+- Required GitHub secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `CODECOV_TOKEN`
 
 ### Testing
-- **vitest** — unit tests in `frontend/tests/unit/` (502 tests, 79 files)
+- **vitest** — unit tests in `frontend/tests/unit/` (503 tests, 79 files)
 - **playwright** — E2E via `npm run test:e2e` (run `npx playwright install` once to fetch browsers)
 
 ### Quick validation chain (full local CI)
 ```bash
 cd frontend && npm run build && ./node_modules/.bin/vitest run
-cd /Users/micky/Desktop/politicoresto && act -j build-and-test -n   # dry-run
+act -j build -n   # dry-run from repo root
 ```
 
 ## Project structure
 
-- `frontend/` — Next.js 16 app (TypeScript, Tailwind, Supabase SSR)
+- `frontend/` — Next.js 16 app (TypeScript, Tailwind v4, Supabase SSR)
 - `supabase/migrations/` — PostgreSQL migrations applied in timestamp order on fresh DB
 - Tests: `frontend/tests/unit/` — Vitest + React Testing Library
 
