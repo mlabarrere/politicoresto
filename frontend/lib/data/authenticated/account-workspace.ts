@@ -23,15 +23,6 @@ type PrivateProfileRow = {
   profile_payload: Record<string, unknown> | null;
 };
 
-type VoteHistoryRow = {
-  id: string;
-  vote_round: number | null;
-  declared_option_label: string | null;
-  declared_candidate_name: string | null;
-  declared_at: string | null;
-  created_at: string;
-};
-
 type DraftRow = {
   id: string;
   thread_id: string;
@@ -68,7 +59,6 @@ type SectionStatus = {
 
 type AccountSectionStatuses = {
   profile: SectionStatus;
-  votes: SectionStatus;
   drafts: SectionStatus;
   posts: SectionStatus;
   comments: SectionStatus;
@@ -86,7 +76,6 @@ export type AccountWorkspaceData = {
   profile: AppProfileRow | null;
   visibility: VisibilityRow | null;
   privateProfile: PrivateProfileRow | null;
-  voteHistory: VoteHistoryRow[];
   drafts: DraftRow[];
   publications: PostHistoryRow[];
   comments: Array<CommentHistoryRow & { parentTitle: string | null }>;
@@ -183,14 +172,13 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
 
   const sectionStatus: AccountSectionStatuses = {
     profile: readyStatus(),
-    votes: readyStatus(),
     drafts: readyStatus(),
     posts: readyStatus(),
     comments: readyStatus(),
     security: readyStatus()
   };
 
-  const [profileResult, visibilityResult, privateProfileResult, voteResult, draftResult, postResult, commentResult] =
+  const [profileResult, visibilityResult, privateProfileResult, draftResult, postResult, commentResult] =
     await Promise.all([
       supabase
         .from("app_profile")
@@ -203,7 +191,6 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
         .eq("user_id", user.id)
         .maybeSingle(),
       supabase.rpc("rpc_get_private_political_profile"),
-      supabase.rpc("rpc_list_private_vote_history"),
       supabase
         .from("thread_post")
         .select("id, thread_id, type, title, status, updated_at")
@@ -221,7 +208,6 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   sectionStatus.profile = mergeStatus(sectionStatus.profile, statusFromError(profileResult.error));
   sectionStatus.profile = mergeStatus(sectionStatus.profile, statusFromError(privateProfileResult.error));
   sectionStatus.profile = mergeStatus(sectionStatus.profile, statusFromError(visibilityResult.error));
-  sectionStatus.votes = mergeStatus(sectionStatus.votes, statusFromError(voteResult.error));
   sectionStatus.drafts = mergeStatus(sectionStatus.drafts, statusFromError(draftResult.error));
   sectionStatus.posts = mergeStatus(sectionStatus.posts, statusFromError(postResult.error));
   sectionStatus.comments = mergeStatus(sectionStatus.comments, statusFromError(commentResult.error));
@@ -252,7 +238,6 @@ export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
     profile: profileResult.error ? null : ((profileResult.data ?? null) as AppProfileRow | null),
     visibility: visibilityResult.error ? null : ((visibilityResult.data ?? null) as VisibilityRow | null),
     privateProfile: privateProfileResult.error ? null : ((privateProfileResult.data ?? null) as PrivateProfileRow | null),
-    voteHistory: voteResult.error ? [] : ((voteResult.data ?? []) as VoteHistoryRow[]),
     drafts: draftResult.error ? [] : ((draftResult.data ?? []) as DraftRow[]),
     publications: postResult.error ? [] : ((postResult.rows ?? []) as PostHistoryRow[]),
     comments: comments.map((comment) => ({

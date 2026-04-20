@@ -81,7 +81,6 @@ describe("account workspace data", () => {
             data: { political_interest_level: 3, notes_private: null, profile_payload: {} },
             error: null
           },
-          rpc_list_private_vote_history: { data: [], error: null }
         }
       }) as never
     );
@@ -89,7 +88,6 @@ describe("account workspace data", () => {
     const data = await getAccountWorkspaceData();
 
     expect(data.sectionStatus.profile.state).toBe("ready");
-    expect(data.sectionStatus.votes.state).toBe("ready");
     expect(data.sectionStatus.posts.state).toBe("ready");
   });
 
@@ -125,10 +123,6 @@ describe("account workspace data", () => {
           rpc_get_private_political_profile: {
             data: { political_interest_level: null, notes_private: null, profile_payload: {} },
             error: null
-          },
-          rpc_list_private_vote_history: {
-            data: null,
-            error: { message: "Could not find the function public.rpc_list_private_vote_history without parameters in the schema cache" }
           }
         }
       }) as never
@@ -137,10 +131,7 @@ describe("account workspace data", () => {
     const data = await getAccountWorkspaceData();
 
     expect(data.sectionStatus.profile.state).toBe("unavailable");
-    expect(data.sectionStatus.votes.state).toBe("unavailable");
     expect(data.sectionStatus.posts.state).toBe("unavailable");
-    expect(data.sectionStatus.votes.message).toBe("Indisponible temporairement.");
-    expect(data.voteHistory).toEqual([]);
     expect(data.publications).toEqual([]);
   });
 
@@ -171,7 +162,6 @@ describe("account workspace data", () => {
             data: { political_interest_level: null, notes_private: null, profile_payload: {} },
             error: null
           },
-          rpc_list_private_vote_history: { data: [], error: null }
         }
       }) as never
     );

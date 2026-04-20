@@ -102,8 +102,6 @@ describe("AppVoteHistoryEditor", () => {
       election_label: "Presidentielle 2022 - 1er tour",
       election_result_id: "r-macron",
       choice_kind: "vote",
-      confidence: null,
-      notes: null,
       declared_at: "2026-04-20T00:00:00Z",
       candidate_name: "Emmanuel Macron",
       list_label: null,

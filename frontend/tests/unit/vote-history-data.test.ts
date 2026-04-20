@@ -85,8 +85,6 @@ describe("getVoteHistoryEditorData", () => {
               election_label: "L",
               election_result_id: "r1",
               choice_kind: "vote",
-              confidence: null,
-              notes: null,
               declared_at: null,
               candidate_name: "A",
               list_label: null,
