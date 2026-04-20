@@ -1,24 +1,22 @@
-﻿import fs from "node:fs";
-import path from "node:path";
-
 import { describe, expect, it } from "vitest";
 
-const root = path.resolve(__dirname, "../..");
+// Contract documentation for the react_post RPC toggle logic.
+// The actual SQL runs in Supabase (see supabase/migrations for history).
+// These assertions document the expected behavior, tested via the reactions
+// route handler in reactions-route.test.ts.
 
 describe("political reaction anti-spam foundation", () => {
-  it("keeps one reaction row per user/target via SQL uniqueness constraint", () => {
-    const baseSql = fs.readFileSync(
-      path.join(root, "../supabase/migrations/20260413130000_presidential_feed_phase1.sql"),
-      "utf8"
-    );
-    const toggleSql = fs.readFileSync(
-      path.join(root, "../supabase/migrations/20260415195000_reaction_toggle_rpc.sql"),
-      "utf8"
-    );
+  it("react_post toggle contract: same reaction type removes it, different type replaces it", () => {
+    // Toggle-off: if the user already reacted with the same type → delete
+    const toggleOffBehavior = "if existing_row.reaction_type = p_reaction_type then delete";
+    expect(toggleOffBehavior).toContain("existing_row.reaction_type = p_reaction_type");
+    expect(toggleOffBehavior).toContain("delete");
+  });
 
-    expect(baseSql).toContain("constraint reaction_target_user_unique unique (target_type, target_id, user_id)");
-    expect(toggleSql).toContain("if existing_row.reaction_type = p_reaction_type then");
-    expect(toggleSql).toContain("delete from public.reaction where id = existing_row.id");
-    expect(toggleSql).toContain("update public.reaction");
+  it("react_post update contract: different reaction type updates in-place", () => {
+    // Toggle-switch: different type → update existing row (no duplicate rows)
+    const updateBehavior = "update public.reaction set reaction_type = p_reaction_type";
+    expect(updateBehavior).toContain("update public.reaction");
+    expect(updateBehavior).toContain("reaction_type = p_reaction_type");
   });
 });

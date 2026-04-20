@@ -103,7 +103,7 @@ cd /Users/micky/Desktop/politicoresto && act -j build-and-test -n   # dry-run
 
 - Use `proxy.ts` (not `middleware.ts`) — Next.js 16 renamed the file convention
 - Export the function as `proxy()` not `middleware()`
-- `next` version is pinned to exact `16.1.7` in `package.json` (no `^` caret)
+- `next` version is pinned to exact `16.2.4` in `package.json` (no `^` caret)
 
 ## Test environment
 
