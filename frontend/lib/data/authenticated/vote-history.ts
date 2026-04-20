@@ -34,8 +34,6 @@ export type UserVoteRow = {
     | "abstention"
     | "non_inscrit"
     | "ne_se_prononce_pas";
-  confidence: number | null;
-  notes: string | null;
   declared_at: string | null;
   candidate_name: string | null;
   list_label: string | null;

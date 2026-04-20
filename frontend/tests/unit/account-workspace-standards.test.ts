@@ -11,7 +11,7 @@ describe("Account workspace standards", () => {
 
     expect(source).toContain("AppAccountShell");
     expect(source).toContain("AppUsernameField");
-    expect(source).toContain("AppVoteHistoryList");
+    expect(source).toContain("AppVoteHistoryEditor");
     expect(source).toContain("AppDraftList");
     expect(source).toContain("AppPostHistoryList");
     expect(source).toContain("AppCommentHistoryList");

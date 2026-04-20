@@ -34,6 +34,22 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  // Decider si on doit verifier la session cote Supabase (round-trip reseau ~200ms).
+  // On ne le fait que pour les navigations GET vers /me et ses sous-routes — le
+  // seul usage est de rediriger les visiteurs non-auth vers /auth/login.
+  //
+  // Les server actions (POST avec header next-action) authentifient elles-memes
+  // via le RPC security definer ; pas besoin de refaire un getUser() ici, ce qui
+  // ajoutait 200ms a chaque click dans la grille de vote.
+  const isServerAction = request.headers.get("next-action") !== null;
+  const pathname = request.nextUrl.pathname;
+  const needsAuthGate =
+    !isServerAction && request.method === "GET" && pathname.startsWith("/me");
+
+  if (!needsAuthGate) {
+    return response;
+  }
+
   const {
     data: { user },
     error: userError,
@@ -42,17 +58,17 @@ export async function updateSession(request: NextRequest) {
   if (userError) {
     console.warn("[proxy] getUser failed", {
       message: userError.message,
-      pathname: request.nextUrl.pathname,
+      pathname,
     });
   }
 
-  if (!user && request.nextUrl.pathname.startsWith("/me")) {
+  if (!user) {
     console.info("[proxy] unauthenticated access to /me — redirecting to login", {
-      pathname: request.nextUrl.pathname,
+      pathname,
     });
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 

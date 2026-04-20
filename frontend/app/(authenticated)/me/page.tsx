@@ -14,7 +14,6 @@ import { AppPrivateNotice } from "@/components/app/app-private-notice";
 import { AppTextarea } from "@/components/app/app-textarea";
 import { AppUsernameField } from "@/components/app/app-username-field";
 import { AppVoteHistoryEditor } from "@/components/app/app-vote-history-editor";
-import { AppVoteHistoryList } from "@/components/app/app-vote-history-list";
 import {
   clearPrivateProfileAction,
   deactivateAccountAction,
@@ -133,29 +132,15 @@ export default async function MePage({
           </div>
         ) : null}
 
-        {section === "votes" ? (
+        {section === "votes" && voteEditor ? (
           <div className="space-y-4">
             <AppPrivateNotice message="Historique prive. Visible uniquement par vous. Sert au redressement anonymise des sondages." />
-            {voteEditor ? (
-              <AppVoteHistoryEditor
-                elections={voteEditor.elections}
-                votesByElectionId={voteEditor.votesByElectionId}
-                status={voteEditor.status}
-                message={voteEditor.message}
-              />
-            ) : null}
-            <details className="rounded-2xl border border-border bg-card p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-foreground">
-                Journal brut
-              </summary>
-              <div className="mt-3">
-                <AppVoteHistoryList
-                  items={data.voteHistory}
-                  status={data.sectionStatus.votes.state}
-                  message={data.sectionStatus.votes.message}
-                />
-              </div>
-            </details>
+            <AppVoteHistoryEditor
+              elections={voteEditor.elections}
+              votesByElectionId={voteEditor.votesByElectionId}
+              status={voteEditor.status}
+              message={voteEditor.message}
+            />
           </div>
         ) : null}
 

@@ -19,8 +19,8 @@ vi.mock("@/lib/supabase/env", () => ({
 
 import { updateSession } from "@/lib/supabase/middleware";
 
-function makeRequest(pathname: string) {
-  return new NextRequest(`http://localhost:3000${pathname}`);
+function makeRequest(pathname: string, init?: { method?: string; headers?: Record<string, string> }) {
+  return new NextRequest(`http://localhost:3000${pathname}`, init);
 }
 
 function makeClient(user: unknown = null) {
@@ -82,5 +82,24 @@ describe("updateSession", () => {
     expect(response.status).toBe(307);
     const location = response.headers.get("location") ?? "";
     expect(location).toContain(encodeURIComponent("/me/settings"));
+  });
+
+  it("skips auth.getUser() on server action POSTs (next-action header)", async () => {
+    const request = makeRequest("/me", {
+      method: "POST",
+      headers: { "next-action": "some-action-id" }
+    });
+    const response = await updateSession(request);
+    expect(response.status).toBe(200);
+    // Le seul but du middleware etant de rediriger les GET non-auth, il ne doit
+    // pas consommer un round-trip Supabase Auth sur les server actions.
+    expect(mocks.getUser).not.toHaveBeenCalled();
+  });
+
+  it("skips auth check on non-/me paths even when GET (public routes)", async () => {
+    const request = makeRequest("/post/some-slug");
+    const response = await updateSession(request);
+    expect(response.status).toBe(200);
+    expect(mocks.getUser).not.toHaveBeenCalled();
   });
 });

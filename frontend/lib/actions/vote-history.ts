@@ -25,90 +25,68 @@ export async function upsertVoteHistoryAction(input: {
   election_slug: string;
   election_result_id: string | null;
   choice_kind: ChoiceKind;
-  confidence?: number | null;
-  notes?: string | null;
 }) {
-  const electionSlug = input.election_slug?.trim();
+  const electionSlug = input.election_slug.trim();
   const choiceKind = input.choice_kind;
 
-  console.info("[vote-history][upsert] start", {
-    electionSlug,
-    choiceKind,
-    hasResult: Boolean(input.election_result_id)
-  });
-
-  if (!electionSlug) {
-    throw new Error("Scrutin requis.");
-  }
-  if (!VALID_CHOICES.has(choiceKind)) {
-    throw new Error("Type de choix invalide.");
-  }
+  if (!electionSlug) throw new Error("Scrutin requis.");
+  if (!VALID_CHOICES.has(choiceKind)) throw new Error("Type de choix invalide.");
   if (choiceKind === "vote" && !input.election_result_id) {
     throw new Error("Choix de candidat requis pour un vote.");
   }
 
+  // Le RPC est security definer et raise errcode 28000 si auth.uid() est null.
+  // C'est la seule source de verite — pas de auth.getUser() redondant ici.
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    console.error("[vote-history][upsert] auth failed", { message: userError?.message });
-    throw new Error("Authentication required");
-  }
-
+  const t0 = performance.now();
   const { error } = await supabase.rpc("rpc_upsert_vote_history", {
     p_election_slug: electionSlug,
     p_election_result_id: choiceKind === "vote" ? input.election_result_id : null,
-    p_choice_kind: choiceKind,
-    p_confidence: input.confidence ?? null,
-    p_notes: input.notes ?? null
+    p_choice_kind: choiceKind
   });
+  const rpcMs = Math.round(performance.now() - t0);
 
   if (error) {
     console.error("[vote-history][upsert] rpc failed", {
       message: error.message,
-      code: error.code
+      code: error.code,
+      rpcMs
     });
+    if (error.code === "28000") {
+      throw new Error("Authentication required");
+    }
     throw new Error("Enregistrement impossible pour le moment.");
   }
 
-  console.info("[vote-history][upsert] OK", { userId: user.id, electionSlug, choiceKind });
+  console.info("[vote-history][upsert] OK", { electionSlug, choiceKind, rpcMs });
   revalidatePath("/me");
 }
 
 export async function deleteVoteHistoryAction(electionSlug: string) {
-  const slug = (electionSlug ?? "").trim();
-  console.info("[vote-history][delete] start", { electionSlug: slug });
-
-  if (!slug) {
-    throw new Error("Scrutin requis.");
-  }
+  const slug = electionSlug.trim();
+  if (!slug) throw new Error("Scrutin requis.");
 
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    console.error("[vote-history][delete] auth failed", { message: userError?.message });
-    throw new Error("Authentication required");
-  }
-
+  const t0 = performance.now();
   const { error } = await supabase.rpc("rpc_delete_vote_history", {
     p_election_slug: slug
   });
+  const rpcMs = Math.round(performance.now() - t0);
 
   if (error) {
     console.error("[vote-history][delete] rpc failed", {
       message: error.message,
-      code: error.code
+      code: error.code,
+      rpcMs
     });
+    if (error.code === "28000") {
+      throw new Error("Authentication required");
+    }
     throw new Error("Suppression impossible pour le moment.");
   }
 
-  console.info("[vote-history][delete] OK", { userId: user.id, electionSlug: slug });
+  console.info("[vote-history][delete] OK", { electionSlug: slug, rpcMs });
   revalidatePath("/me");
 }

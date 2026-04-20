@@ -1,65 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { AppVoteHistoryList } from "@/components/app/app-vote-history-list";
 import { AppDraftList } from "@/components/app/app-draft-list";
 import { AppPostHistoryList } from "@/components/app/app-post-history-list";
 import { AppCommentHistoryList } from "@/components/app/app-comment-history-list";
-
-// ─── AppVoteHistoryList ────────────────────────────────────────────────
-describe("AppVoteHistoryList", () => {
-  it("shows loading message when loading=true", () => {
-    render(<AppVoteHistoryList items={[]} loading />);
-    expect(screen.getByText(/Chargement/)).toBeTruthy();
-  });
-
-  it("shows unavailable state", () => {
-    render(<AppVoteHistoryList items={[]} status="unavailable" />);
-    expect(screen.getByText("Historique indisponible temporairement")).toBeTruthy();
-  });
-
-  it("shows error state", () => {
-    render(<AppVoteHistoryList items={[]} status="error" />);
-    expect(screen.getByText("Historique indisponible")).toBeTruthy();
-  });
-
-  it("shows empty state when no items", () => {
-    render(<AppVoteHistoryList items={[]} />);
-    expect(screen.getByText("Aucun vote prive")).toBeTruthy();
-  });
-
-  it("renders vote items", () => {
-    const items = [
-      {
-        id: "v1",
-        vote_round: 1,
-        declared_option_label: "Option A",
-        declared_candidate_name: "Jean Dupont",
-        declared_at: "2026-01-01T00:00:00Z",
-        created_at: "2026-01-01T00:00:00Z"
-      }
-    ];
-    render(<AppVoteHistoryList items={items} />);
-    expect(screen.getByText("Option A")).toBeTruthy();
-    expect(screen.getByText(/Jean Dupont/)).toBeTruthy();
-  });
-
-  it("handles null candidate name", () => {
-    const items = [
-      {
-        id: "v1",
-        vote_round: null,
-        declared_option_label: null,
-        declared_candidate_name: null,
-        declared_at: null,
-        created_at: "2026-01-01T00:00:00Z"
-      }
-    ];
-    render(<AppVoteHistoryList items={items} />);
-    expect(screen.getByText("Vote sans etiquette")).toBeTruthy();
-    expect(screen.getByText("Candidat non renseigne")).toBeTruthy();
-  });
-});
 
 // ─── AppDraftList ──────────────────────────────────────────────────────
 describe("AppDraftList", () => {

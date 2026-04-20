@@ -1,5 +1,21 @@
 # Claude Code — Project Rules
 
+## MANDATORY: Engineering standards
+
+**Code comme un ingénieur Google, pas comme un étudiant dans sa chambre.**
+
+Priorité absolue : **simplicité et élégance**. Un diff court et lisible bat un diff clever et long. Moins de code = moins de bugs = moins de maintenance.
+
+Règles opérationnelles :
+
+1. **Diagnostique avant de patcher.** Si un truc est lent, cherche la cause racine (latence réseau, N+1, appel redondant) — ne le cache pas derrière un cache / loader / optimistic UI / debounce. Ces outils sont légitimes, mais seulement après avoir éliminé la cause.
+2. **Pas de quick-fix qui ripoline.** Un workaround temporaire doit être explicitement annoté `// TODO:` avec le vrai fix à faire. Sinon, on fait le vrai fix directement.
+3. **Zéro duplication réseau.** Un même `auth.getUser()` / RPC / requête ne doit **jamais** être appelé deux fois dans le même parcours de requête (middleware + action + data fetcher = trois fois le coût).
+4. **Trust the backend.** RLS Supabase et RPC `security definer` sont la source de vérité. Ne reprogramme pas les validations côté client ou action. Un RPC qui raise `28000` suffit, pas besoin de double-checker avec `auth.getUser()` avant.
+5. **Supprime avant d'ajouter.** Avant d'ajouter une abstraction, vérifie si une existante peut faire le job. Avant d'ajouter un état local, vérifie si l'état serveur suffit.
+6. **Mesure, n'intuite pas.** Perf = chiffres (`performance.now()`, logs `rpcMs`). UX = usage réel. Pas de décision perf sans mesure avant/après.
+7. **Pas de feature flags mort-nés, pas de props "au cas où", pas de `try/catch` décoratif.** Si ce n'est pas utilisé aujourd'hui, ça n'existe pas.
+
 ## MANDATORY: Pre-push checklist
 
 **NEVER push to git without running these two commands first and confirming they pass:**
