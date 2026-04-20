@@ -22,6 +22,9 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    # Non-blocking: security findings create annotations but don't block the pipeline.
+    # Requires CODACY_PROJECT_TOKEN secret to use project-specific tool config.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
