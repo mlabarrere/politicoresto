@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppVoteHistoryEditor } from "@/components/app/app-vote-history-editor";
 import type { ElectionRow, UserVoteRow } from "@/lib/data/authenticated/vote-history";
 
-const upsertMock = vi.fn(async () => {});
-const deleteMock = vi.fn(async () => {});
+const upsertMock = vi.fn(async (_input: unknown) => undefined);
+const deleteMock = vi.fn(async (_slug: string) => undefined);
 
 vi.mock("@/lib/actions/vote-history", () => ({
   upsertVoteHistoryAction: (input: unknown) => upsertMock(input),
