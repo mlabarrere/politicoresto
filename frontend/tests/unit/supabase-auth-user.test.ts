@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getAuthUserId, getCurrentUser } from "@/lib/supabase/auth-user";
+import { getAuthUser, getAuthUserId } from "@/lib/supabase/auth-user";
 
 describe("getAuthUserId", () => {
   it("returns sub from getClaims() when available (fast path, no round-trip)", async () => {
@@ -57,17 +57,28 @@ describe("getAuthUserId", () => {
   });
 });
 
-describe("getCurrentUser", () => {
-  it("wraps getAuthUserId into a {id} object", async () => {
+describe("getAuthUser", () => {
+  it("returns id + email from claims when present", async () => {
     const client = {
       auth: {
-        getClaims: async () => ({ data: { claims: { sub: "user-xyz" } } })
+        getClaims: async () => ({
+          data: { claims: { sub: "user-xyz", email: "u@example.com" } }
+        })
       }
     };
-    expect(await getCurrentUser(client)).toEqual({ id: "user-xyz" });
+    expect(await getAuthUser(client)).toEqual({ id: "user-xyz", email: "u@example.com" });
+  });
+
+  it("returns null email when claims has no email", async () => {
+    const client = {
+      auth: {
+        getClaims: async () => ({ data: { claims: { sub: "uid-1" } } })
+      }
+    };
+    expect(await getAuthUser(client)).toEqual({ id: "uid-1", email: null });
   });
 
   it("returns null when no user is available", async () => {
-    expect(await getCurrentUser({})).toBeNull();
+    expect(await getAuthUser({})).toBeNull();
   });
 });

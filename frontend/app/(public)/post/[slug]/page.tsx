@@ -6,7 +6,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { ScreenState } from "@/components/layout/screen-state";
 import { getPostDetail } from "@/lib/data/public/posts";
 import { buildForumCommentTree, mapPostViewToForumPost } from "@/lib/forum/mappers";
-import { getCurrentUser } from "@/lib/supabase/auth-user";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function PostDetailPage({
@@ -16,8 +16,7 @@ export default async function PostDetailPage({
 }) {
   const { slug } = await params;
   const supabase = await createServerSupabaseClient();
-  const user = await getCurrentUser(supabase);
-  const currentUserId = user?.id ?? null;
+  const currentUserId = await getAuthUserId(supabase);
   let detail;
 
   try {
