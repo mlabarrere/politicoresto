@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { Check, Loader2, Slash, Trash2, X } from "lucide-react";
 
 import { AppBanner } from "@/components/app/app-banner";
@@ -42,6 +42,42 @@ type ElectionGroup = {
   elections: ElectionRow[];
 };
 
+type VoteMap = Record<string, UserVoteRow>;
+
+type VoteMutation =
+  | { kind: "set"; election: ElectionRow; resultId: string | null; choiceKind: ChoiceKind }
+  | { kind: "clear"; electionId: string };
+
+function applyMutation(current: VoteMap, mut: VoteMutation): VoteMap {
+  if (mut.kind === "clear") {
+    if (!(mut.electionId in current)) return current;
+    const next = { ...current };
+    delete next[mut.electionId];
+    return next;
+  }
+  const { election, resultId, choiceKind } = mut;
+  const existing = current[election.id];
+  const result =
+    choiceKind === "vote" && resultId
+      ? election.results.find((r) => r.id === resultId)
+      : undefined;
+  const next: UserVoteRow = {
+    id: existing?.id ?? `optimistic:${election.id}`,
+    election_id: election.id,
+    election_slug: election.slug,
+    election_label: election.label,
+    election_result_id: choiceKind === "vote" ? resultId : null,
+    choice_kind: choiceKind,
+    confidence: existing?.confidence ?? null,
+    notes: existing?.notes ?? null,
+    declared_at: new Date().toISOString(),
+    candidate_name: result?.candidate_name ?? null,
+    list_label: result?.list_label ?? null,
+    party_slug: result?.party_slug ?? null
+  };
+  return { ...current, [election.id]: next };
+}
+
 function groupElections(elections: ElectionRow[]): ElectionGroup[] {
   const groups = new Map<string, ElectionRow[]>();
   for (const e of elections) {
@@ -74,6 +110,14 @@ export function AppVoteHistoryEditor({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // useOptimistic ouvre un "miroir" du state serveur qu'on peut bumper instantanement
+  // pour donner du feedback utilisateur (couleur du parti, check) sans attendre le
+  // round-trip Supabase + revalidatePath.
+  const [optimisticVotes, applyOptimistic] = useOptimistic<VoteMap, VoteMutation>(
+    votesByElectionId,
+    applyMutation
+  );
+
   const grouped = useMemo(() => groupElections(elections), [elections]);
 
   if (status === "unavailable") {
@@ -86,10 +130,12 @@ export function AppVoteHistoryEditor({
     return <AppEmptyState title="Aucun scrutin seede" body="L'historique des scrutins n'a pas ete charge." />;
   }
 
-  function runAction(key: string, fn: () => Promise<void>) {
-    setPendingKey(key);
+  function runAction(key: string, mutation: VoteMutation, fn: () => Promise<void>) {
     setError(null);
     startTransition(async () => {
+      setPendingKey(key);
+      // Optimistic first — l'UI reflete le choix instantanement.
+      applyOptimistic(mutation);
       try {
         await fn();
       } catch (err) {
@@ -104,49 +150,63 @@ export function AppVoteHistoryEditor({
 
   function handleResultClick(election: ElectionRow, resultId: string) {
     const key = `${election.slug}:${resultId}`;
-    const current = votesByElectionId[election.id];
+    const current = optimisticVotes[election.id];
     const alreadySelected =
       current?.choice_kind === "vote" && current.election_result_id === resultId;
 
     if (alreadySelected) {
-      runAction(key, () => deleteVoteHistoryAction(election.slug));
+      runAction(key, { kind: "clear", electionId: election.id }, () =>
+        deleteVoteHistoryAction(election.slug)
+      );
       return;
     }
 
-    runAction(key, () =>
-      upsertVoteHistoryAction({
-        election_slug: election.slug,
-        election_result_id: resultId,
-        choice_kind: "vote",
-        confidence: null,
-        notes: null
-      })
+    runAction(
+      key,
+      { kind: "set", election, resultId, choiceKind: "vote" },
+      () =>
+        upsertVoteHistoryAction({
+          election_slug: election.slug,
+          election_result_id: resultId,
+          choice_kind: "vote",
+          confidence: null,
+          notes: null
+        })
     );
   }
 
   function handleAbstentionClick(election: ElectionRow, kind: Exclude<ChoiceKind, "vote">) {
     const key = `${election.slug}:${kind}`;
-    const current = votesByElectionId[election.id];
+    const current = optimisticVotes[election.id];
     const alreadySelected = current?.choice_kind === kind;
 
     if (alreadySelected) {
-      runAction(key, () => deleteVoteHistoryAction(election.slug));
+      runAction(key, { kind: "clear", electionId: election.id }, () =>
+        deleteVoteHistoryAction(election.slug)
+      );
       return;
     }
 
-    runAction(key, () =>
-      upsertVoteHistoryAction({
-        election_slug: election.slug,
-        election_result_id: null,
-        choice_kind: kind,
-        confidence: null,
-        notes: null
-      })
+    runAction(
+      key,
+      { kind: "set", election, resultId: null, choiceKind: kind },
+      () =>
+        upsertVoteHistoryAction({
+          election_slug: election.slug,
+          election_result_id: null,
+          choice_kind: kind,
+          confidence: null,
+          notes: null
+        })
     );
   }
 
   function handleClear(election: ElectionRow) {
-    runAction(`${election.slug}:clear`, () => deleteVoteHistoryAction(election.slug));
+    runAction(
+      `${election.slug}:clear`,
+      { kind: "clear", electionId: election.id },
+      () => deleteVoteHistoryAction(election.slug)
+    );
   }
 
   return (
@@ -170,7 +230,7 @@ export function AppVoteHistoryEditor({
             <ElectionRowBlock
               key={election.id}
               election={election}
-              currentVote={votesByElectionId[election.id]}
+              currentVote={optimisticVotes[election.id]}
               isPending={isPending}
               pendingKey={pendingKey}
               onResultClick={handleResultClick}
@@ -288,7 +348,7 @@ function CandidateTile({
       onClick={() => {
         onClick(election, result.id);
       }}
-      disabled={isPending}
+      disabled={isLoading}
       aria-pressed={isSelected}
       aria-label={`${tooltipBase} — ${isSelected ? "selectionne" : "non selectionne"}`}
       title={`${tooltipBase}${pctLabel}`}
@@ -303,8 +363,7 @@ function CandidateTile({
         isSelected
           ? "border-transparent"
           : "border-border bg-card text-foreground hover:border-foreground/30 hover:bg-muted",
-        isPending && "cursor-wait",
-        isLoading && "opacity-80"
+        isLoading && "cursor-wait opacity-80"
       )}
     >
       <span
@@ -329,8 +388,8 @@ function CandidateTile({
         </span>
       ) : null}
       {isLoading ? (
-        <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/10">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+        <span className="absolute left-1 top-1 inline-flex h-3.5 w-3.5 items-center justify-center">
+          <Loader2 className="h-3 w-3 animate-spin opacity-70" aria-hidden />
         </span>
       ) : null}
     </button>
@@ -358,7 +417,7 @@ function AbstentionTile({
       onClick={() => {
         onClick(election, option.kind);
       }}
-      disabled={isPending}
+      disabled={isLoading}
       aria-pressed={isSelected}
       aria-label={`${option.label} — ${isSelected ? "selectionne" : "non selectionne"}`}
       title={option.label}
@@ -369,8 +428,7 @@ function AbstentionTile({
         isSelected
           ? "border-transparent"
           : "border-border bg-muted/40 text-muted-foreground hover:border-foreground/30 hover:bg-muted",
-        isPending && "cursor-wait",
-        isLoading && "opacity-80"
+        isLoading && "cursor-wait opacity-80"
       )}
     >
       <span
@@ -394,8 +452,8 @@ function AbstentionTile({
         </span>
       ) : null}
       {isLoading ? (
-        <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/10">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+        <span className="absolute left-1 top-1 inline-flex h-3.5 w-3.5 items-center justify-center">
+          <Loader2 className="h-3 w-3 animate-spin opacity-70" aria-hidden />
         </span>
       ) : null}
     </button>
