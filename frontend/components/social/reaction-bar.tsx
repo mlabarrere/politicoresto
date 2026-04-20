@@ -116,12 +116,12 @@ export const ReactionBar = memo(function ReactionBar({
           currentVote: normalizedVote
         });
       } catch {
-        if (!isMountedRef.current || currentRequestId !== requestIdRef.current) return;
-        setState(previousState);
-      } finally {
         if (isMountedRef.current && currentRequestId === requestIdRef.current) {
-          setIsSubmitting(false);
+          setState(previousState);
         }
+      }
+      if (isMountedRef.current && currentRequestId === requestIdRef.current) {
+        setIsSubmitting(false);
       }
     },
     [isSubmitting, state, targetId, targetType]

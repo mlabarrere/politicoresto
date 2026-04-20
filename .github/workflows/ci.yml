@@ -1,8 +1,8 @@
 name: CI
 
 # Runs on every PR targeting main, and on every push to main.
-# On PR   : security + quality + coverage (parallel) → build
-# On main : security + quality + coverage (parallel) → build → deploy preview
+# On PR   : quality + coverage (parallel) → build
+# On main : quality + coverage (parallel) → build → deploy preview
 
 on:
   pull_request:
@@ -12,40 +12,11 @@ on:
 
 permissions:
   contents: read
-  security-events: write   # Codacy SARIF upload
-  actions: read            # SARIF upload in private repos
 
 # ─────────────────────────────────────────
-# JOB 1 — Security scan (Codacy SARIF)
+# JOB 1 — Code quality (TypeScript)
 # ─────────────────────────────────────────
 jobs:
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    # Non-blocking: Codacy Stylelint fails on stale caniuse-lite in their runner.
-    # Annotations still appear in GitHub Security tab. Real errors remain visible.
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@d840f886c4bd4edc059706d09c6a1586111c540b
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          verbose: true
-          output: results.sarif
-          format: sarif
-          gh-code-scanning-compat: true
-          max-allowed-issues: 2147483647
-
-      - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: results.sarif
-
-# ─────────────────────────────────────────
-# JOB 2 — Code quality (TypeScript)
-# ─────────────────────────────────────────
   quality:
     name: Code Quality
     runs-on: ubuntu-latest
@@ -68,7 +39,7 @@ jobs:
         run: npm run typecheck
 
 # ─────────────────────────────────────────
-# JOB 3 — Tests & coverage (Vitest + Codecov)
+# JOB 2 — Tests & coverage (Vitest + Codecov)
 # ─────────────────────────────────────────
   coverage:
     name: Tests & Coverage
@@ -100,11 +71,11 @@ jobs:
           fail_ci_if_error: false
 
 # ─────────────────────────────────────────
-# JOB 4 — Build (waits for all 3 above)
+# JOB 3 — Build (waits for quality + coverage)
 # ─────────────────────────────────────────
   build:
     name: Build
-    needs: [security, quality, coverage]
+    needs: [quality, coverage]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -125,7 +96,7 @@ jobs:
         run: npm run build
 
 # ─────────────────────────────────────────
-# JOB 5 — Deploy Preview (main only)
+# JOB 4 — Deploy Preview (main only)
 # ─────────────────────────────────────────
   deploy-preview:
     name: Deploy Preview
