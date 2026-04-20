@@ -1,13 +1,10 @@
-name: Migrate — Staging DB
+name: Migrate — Staging DB (manual hotfix)
 
-# Applique automatiquement les migrations Supabase sur le projet staging
-# après un merge sur main. Peut être relancé à la main via workflow_dispatch.
+# Manual-only : les pushes sur main déclenchent la migration staging
+# via deploy-preview.yml (job migrate-staging → deploy-preview séquentiel).
+# Ce workflow sert uniquement aux hotfix DB-only qu'on ne veut pas coupler
+# à un déploiement applicatif.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "supabase/migrations/**"
-      - ".github/workflows/migrate-staging.yml"
   workflow_dispatch:
 
 permissions:
