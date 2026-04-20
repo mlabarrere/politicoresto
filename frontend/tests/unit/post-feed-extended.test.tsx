@@ -13,7 +13,7 @@ vi.mock("@/components/app/app-feed-item", () => ({
 
 describe("PostFeed", () => {
   it("shows empty state when no items", () => {
-    render(<PostFeed items={[]} isAuthenticated={false} sortMode="editorial" />);
+    render(<PostFeed items={[]} isAuthenticated={false} sortMode="popular" />);
     expect(screen.getByText("Aucun post visible")).toBeTruthy();
   });
 
@@ -23,7 +23,7 @@ describe("PostFeed", () => {
       <PostFeed
         items={items}
         isAuthenticated={false}
-        sortMode="editorial"
+        sortMode="popular"
         categoryFilter={{ type: "sondage", status: "open" }}
       />
     );
@@ -36,7 +36,7 @@ describe("PostFeed", () => {
       buildHomeFeedTopic({ topic_id: "t1", topic_title: "Post A" }),
       buildHomeFeedTopic({ topic_id: "t2", topic_title: "Post B" })
     ];
-    render(<PostFeed items={items} isAuthenticated={false} sortMode="editorial" />);
+    render(<PostFeed items={items} isAuthenticated={false} sortMode="popular" />);
     expect(screen.getByTestId("feed-item-t1")).toBeTruthy();
     expect(screen.getByTestId("feed-item-t2")).toBeTruthy();
   });
@@ -71,7 +71,7 @@ describe("PostFeed", () => {
       <PostFeed
         items={[withPoll, withoutPoll]}
         isAuthenticated={false}
-        sortMode="editorial"
+        sortMode="popular"
         categoryFilter={{ type: "sondage", status: "open" }}
       />
     );
@@ -87,7 +87,7 @@ describe("PostFeed", () => {
       <PostFeed
         items={[lfiItem, rnItem]}
         isAuthenticated={false}
-        sortMode="editorial"
+        sortMode="popular"
         categoryFilter={{ type: "politique", blocSlug: "gauche-radicale" }}
       />
     );
@@ -100,7 +100,7 @@ describe("PostFeed", () => {
     const items = Array.from({ length: 21 }, (_, i) =>
       buildHomeFeedTopic({ topic_id: `t${i}`, topic_title: `Post ${i}` })
     );
-    render(<PostFeed items={items} isAuthenticated={false} sortMode="editorial" />);
+    render(<PostFeed items={items} isAuthenticated={false} sortMode="popular" />);
     expect(screen.getByText("Charger plus")).toBeTruthy();
   });
 
@@ -108,7 +108,7 @@ describe("PostFeed", () => {
     const items = Array.from({ length: 25 }, (_, i) =>
       buildHomeFeedTopic({ topic_id: `t${i}`, topic_title: `Post ${i}` })
     );
-    render(<PostFeed items={items} isAuthenticated={false} sortMode="editorial" />);
+    render(<PostFeed items={items} isAuthenticated={false} sortMode="popular" />);
     const loadMoreBtn = screen.getByText("Charger plus");
     fireEvent.click(loadMoreBtn);
     // After clicking, 30 items visible (still 25 items, capped at 30)

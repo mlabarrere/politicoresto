@@ -33,7 +33,6 @@ describe("comment node behavior", () => {
         onReplySubmit={vi.fn().mockResolvedValue(undefined)}
         onEditSubmit={vi.fn().mockResolvedValue(undefined)}
         onDeleteSubmit={vi.fn().mockResolvedValue(undefined)}
-        onVoteChange={vi.fn().mockResolvedValue(undefined)}
       />
     );
 
@@ -56,7 +55,6 @@ describe("comment node behavior", () => {
         onReplySubmit={vi.fn().mockResolvedValue(undefined)}
         onEditSubmit={vi.fn().mockResolvedValue(undefined)}
         onDeleteSubmit={vi.fn().mockResolvedValue(undefined)}
-        onVoteChange={vi.fn().mockResolvedValue(undefined)}
       />
     );
 

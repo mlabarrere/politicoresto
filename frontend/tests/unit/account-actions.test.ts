@@ -165,6 +165,7 @@ describe("deactivateAccountAction", () => {
   it("deactivates account and redirects on valid confirmation", async () => {
     const client = makeSupabaseMock();
     client.from = vi.fn(() => ({
+      select: vi.fn(),
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({ error: null })
       })
@@ -200,6 +201,7 @@ describe("deleteAccountAction", () => {
     mocks.signOut.mockResolvedValue({});
     const client = makeSupabaseMock();
     client.from = vi.fn(() => ({
+      select: vi.fn(),
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({ error: null })
       })
@@ -214,6 +216,7 @@ describe("deleteAccountAction", () => {
   it("throws on update error", async () => {
     const client = makeSupabaseMock();
     client.from = vi.fn(() => ({
+      select: vi.fn(),
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({ error: { message: "fail", code: "500" } })
       })

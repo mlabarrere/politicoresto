@@ -14,13 +14,13 @@ type FromTable = "app_profile" | "v_thread_posts" | "v_post_comments" | "topic";
 
 function makeClient({
   profile = { user_id: "u1", username: "citoyen", display_name: "Jean", bio: "Ma bio", created_at: "2026-01-01" },
-  profileError = null,
+  profileError = null as unknown,
   posts = [] as unknown[],
-  postsError = null,
+  postsError = null as unknown,
   comments = [] as unknown[],
-  commentsError = null,
+  commentsError = null as unknown,
   topics = [] as unknown[],
-  topicsError = null
+  topicsError = null as unknown
 } = {}) {
   return {
     from: vi.fn().mockImplementation((table: FromTable) => {
