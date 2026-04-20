@@ -30,6 +30,10 @@ function makeSupabase({
 }) {
   return {
     auth: {
+      getSession: vi.fn(async () => ({
+        data: { session: { user: { id: "u1", email: "user@example.com" } } },
+        error: null
+      })),
       getUser: vi.fn(async () => ({
         data: { user: { id: "u1", email: "user@example.com" } },
         error: null

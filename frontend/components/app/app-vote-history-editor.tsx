@@ -226,6 +226,11 @@ function CandidateTile({
   onClick: () => void;
 }) {
   const theme = getPartyTheme(result.party_slug);
+  // Tile label = nom court pour candidat ("E. Macron"), liste telle quelle.
+  // Les list_label en base sont deja concis apres migration 20260420220000.
+  const tileLabel = result.candidate_name
+    ? shortenCandidateName(result.candidate_name)
+    : result.list_label ?? "Liste";
   const displayName = result.candidate_name ?? result.list_label ?? "Candidat";
   const tooltipBase = result.candidate_name
     ? `${result.candidate_name}${result.list_label ? ` — ${result.list_label}` : ""}`
@@ -269,7 +274,7 @@ function CandidateTile({
         {initials(displayName)}
       </span>
       <span className="mt-1 line-clamp-2 w-full px-0.5 text-[10px] leading-tight">
-        {shortName(displayName)}
+        {tileLabel}
       </span>
       {isSelected ? (
         <span className="absolute right-1 top-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-white">
@@ -346,11 +351,13 @@ function formatHeldOn(iso: string): string {
   });
 }
 
-function shortName(full: string): string {
+// Transforme "Emmanuel Macron" en "E. Macron". S'applique UNIQUEMENT aux noms
+// de candidats (prenom + nom, parfois compose). Pour 3+ mots on tronque juste
+// le prenom pour laisser la place au nom de famille complet.
+function shortenCandidateName(full: string): string {
   const parts = full.trim().split(/\s+/).filter(Boolean);
   if (parts.length <= 1) return full;
   const [first, ...rest] = parts;
-  const last = rest[rest.length - 1];
-  if (!first || !last) return full;
-  return `${first.charAt(0)}. ${last}`;
+  if (!first) return full;
+  return `${first.charAt(0)}. ${rest.join(" ")}`;
 }

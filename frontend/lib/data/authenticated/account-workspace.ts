@@ -161,13 +161,21 @@ async function fetchPublicationRows(
 
 export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    throw new Error(userError?.message ?? "Authentication required");
+  // getSession() lit le JWT depuis les cookies sans aller-retour reseau vers
+  // Supabase Auth (contrairement a getUser() qui fait un appel REST ~200ms).
+  // C'est safe ici parce que :
+  //   1. Le middleware a deja valide la session (getUser) avant d'autoriser le
+  //      GET sur /me — on ne rentre dans cette fonction que si le JWT est bon.
+  //   2. Les queries ci-dessous sont toutes RLS-protegees : Postgres refusera
+  //      de renvoyer des lignes qui ne correspondent pas a auth.uid().
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+  const user = session?.user;
+
+  if (!user) {
+    throw new Error("Authentication required");
   }
 
   const sectionStatus: AccountSectionStatuses = {
