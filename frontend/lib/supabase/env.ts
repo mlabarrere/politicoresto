@@ -21,8 +21,11 @@ const env = createEnv({
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   },
   // In tests the env is absent; skip validation so unit tests don't need to
-  // stub every var. In dev / build / production the real env is validated.
-  skipValidation: process.env.NODE_ENV === 'test',
+  // stub every var. SKIP_ENV_VALIDATION is the t3-env convention CI honours
+  // during build — the production runtime on Vercel sets real values via
+  // project env vars. In local dev / production runtime, validation is on.
+  skipValidation:
+    process.env.NODE_ENV === 'test' || Boolean(process.env.SKIP_ENV_VALIDATION),
 });
 
 export const supabaseEnv = {
