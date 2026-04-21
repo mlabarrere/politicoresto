@@ -138,13 +138,14 @@ the only path to production.
   `supabase db push` to staging/prod, run
   `supabase migration repair --status applied 20260402193700` on those envs so
   the CLI does not try to re-apply it.
-- **No ESLint/Prettier** yet — Session 3 will install them and wire CI.
-- **Remaining `console.*` call sites** — Session 2 migrated all auth-path
-  sites to Pino (middleware, callback route, env, account actions). The 4
-  calls in `components/auth/oauth-buttons.tsx` are kept behind a documented
-  `eslint-disable` pending the `/api/_log` client→server forwarder (Session 3).
-  Non-auth app code still carries `console.*` — Session 3 converts them under
-  ESLint enforcement.
+- **`console.*` exceptions** — All app code uses Pino via `lib/logger.ts`.
+  The 4 calls in `components/auth/oauth-buttons.tsx` and 3 in client error
+  boundaries (`app/error.tsx`, `app/global-error.tsx`, `app/(public)/post/
+  [slug]/error.tsx`, `components/app/app-vote-history-editor.tsx`,
+  `components/home/post-composer.tsx`) are intentional — client components
+  cannot import the server Pino logger. Each site carries an
+  `eslint-disable-next-line no-console -- <reason>` annotation. A future
+  `/api/_log` forwarder will eliminate them.
 - **Auth on asymmetric JWT keys since 2026-04-21.** HS256 legacy decommissioned
   on staging and prod. `auth.getClaims()` is now the default in server
   contexts (see `auth-user.ts` header). Single codebase for both environments.
@@ -164,6 +165,19 @@ the only path to production.
   `.claude/skills/authentication`.
 - 2026-04-21 — Supabase asymmetric JWT keys enabled on staging + prod; HS256
   legacy decommissioned. `auth.getClaims()` is now the default server-side.
+- 2026-04-22 — Session 3 library adoptions:
+  - `zod@^3` + `@t3-oss/env-nextjs@^0.13` for env validation
+    (`lib/supabase/env.ts`).
+  - **No** `react-hook-form` (Server Actions are native and sufficient).
+  - **No** `date-fns` (native `Intl.RelativeTimeFormat` /
+    `Intl.DateTimeFormat` is the modern correct choice).
+  - **No** `@tanstack/react-query` (Server Components + Supabase direct).
+  - See `.claude/skills/library-first` for the full decision table.
+- 2026-04-22 — Session 3 style toolchain: `@vercel/style-guide@^6`
+  (browser + react + next + typescript) + `eslint@^8.57` + `prettier@^3`.
+  ESLint config at `frontend/.eslintrc.cjs` (legacy format required by
+  style-guide v6). A handful of default rules disabled with written
+  justifications (see the file header). `no-console: error` enforced.
 
 ## Instructions to future sessions
 
@@ -176,5 +190,5 @@ the only path to production.
 6. **Fetch current docs when uncertain.** Auth, logging, and Supabase/Vercel
    CLIs evolve — do not trust stale memory.
 7. **Skills** live in `.claude/skills/`. Load them when doing work in their
-   domain: `local-dev`, `logging`, `authentication`. Session 3 adds
-   `supabase-migration`, `nextjs-component`, `library-first`.
+   domain: `local-dev`, `logging`, `authentication`, `supabase-migration`,
+   `nextjs-component`, `library-first`.
