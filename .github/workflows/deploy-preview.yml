@@ -151,8 +151,25 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E auth
+      # Pre-flight: vérifier que le staging n'est pas derrière Vercel
+      # Deployment Protection (401). Si oui, l'E2E skip — inutile de faire
+      # planter le pipeline tant que la protection n'est pas levée.
+      # Cf. docs/STAGING_SETUP.md.
+      - name: Check staging is publicly reachable
         if: ${{ env.HAS_E2E_SECRETS == 'yes' }}
+        id: staging_check
+        run: |
+          status=$(curl -sI -o /dev/null -w "%{http_code}" https://politicoresto-staging.vercel.app/)
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" = "401" ] || [ "$status" = "403" ]; then
+            echo "::warning::staging returned $status — Vercel Deployment Protection is ON. See docs/STAGING_SETUP.md."
+            echo "reachable=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "reachable=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run E2E auth
+        if: ${{ env.HAS_E2E_SECRETS == 'yes' && steps.staging_check.outputs.reachable == 'yes' }}
         working-directory: frontend
         env:
           E2E_BASE_URL: https://politicoresto-staging.vercel.app
