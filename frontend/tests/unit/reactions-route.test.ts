@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { makeAuthMock } from "../fixtures/auth-mock";
+
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
   getUser: vi.fn(),
@@ -70,14 +72,7 @@ function makeClient({
   });
 
   return {
-    auth: {
-      getClaims: async () => ({
-        data: { claims: userNull ? null : { sub: userId } }
-      }),
-      getSession: async () => ({
-        data: { session: userNull ? null : { user: { id: userId } } }
-      })
-    },
+    auth: makeAuthMock(userNull ? null : userId),
     from: fromMock,
     rpc: vi.fn().mockResolvedValue({ error: rpcError, data: null })
   };
