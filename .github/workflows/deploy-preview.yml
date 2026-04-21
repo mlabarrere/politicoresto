@@ -89,7 +89,68 @@ jobs:
         run: |
           url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "deployment_url=${url#https://}" >> "$GITHUB_OUTPUT"
           echo "✅ Preview: $url"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # Alias staging stable pour que Google OAuth ait une URL unique à whitelister.
+      # Sans ça, l'URL Vercel change à chaque deploy → régression SSO (5x vue).
+      - name: Alias deployment to politicoresto-staging.vercel.app
+        run: |
+          vercel alias set "${{ steps.deploy.outputs.deployment_url }}" politicoresto-staging.vercel.app --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }}
+          echo "🔗 Staging alias: https://politicoresto-staging.vercel.app"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # ────────────────────────────────────────────────────────────
+  # 3. E2E auth sur staging (vraie Supabase, vrai cookie jar)
+  # ────────────────────────────────────────────────────────────
+  # Couvre les régressions silencieuses du cookie de session après login.
+  # Skip si les secrets E2E ne sont pas là (ex: premier run avant setup).
+  e2e-auth-staging:
+    name: E2E auth (staging)
+    needs: deploy-preview
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E auth
+        working-directory: frontend
+        env:
+          E2E_BASE_URL: https://politicoresto-staging.vercel.app
+          E2E_SUPABASE_URL: https://nvwpvckjsvicsyzpzjfi.supabase.co
+          E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+          E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+          E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+        run: npx playwright test --project=staging-auth
+
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-staging-auth
+          path: frontend/test-results/
+          retention-days: 7

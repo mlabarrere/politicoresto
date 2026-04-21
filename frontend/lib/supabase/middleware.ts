@@ -25,6 +25,13 @@ export async function updateSession(request: NextRequest) {
             options: CookieOptions;
           }>
         ) {
+          if (cookiesToSet.length > 0) {
+            console.info("[proxy] cookie mutations", {
+              pathname: request.nextUrl.pathname,
+              host: request.headers.get("host"),
+              names: cookiesToSet.map((c) => c.name)
+            });
+          }
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value);
             response.cookies.set(name, value, options);
