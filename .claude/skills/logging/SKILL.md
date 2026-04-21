@@ -118,8 +118,8 @@ JSON to stdout is immediately queryable via the Vercel dashboard.
 
 Client components cannot import the server logger. Two options:
 
-1. **Don't log from client** — let the server handler the client calls
-   log the outcome (preferred).
+1. **Don't log from client** — let the server handle the client calls
+   and log the outcome (preferred).
 2. **Client error boundaries** (`app/error.tsx`, `app/global-error.tsx`)
    use a targeted `// eslint-disable-next-line no-console` with a reason.
    Session 3 will add `/api/_log` for client→server log forwarding.

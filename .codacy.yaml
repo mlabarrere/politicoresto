@@ -22,3 +22,14 @@ exclude_paths:
   - "**/build/**"
   - "**/.next/**"
   - "frontend/coverage/**"
+  # Prose / rules documentation. Codacy's AI prose lints flag our intentional
+  # style (absolute rules, SQL keyword acronyms, migration timestamp digits
+  # misread as phone numbers). Documentation is reviewed by humans, not a
+  # prose-style linter.
+  - "**/*.md"
+  - ".claude/**"
+  - "docs/**"
+  - "supabase/docs/**"
+  # Baseline migration is a pg_dump of pre-existing staging schema, not
+  # hand-written code — style and complexity checks are noise on a dump.
+  - "supabase/migrations/20260402193700_remote_baseline.sql"
