@@ -6,7 +6,7 @@ Après ce setup, **plus aucune régression silencieuse** — l'E2E de [deploy-pr
 
 **Architecture** : un **client OAuth Google séparé par environnement** (staging/prod), chacun branché sur le projet Supabase correspondant. Les URIs sont symétriques : JavaScript origins = l'URL Vercel de l'env, redirect URI = l'URL Supabase de l'env (fixe, ne change jamais).
 
-Ordre à respecter : Google → Vercel (désactiver protection) → Supabase → vérif.
+Ordre à respecter : Google → Supabase → vérif. Vercel Deployment Protection peut rester ON — elle ne bloque pas le flow OAuth, et désactiver requiert le plan Pro à 150 $/mois (Advanced Deployment Protection).
 
 ---
 
@@ -43,21 +43,21 @@ Client ID : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleuserconten
 
 ---
 
-## 2. 🔓 Vercel — Désactiver Deployment Protection sur Preview
+## 2. 🔓 Vercel Deployment Protection — à laisser ON, sauf cas particuliers
 
-🎯 **Pourquoi** : Vercel bloque par défaut l'accès anonyme aux deploys preview (401). Conséquence : Google OAuth ne peut pas faire son callback (Vercel coupe la requête avant que Next la voie), les utilisateurs externes voient un écran de login Vercel, et les E2E plantent.
+🎯 **Contexte** : Vercel Authentication renvoie 401 aux visiteurs anonymes des deploys preview. En Hobby/Free, on ne peut pas la désactiver proprement (l'option « Only Production Deployments » est payante, 150 $/mois Advanced Deployment Protection).
 
-🎯 **Où** : https://vercel.com/martoai/politicoresto/settings/deployment-protection
+🎯 **Impact réel sur le flow OAuth** : **aucun**. Tu es déjà membre de la team Vercel → tu vois l'app. Google OAuth callback passe par Supabase, pas Vercel. Donc zéro blocage pour ton usage.
 
-📋 **Action** :
+**À faire seulement si besoin** :
 
-🔹 Section **Vercel Authentication** → sélectionner **Only Production Deployments** (donc Preview = accès libre). C'est l'option la plus simple et la plus propre pour une app web publique.
+🔹 **Testeur externe beta (n'est pas dans la team Vercel)** : deux options
+   - Activer **Shareable Links** (bouton Share depuis le dashboard de la preview), lui envoyer l'URL partageable.
+   - OU créer un **Automation Bypass Secret** (section déjà dispo gratuite), lui transmettre. Chaque requête avec le header `x-vercel-protection-bypass: <secret>` passe.
 
-🔹 OU si tu veux garder une protection : générer un **Automation Bypass Secret** (section « Protection Bypass for Automation »), le stocker dans GitHub repo secret `VERCEL_AUTOMATION_BYPASS_SECRET`. Le callback Google restera cassé, mais l'E2E utilisera le bypass.
+🔹 **E2E automatisé en CI sans skip** : créer un bypass secret et le stocker dans le GitHub repo comme `VERCEL_AUTOMATION_BYPASS_SECRET`. Le workflow `deploy-preview.yml` peut ensuite injecter ce header. Tant que ce secret n'existe pas, l'E2E skip avec un `::warning::` — pas bloquant.
 
-💾 **Save**.
-
-✅ **Vérif** : `curl -I https://politicoresto-staging.vercel.app/` doit renvoyer `200` (pas `401`).
+💡 Pour l'instant on laisse Protection ON. On reviendra sur le bypass si on veut un E2E vraiment automatisé sans concession.
 
 ---
 
