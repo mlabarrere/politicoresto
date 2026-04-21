@@ -168,7 +168,10 @@ module.exports = {
     'node_modules/',
     'coverage/',
     'next-env.d.ts',
-    'public/',
+    // Root /public (Next.js static assets) — anchored to repo root so
+    // application directories like lib/data/public/ are NOT accidentally
+    // ignored.
+    '/public/',
     'playwright.config.ts',
     // Plain .js config files — not typed; keep out of typed-rules pipeline.
     'postcss.config.js',
