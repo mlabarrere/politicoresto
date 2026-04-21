@@ -37,8 +37,8 @@ describe("forum comment tree", () => {
     ]);
 
     expect(tree).toHaveLength(1);
-    expect(tree[0].children[0].id).toBe("b");
-    expect(tree[0].children[0].children[0].id).toBe("c");
+    expect(tree[0]!.children[0]!.id).toBe("b");
+    expect(tree[0]!.children[0]!.children[0]!.id).toBe("c");
   });
 
   it("supports visual depth compression", () => {

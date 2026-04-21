@@ -117,8 +117,8 @@ describe("getPublicProfile", () => {
     const topics = [{ id: "t1", slug: "mon-post-slug" }];
     mocks.createServerSupabaseClient.mockResolvedValue(makeClient({ posts, topics }));
     const result = await getPublicProfile("citoyen");
-    expect(result?.posts[0].thread_slug).toBe("mon-post-slug");
-    expect(result?.posts[0].title).toBe("Mon post");
+    expect(result?.posts[0]!.thread_slug).toBe("mon-post-slug");
+    expect(result?.posts[0]!.title).toBe("Mon post");
   });
 
   it("maps comments with thread slugs", async () => {
@@ -126,14 +126,14 @@ describe("getPublicProfile", () => {
     const topics = [{ id: "t1", slug: "le-topic" }];
     mocks.createServerSupabaseClient.mockResolvedValue(makeClient({ comments, topics }));
     const result = await getPublicProfile("citoyen");
-    expect(result?.comments[0].thread_slug).toBe("le-topic");
-    expect(result?.comments[0].body_markdown).toBe("Mon commentaire");
+    expect(result?.comments[0]!.thread_slug).toBe("le-topic");
+    expect(result?.comments[0]!.body_markdown).toBe("Mon commentaire");
   });
 
   it("handles posts with no matching topic slug (empty string fallback)", async () => {
     const posts = [{ id: "p1", thread_id: "orphan-t", title: null, content: null, created_at: "2026-01-01" }];
     mocks.createServerSupabaseClient.mockResolvedValue(makeClient({ posts }));
     const result = await getPublicProfile("citoyen");
-    expect(result?.posts[0].thread_slug).toBe("");
+    expect(result?.posts[0]!.thread_slug).toBe("");
   });
 });

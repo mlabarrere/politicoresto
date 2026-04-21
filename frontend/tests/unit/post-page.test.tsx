@@ -170,7 +170,7 @@ describe("post page forum UX", () => {
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "post-1" }) }));
 
-    fireEvent.click(screen.getAllByLabelText("C'est de gauche !")[0]);
+    fireEvent.click(screen.getAllByLabelText("C'est de gauche !")[0]!);
 
     expect(screen.getByText("Se connecter")).toBeInTheDocument();
     expect(screen.getByText(/Cr.+er un compte/i)).toBeInTheDocument();

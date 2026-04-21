@@ -67,7 +67,7 @@ describe("normalizePostPollSummary", () => {
     };
     const result = normalizePostPollSummary(row);
     expect(result?.options).toHaveLength(2);
-    expect(result?.options[0].label).toBe("Oui");
+    expect(result?.options[0]!.label).toBe("Oui");
   });
 
   it("filters out invalid options", () => {
@@ -81,7 +81,7 @@ describe("normalizePostPollSummary", () => {
     };
     const result = normalizePostPollSummary(row);
     expect(result?.options).toHaveLength(1);
-    expect(result?.options[0].option_id).toBe("opt-1");
+    expect(result?.options[0]!.option_id).toBe("opt-1");
   });
 
   it("normalizes raw_results with share and counts", () => {
@@ -93,8 +93,8 @@ describe("normalizePostPollSummary", () => {
     };
     const result = normalizePostPollSummary(row);
     expect(result?.raw_results).toHaveLength(1);
-    expect(result?.raw_results[0].share).toBe(0.6);
-    expect(result?.raw_results[0].response_count).toBe(60);
+    expect(result?.raw_results[0]!.share).toBe(0.6);
+    expect(result?.raw_results[0]!.response_count).toBe(60);
   });
 
   it("filters out invalid result points", () => {

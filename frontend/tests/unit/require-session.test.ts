@@ -39,7 +39,7 @@ describe("requireSession", () => {
   it("includes encoded next path in redirect URL", async () => {
     mocks.createServerSupabaseClient.mockResolvedValue(makeClient(null));
     await requireSession("/dashboard");
-    const [url] = mocks.redirect.mock.calls[0];
+    const [url] = mocks.redirect.mock.calls[0]!;
     expect(url).toContain(encodeURIComponent("/dashboard"));
   });
 
@@ -54,7 +54,7 @@ describe("requireSession", () => {
   it("uses /me as default next path", async () => {
     mocks.createServerSupabaseClient.mockResolvedValue(makeClient(null));
     await requireSession();
-    const [url] = mocks.redirect.mock.calls[0];
+    const [url] = mocks.redirect.mock.calls[0]!;
     expect(url).toContain(encodeURIComponent("/me"));
   });
 });

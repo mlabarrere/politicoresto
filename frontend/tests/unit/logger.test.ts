@@ -69,13 +69,13 @@ describe("lib/logger", () => {
     // Cast shim to satisfy the Logger shape required by logError.
     logError(shim as unknown as typeof log, new Error("boom"), { event: "oops" });
     expect(calls).toHaveLength(1);
-    expect(calls[0].level).toBe("error");
-    const payload = calls[0].args[0] as { event: string; err: { type: string; message: string; stack?: string } };
+    expect(calls[0]!.level).toBe("error");
+    const payload = calls[0]!.args[0] as { event: string; err: { type: string; message: string; stack?: string } };
     expect(payload.event).toBe("oops");
     expect(payload.err.type).toBe("Error");
     expect(payload.err.message).toBe("boom");
     expect(payload.err.stack).toBeTypeOf("string");
-    expect(calls[0].args[1]).toBe("unhandled error");
+    expect(calls[0]!.args[1]).toBe("unhandled error");
   });
 
   it("logError honours level override", () => {
@@ -96,7 +96,7 @@ describe("lib/logger", () => {
     const cause = new Error("root");
     const outer = new Error("outer", { cause });
     logError(shim as never, outer);
-    const payload = calls[0][0] as { err: { message: string; cause: { message: string } } };
+    const payload = calls[0]![0] as { err: { message: string; cause: { message: string } } };
     expect(payload.err.message).toBe("outer");
     expect(payload.err.cause.message).toBe("root");
   });
@@ -107,9 +107,9 @@ describe("lib/logger", () => {
     logError(shim as never, "a string");
     logError(shim as never, 42);
     logError(shim as never, { foo: "bar" });
-    expect((calls[0][0] as { err: { value: string } }).err.value).toBe("a string");
-    expect((calls[1][0] as { err: { value: string } }).err.value).toBe("42");
-    expect((calls[2][0] as { err: Record<string, unknown> }).err.foo).toBe("bar");
+    expect((calls[0]![0] as { err: { value: string } }).err.value).toBe("a string");
+    expect((calls[1]![0] as { err: { value: string } }).err.value).toBe("42");
+    expect((calls[2]![0] as { err: Record<string, unknown> }).err.foo).toBe("bar");
   });
 
   it("runWithRequest exposes requestId and logger via AsyncLocalStorage", async () => {

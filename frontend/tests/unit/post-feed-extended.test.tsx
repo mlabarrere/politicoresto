@@ -125,6 +125,6 @@ describe("PostFeed", () => {
     );
     const rendered = screen.queryAllByTestId(/feed-item-/);
     // Newer should come first
-    expect(rendered[0].getAttribute("data-testid")).toBe("feed-item-t-new");
+    expect(rendered[0]!.getAttribute("data-testid")).toBe("feed-item-t-new");
   });
 });

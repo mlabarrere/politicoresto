@@ -46,7 +46,7 @@ describe("comment tree sorting", () => {
     ]);
 
     expect(tree).toHaveLength(1);
-    expect(tree[0].children.map((node) => node.comment.id)).toEqual(["r2", "r3", "r1"]);
+    expect(tree[0]!.children.map((node) => node.comment.id)).toEqual(["r2", "r3", "r1"]);
   });
 });
 

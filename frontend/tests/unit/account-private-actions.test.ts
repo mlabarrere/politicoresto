@@ -54,7 +54,7 @@ describe("upsertPrivateProfileAction", () => {
     mocks.createServerSupabaseClient.mockResolvedValue(makeClient(null));
     const fd = makeFormData({ political_interest_level: "" });
     await upsertPrivateProfileAction(fd);
-    const payload = mocks.rpcMock.mock.calls[0][1];
+    const payload = mocks.rpcMock.mock.calls[0]![1];
     expect(payload.p_political_interest_level).toBeUndefined();
   });
 
@@ -68,7 +68,7 @@ describe("upsertPrivateProfileAction", () => {
     mocks.createServerSupabaseClient.mockResolvedValue(makeClient(null));
     const fd = makeFormData({ political_interest_level: "not-a-number" });
     await upsertPrivateProfileAction(fd);
-    const payload = mocks.rpcMock.mock.calls[0][1];
+    const payload = mocks.rpcMock.mock.calls[0]![1];
     // NaN is not finite, so it should not be included
     expect(payload.p_political_interest_level).toBeUndefined();
   });
