@@ -68,10 +68,11 @@ export async function updateSession(request: NextRequest) {
   // Appel CRITIQUE : valide le JWT (JWKS local, fallback getUser) et trigger
   // le refresh si expiré. Se fait partout, pour toute navigation, sinon on
   // casse la session après expiration de l'access_token.
-  const {
-    data: { claims },
-    error: claimsError
-  } = await supabase.auth.getClaims();
+  //
+  // Note defensive destructuring : sur un premier visit sans cookie,
+  // getClaims retourne { data: null, error: ... } — pas { data: { claims: null } }.
+  const { data, error: claimsError } = await supabase.auth.getClaims();
+  const claims = data?.claims ?? null;
 
   if (claimsError) {
     logError(log, claimsError, {
