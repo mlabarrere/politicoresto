@@ -31,7 +31,7 @@ const sourceFiles = [
   "components/layout/empty-state.tsx",
   "components/layout/screen-state.tsx",
   "app/not-found.tsx",
-  "components/domain/post-card.tsx",  "components/navigation/political-bloc-sidebar.tsx",
+  "components/domain/post-card.tsx",
   "components/navigation/main-nav.tsx"
 ];
 
