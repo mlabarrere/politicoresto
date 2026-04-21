@@ -4,10 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AppShell } from "@/components/layout/app-shell";
 
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => ({ getAll: () => [] }))
+}));
+
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn(async () => ({
     auth: {
-      getSession: vi.fn(async () => ({ data: { session: null } }))
+      getClaims: vi.fn(async () => ({ data: { claims: null } }))
     }
   }))
 }));
@@ -21,14 +25,14 @@ vi.mock("@/components/layout/site-footer", () => ({
 }));
 
 vi.mock("@/components/app/app-primary-cta", () => ({
-  AppPrimaryCTA: ({ mode }: { mode?: "inline" | "fab" }) => <button type="button">Créer {mode ?? "inline"}</button>
+  AppPrimaryCTA: ({ mode }: { mode?: "inline" | "fab" }) => <button type="button">Crï¿½er {mode ?? "inline"}</button>
 }));
 
 describe("AppShell", () => {
   it("renders global mobile FAB create entrypoint", async () => {
     render(await AppShell({ children: <div>Page content</div> as ReactNode }));
 
-    expect(screen.getByText("Créer fab")).toBeInTheDocument();
+    expect(screen.getByText("Crï¿½er fab")).toBeInTheDocument();
     expect(screen.getByText("Page content")).toBeInTheDocument();
   });
 });

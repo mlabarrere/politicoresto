@@ -21,6 +21,12 @@ export const metadata: Metadata = {
   description: siteConfig.description
 };
 
+// Le layout lit le cookie de session via AppShell → getAuthUserId. On force
+// le rendering dynamique pour que Next.js 16 ne serve jamais une version
+// pré-rendue anonyme à un utilisateur authentifié (bug vu sur toutes les pages
+// après OAuth : cookies présents mais AppShell affichait "Se connecter").
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="fr" className={cn("font-sans", sans.variable)}>
