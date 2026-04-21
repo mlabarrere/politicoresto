@@ -73,12 +73,12 @@ describe("GET /auth/callback", () => {
     mocks.createServerClient.mockReturnValue(makeSupabaseClient(null));
   });
 
-  it("redirects to login with oauth_missing_code when no code param", async () => {
+  it("redirects to /auth/auth-code-error with oauth_missing_code when no code param", async () => {
     const request = makeRequest("http://localhost:3000/auth/callback");
     const response = await GET(request);
     expect(response.status).toBe(307);
     const location = response.headers.get("location") ?? "";
-    expect(location).toContain("/auth/login");
+    expect(location).toContain("/auth/auth-code-error");
     expect(location).toContain("oauth_missing_code");
   });
 
@@ -92,12 +92,13 @@ describe("GET /auth/callback", () => {
     expect(location).toMatch(/https?:\/\/[^/]+(\/)?$/);
   });
 
-  it("redirects to login with oauth_exchange_failed on error", async () => {
+  it("redirects to /auth/auth-code-error with oauth_exchange_failed on error", async () => {
     mocks.createServerClient.mockReturnValue(makeSupabaseClient({ message: "exchange failed" }));
     const request = makeRequest("http://localhost:3000/auth/callback?code=bad-code");
     const response = await GET(request);
     expect(response.status).toBe(307);
     const location = response.headers.get("location") ?? "";
+    expect(location).toContain("/auth/auth-code-error");
     expect(location).toContain("oauth_exchange_failed");
   });
 
@@ -147,16 +148,7 @@ describe("GET /auth/callback", () => {
     expect(response.cookies.get("sb-example-auth-token")).toBeUndefined();
   });
 
-  it("logs rich diagnostic on exchange failure", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    mocks.createServerClient.mockReturnValue(
-      makeSupabaseClient({ message: "invalid grant", status: 400, code: "invalid_grant", name: "AuthApiError" })
-    );
-    await GET(makeRequest("http://localhost:3000/auth/callback?code=bad"));
-    expect(errorSpy).toHaveBeenCalledWith(
-      "[auth/callback] exchangeCodeForSession failed",
-      expect.objectContaining({ status: 400, code: "invalid_grant", name: "AuthApiError" })
-    );
-    errorSpy.mockRestore();
-  });
+  // Rich diagnostic logging on exchange failure is now emitted via the Pino
+  // logger (see lib/logger.ts logError). Logger behavior is covered by
+  // tests/unit/logger.test.ts; here we only assert the redirect contract.
 });

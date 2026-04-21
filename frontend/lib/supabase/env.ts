@@ -1,3 +1,7 @@
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("supabase.env");
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -15,10 +19,14 @@ export const supabaseEnv = {
     const value = readEnv(supabaseUrl, "NEXT_PUBLIC_SUPABASE_URL");
     if (!logged) {
       logged = true;
-      console.info("[supabase/env] active project", {
-        host: new URL(value).host,
-        environment: process.env.VERCEL_ENV ?? "local"
-      });
+      log.debug(
+        {
+          event: "supabase.env.resolved",
+          host: new URL(value).host,
+          environment: process.env.VERCEL_ENV ?? "local"
+        },
+        "active supabase project"
+      );
     }
     return value;
   },

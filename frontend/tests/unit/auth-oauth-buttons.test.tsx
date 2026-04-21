@@ -39,14 +39,8 @@ describe("OAuthButtons", () => {
     expect(screen.getByText("Continuer avec Google")).toBeTruthy();
   });
 
-  it("shows initial error message when provided", () => {
-    render(<OAuthButtons initialError="La connexion a echoue." />);
-    expect(screen.getByRole("alert")).toBeTruthy();
-    expect(screen.getByText("La connexion a echoue.")).toBeTruthy();
-  });
-
-  it("shows no error when initialError is null", () => {
-    render(<OAuthButtons initialError={null} />);
+  it("shows no error on initial render", () => {
+    render(<OAuthButtons />);
     expect(screen.queryByRole("alert")).toBeNull();
   });
 

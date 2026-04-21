@@ -1,5 +1,14 @@
 "use client";
 
+/* eslint-disable no-console -- client boundary, server logger unavailable here.
+ * These call sites will be forwarded to /api/_log in Session 3.
+ * Event taxonomy (for the forthcoming forwarder):
+ *   auth.oauth.google.start
+ *   auth.oauth.google.signin_failed
+ *   auth.oauth.google.redirect_to_provider
+ *   auth.oauth.google.no_url
+ */
+
 import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
@@ -21,14 +30,12 @@ function normalizeNextPath(next?: string) {
 }
 
 export function OAuthButtons({
-  next = "/me",
-  initialError = null
+  next = "/me"
 }: {
   next?: string;
-  initialError?: string | null;
 }) {
   const [pending, setPending] = useState<"google" | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(initialError);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const googleEnabled = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_OAUTH !== "false";
 
   async function handleProvider() {

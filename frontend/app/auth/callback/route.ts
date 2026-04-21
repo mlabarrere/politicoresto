@@ -1,8 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
+import { createLogger, logError, withRequest } from "@/lib/logger";
 import { supabaseEnv } from "@/lib/supabase/env";
 import { safeNextPath } from "@/lib/utils/safe-path";
+
+const moduleLog = createLogger("auth.callback");
 
 /**
  * Callback OAuth — pattern officiel @supabase/ssr pour Next.js Route Handlers.
@@ -17,28 +20,25 @@ import { safeNextPath } from "@/lib/utils/safe-path";
  * qui a causé la 6e régression SSO.
  */
 export async function GET(request: NextRequest) {
+  const log = withRequest(moduleLog, request);
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const next = safeNextPath(requestUrl.searchParams.get("next"));
-  const host = request.headers.get("host");
 
-  console.info("[auth/callback] GET", {
-    host,
-    origin: requestUrl.origin,
-    pathname: requestUrl.pathname,
-    hasCode: Boolean(code),
-    next
-  });
+  log.info(
+    { event: "auth.oauth.callback.received", has_code: Boolean(code), next },
+    "oauth callback received"
+  );
 
   if (!code) {
-    console.warn("[auth/callback] missing OAuth code — redirecting to login", {
-      host,
-      fullQuery: requestUrl.search
-    });
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("next", next);
-    loginUrl.searchParams.set("auth_error", "oauth_missing_code");
-    return NextResponse.redirect(loginUrl);
+    log.warn(
+      { event: "auth.oauth.callback.missing_code", query: requestUrl.search },
+      "missing OAuth code"
+    );
+    const errUrl = new URL("/auth/auth-code-error", request.url);
+    errUrl.searchParams.set("reason", "oauth_missing_code");
+    errUrl.searchParams.set("next", next);
+    return NextResponse.redirect(errUrl);
   }
 
   // Response object créé en amont — les cookies posés via setAll y sont
@@ -64,31 +64,27 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  console.info("[auth/callback] exchanging code for session…", {
-    host,
-    cookieNamesBefore: request.cookies.getAll().map((c) => c.name)
-  });
+  log.debug({ event: "auth.oauth.exchange.start" }, "exchanging code for session");
 
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
-    console.error("[auth/callback] exchangeCodeForSession failed", {
-      host,
-      message: exchangeError.message,
+    logError(log, exchangeError, {
+      event: "auth.oauth.exchange.failed",
       status: exchangeError.status,
       code: (exchangeError as { code?: string }).code,
-      name: exchangeError.name
+      message: "exchange code for session failed"
     });
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("next", next);
-    loginUrl.searchParams.set("auth_error", "oauth_exchange_failed");
-    return NextResponse.redirect(loginUrl);
+    const errUrl = new URL("/auth/auth-code-error", request.url);
+    errUrl.searchParams.set("reason", "oauth_exchange_failed");
+    errUrl.searchParams.set("next", next);
+    return NextResponse.redirect(errUrl);
   }
 
-  console.info("[auth/callback] session exchanged OK", {
-    host,
-    cookieNamesPosted
-  });
+  log.info(
+    { event: "auth.oauth.exchange.ok", cookie_names: cookieNamesPosted },
+    "session exchanged"
+  );
 
   // Lire le user pour router vers /onboarding si username manque. Important :
   // on utilise la MÊME response — si on doit rediriger ailleurs que vers `next`,
@@ -98,7 +94,10 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    console.warn("[auth/callback] getUser returned no user after successful exchange", { host });
+    log.warn(
+      { event: "auth.oauth.callback.no_user_after_exchange" },
+      "getUser returned no user after successful exchange"
+    );
     return response;
   }
 
@@ -109,21 +108,24 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
 
   if (profileError) {
-    console.warn("[auth/callback] profile fetch failed (non-blocking)", {
-      host,
-      userId: user.id,
-      message: profileError.message,
-      code: profileError.code
-    });
+    log.warn(
+      {
+        event: "auth.profile.fetch_failed_nonblocking",
+        user_id: user.id,
+        code: profileError.code,
+        db_message: profileError.message
+      },
+      "profile fetch failed (non-blocking)"
+    );
   }
 
   if (!profile?.username) {
     const onboardingUrl = new URL("/onboarding", request.url);
     if (next !== "/") onboardingUrl.searchParams.set("next", next);
-    console.info("[auth/callback] no username — redirecting to onboarding", {
-      host,
-      userId: user.id
-    });
+    log.info(
+      { event: "auth.onboarding.redirect", user_id: user.id, next },
+      "no username — redirecting to onboarding"
+    );
     // Clone la response vers /onboarding en copiant les cookies de session.
     const onboardingResponse = NextResponse.redirect(onboardingUrl);
     for (const c of response.cookies.getAll()) {
@@ -132,11 +134,9 @@ export async function GET(request: NextRequest) {
     return onboardingResponse;
   }
 
-  console.info("[auth/callback] username exists — redirecting to next", {
-    host,
-    userId: user.id,
-    next,
-    username: profile.username
-  });
+  log.info(
+    { event: "auth.callback.redirect_next", user_id: user.id, next, username: profile.username },
+    "redirecting to next"
+  );
   return response;
 }

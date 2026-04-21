@@ -10,10 +10,9 @@ vi.mock("next/image", () => ({
 }));
 
 vi.mock("@/components/auth/oauth-buttons", () => ({
-  OAuthButtons: ({ initialError }: { next?: string; initialError?: string | null }) => (
+  OAuthButtons: () => (
     <div>
       <button type="button">Continuer avec Google</button>
-      {initialError ? <p role="alert">{initialError}</p> : null}
     </div>
   )
 }));
@@ -30,20 +29,9 @@ describe("LoginPage", () => {
     expect(screen.getByRole("button", { name: /Continuer avec Google/i })).toBeInTheDocument();
   });
 
-  it("shows no error by default", async () => {
+  it("shows no error alert (errors now handled by /auth/auth-code-error)", async () => {
     render(await LoginPage({ searchParams: Promise.resolve({}) }));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-  });
-
-  it("shows simplified error for oauth_missing_code", async () => {
-    render(await LoginPage({ searchParams: Promise.resolve({ auth_error: "oauth_missing_code" }) }));
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByRole("alert")).toHaveTextContent(/connexion a echoue/i);
-  });
-
-  it("shows simplified error for oauth_exchange_failed", async () => {
-    render(await LoginPage({ searchParams: Promise.resolve({ auth_error: "oauth_exchange_failed" }) }));
-    expect(screen.getByRole("alert")).toHaveTextContent(/session n'a pas pu/i);
   });
 
   it("renders terms of use notice", async () => {

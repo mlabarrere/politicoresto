@@ -1,7 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { createLogger, getRequestLogger, logError } from "@/lib/logger";
 import { supabaseEnv } from "@/lib/supabase/env";
+
+const moduleLog = createLogger("auth.middleware");
 
 /**
  * Pattern officiel Supabase SSR pour Next.js middleware.
@@ -18,6 +21,7 @@ import { supabaseEnv } from "@/lib/supabase/env";
  * un nouveau access_token + refresh_token, qui sont réécrits via setAll.
  */
 export async function updateSession(request: NextRequest) {
+  const log = getRequestLogger() ?? moduleLog;
   let response = NextResponse.next({
     request: { headers: request.headers }
   });
@@ -34,11 +38,14 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }>
         ) {
           if (cookiesToSet.length > 0) {
-            console.info("[proxy] cookie mutations (refresh)", {
-              pathname: request.nextUrl.pathname,
-              host: request.headers.get("host"),
-              names: cookiesToSet.map((c) => c.name)
-            });
+            log.debug(
+              {
+                event: "auth.session.cookie_rotation",
+                path: request.nextUrl.pathname,
+                cookie_names: cookiesToSet.map((c) => c.name)
+              },
+              "cookie mutations (refresh)"
+            );
           }
           for (const { name, value, options } of cookiesToSet) {
             request.cookies.set(name, value);
@@ -65,9 +72,10 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (userError) {
-    console.warn("[proxy] getUser failed", {
-      message: userError.message,
-      pathname: request.nextUrl.pathname
+    logError(log, userError, {
+      event: "auth.session.getuser_failed",
+      path: request.nextUrl.pathname,
+      level: "warn"
     });
   }
 
@@ -78,7 +86,10 @@ export async function updateSession(request: NextRequest) {
     request.method === "GET" && pathname.startsWith("/me") && !user;
 
   if (needsAuthGate) {
-    console.info("[proxy] unauthenticated /me → /auth/login", { pathname });
+    log.info(
+      { event: "auth.gate.redirect", path: pathname, reason: "unauthenticated_me" },
+      "redirect to login"
+    );
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set("next", pathname);

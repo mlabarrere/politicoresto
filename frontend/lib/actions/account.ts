@@ -102,9 +102,11 @@ export async function upsertAccountIdentityAction(formData: FormData) {
     .maybeSingle();
 
   if (duplicateResult.error) {
-    console.error("[account][upsertAccountIdentity] duplicate check failed", {
-      message: duplicateResult.error.message,
-      code: duplicateResult.error.code
+    logError(log, duplicateResult.error, {
+      event: "account.upsert_identity.duplicate_check_failed",
+      user_id: userId,
+      code: duplicateResult.error.code,
+      message: "app_profile duplicate check failed"
     });
     throw new Error("Enregistrement impossible pour le moment.");
   }
@@ -125,7 +127,12 @@ export async function upsertAccountIdentityAction(formData: FormData) {
     .eq("user_id", userId);
 
   if (error) {
-    console.error("[account][upsertAccountIdentity] update failed", { message: error.message, code: error.code });
+    logError(log, error, {
+      event: "account.upsert_identity.update_failed",
+      user_id: userId,
+      code: error.code,
+      message: "app_profile update failed"
+    });
     throw new Error("Enregistrement impossible pour le moment.");
   }
 
@@ -162,7 +169,11 @@ export async function upsertPrivateProfileAction(formData: FormData) {
   const { error } = await supabase.rpc("rpc_upsert_private_political_profile", rpcPayload);
 
   if (error) {
-    console.error("[account][upsertPrivateProfile] rpc failed", { message: error.message, code: error.code });
+    logError(log, error, {
+      event: "account.upsert_private.rpc_failed",
+      code: error.code,
+      message: "rpc_upsert_private_political_profile failed"
+    });
     throw new Error("Enregistrement impossible pour le moment.");
   }
 
@@ -177,7 +188,11 @@ export async function clearPrivateProfileAction(formData: FormData) {
   const { error } = await supabase.rpc("rpc_delete_private_political_profile");
 
   if (error) {
-    console.error("[account][clearPrivateProfile] rpc failed", { message: error.message, code: error.code });
+    logError(log, error, {
+      event: "account.clear_private.rpc_failed",
+      code: error.code,
+      message: "rpc_delete_private_political_profile failed"
+    });
     throw new Error("Operation impossible pour le moment.");
   }
 
@@ -203,7 +218,12 @@ export async function deactivateAccountAction(formData: FormData) {
     .eq("user_id", userId);
 
   if (error) {
-    console.error("[account][deactivate] update failed", { message: error.message, code: error.code });
+    logError(log, error, {
+      event: "account.deactivate.update_failed",
+      user_id: userId,
+      code: error.code,
+      message: "app_profile deactivation failed"
+    });
     throw new Error("Operation impossible pour le moment.");
   }
 
@@ -229,7 +249,12 @@ export async function deleteAccountAction(formData: FormData) {
     .eq("user_id", userId);
 
   if (error) {
-    console.error("[account][delete] update failed", { message: error.message, code: error.code });
+    logError(log, error, {
+      event: "account.delete.update_failed",
+      user_id: userId,
+      code: error.code,
+      message: "app_profile deletion failed"
+    });
     throw new Error("Operation impossible pour le moment.");
   }
 
