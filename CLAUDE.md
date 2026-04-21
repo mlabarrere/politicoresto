@@ -24,11 +24,24 @@ Verify conventions against these sources rather than extrapolating from existing
    `frontend/lib`, `frontend/components`. Tests and `scripts/*` excepted.
    Structured objects only: `log.info({ fields }, "msg")`. Secrets are redacted
    at the logger level — never inline secret values in call sites.
-3. **Auth** (detail finalised in Session 2):
-   - One library: `@supabase/ssr`. No custom auth code.
-   - Canonical client factories live in `lib/supabase/`. No ad-hoc createClient.
-   - Use `getUser()` (not `getSession()`) in server contexts.
-   - Auth state is fetched **once per request**. Pass it down; never re-query.
+3. **Auth** — canonical `@supabase/ssr` pattern, no custom auth code.
+   - Four factories in `frontend/lib/supabase/`: `client.ts` (browser),
+     `server.ts` (RSC / actions / route handlers), `middleware.ts` (proxy),
+     `auth-user.ts` (request-memoized user resolution via `react.cache()`).
+   - Always `auth.getUser()` in server contexts. **Never** `auth.getSession()`
+     (reads cookie without verification). **Never** `auth.getClaims()` on this
+     project: staging/prod still run HS256 legacy keys; `getClaims()` returns
+     `null` silently and breaks auth. See `auth-user.ts` header + commits #33,
+     #34. Reopens once Supabase keys are rotated to asymmetric.
+   - Auth state fetched **exactly once per request** via `react.cache()` in
+     `auth-user.ts`. Pass the client down; never re-instantiate inside leaves.
+   - OAuth callback at `app/auth/callback/route.ts`. Failures redirect to
+     `/auth/auth-code-error?reason=oauth_missing_code|oauth_exchange_failed`.
+   - Middleware `/me` gate is intentional product routing, not a generic wall.
+   - Every auth operation emits a structured log per the taxonomy documented
+     in `.claude/skills/authentication/reference/supabase-auth-nextjs.md`.
+   - Forbidden: custom JWT, custom session cookies, session in React state,
+     trivial `auth.*` wrappers, ad-hoc `createClient` outside the four factories.
 4. **Every new table:** RLS enabled **and** at least one policy in the same migration.
 5. **`service_role` keys never reach client or Edge code.** Server-only paths only.
 6. **Libraries over custom code** for all solved problems (validation, forms,
@@ -119,8 +132,15 @@ the only path to production.
   `supabase migration repair --status applied 20260402193700` on those envs so
   the CLI does not try to re-apply it.
 - **No ESLint/Prettier** yet — Session 3 will install them and wire CI.
-- **~55 `console.*` call sites** remain in app code — Session 2 (auth paths)
-  and Session 3 (the rest) convert them.
+- **Remaining `console.*` call sites** — Session 2 migrated all auth-path
+  sites to Pino (middleware, callback route, env, account actions). The 4
+  calls in `components/auth/oauth-buttons.tsx` are kept behind a documented
+  `eslint-disable` pending the `/api/_log` client→server forwarder (Session 3).
+  Non-auth app code still carries `console.*` — Session 3 converts them under
+  ESLint enforcement.
+- **Auth on HS256 legacy keys.** `auth.getClaims()` unsafe on this project
+  until Supabase staging/prod rotate to asymmetric keys. See `lib/supabase/
+  auth-user.ts` header and commits #33/#34. Separate migration session.
 - **`seed/polls_demo.sql` disabled** — references the dropped RPC
   `recompute_post_poll_snapshot`; rewrite needed against the consolidated
   RPCs from migration `20260420240000`.
@@ -131,6 +151,10 @@ the only path to production.
 
 - 2026-04-21 — Pino chosen as the single logging library. See `.claude/skills/logging`.
 - 2026-04-21 — Local seed test user: `test@example.com` / `password123`.
+- 2026-04-21 — Session 2: auth consolidated on `@supabase/ssr`. Four factories,
+  `getUser()` over `getClaims()` (HS256 constraint), `react.cache()` on the
+  request-scoped user resolve, `/auth/auth-code-error` page for OAuth failures.
+  See `.claude/skills/authentication`.
 
 ## Instructions to future sessions
 
@@ -143,5 +167,5 @@ the only path to production.
 6. **Fetch current docs when uncertain.** Auth, logging, and Supabase/Vercel
    CLIs evolve — do not trust stale memory.
 7. **Skills** live in `.claude/skills/`. Load them when doing work in their
-   domain: `local-dev`, `logging`. Session 2 adds `authentication`; Session 3
-   adds `supabase-migration`, `nextjs-component`, `library-first`.
+   domain: `local-dev`, `logging`, `authentication`. Session 3 adds
+   `supabase-migration`, `nextjs-component`, `library-first`.
