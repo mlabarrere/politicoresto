@@ -1,16 +1,85 @@
 project_id = "politicoresto-local"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Supabase local stack configuration
+#
+# Ports (all bound to 127.0.0.1 only):
+#   54321 — API Gateway (PostgREST + GoTrue + Realtime + Storage)
+#   54322 — Postgres
+#   54323 — Studio (http://127.0.0.1:54323)
+#   54324 — Inbucket mail UI (http://127.0.0.1:54324)
+#   54320 — shadow DB (internal)
+#
+# Docs: https://supabase.com/docs/guides/local-development/cli/config
+# ─────────────────────────────────────────────────────────────────────────────
+
 [api]
 enabled = true
 port = 54321
 schemas = ["public"]
 extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
 [db]
 port = 54322
 shadow_port = 54320
-major_version = 15
+major_version = 17
+
+[db.pooler]
+enabled = false
+
+# Seed files applied in order by `supabase db reset`, after all migrations.
+# The main `seed.sql` handles the auth test user; topical seeds follow.
+[db.seed]
+enabled = true
+sql_paths = [
+  "./seed.sql",
+  "./seed/forum_minimal_seed.sql"
+  # ./seed/polls_demo.sql — disabled: references dropped RPC
+  # `recompute_post_poll_snapshot`. Re-enable after rewriting against the
+  # consolidated post/poll RPCs (migration 20260420240000).
+]
+
+[realtime]
+enabled = true
 
 [studio]
 enabled = true
 port = 54323
+api_url = "http://127.0.0.1:54321"
+
+# Local SMTP capture. All emails (confirmations, magic links, password resets)
+# land in the Inbucket UI — no external SMTP needed for local dev.
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+# Disabled locally so seeded users and dev signups are usable immediately.
+# Production keeps email confirmation on (configured in Supabase Dashboard).
+enable_confirmations = false
+double_confirm_changes = false
+secure_password_change = false
+
+# OAuth providers are configured in the Supabase Dashboard per environment.
+# Uncomment and fill locally if you need to exercise the OAuth flow against
+# a local stub — otherwise leave disabled.
+# [auth.external.google]
+# enabled = false
+# client_id = ""
+# secret   = ""
+# redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"

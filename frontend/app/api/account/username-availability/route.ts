@@ -1,8 +1,11 @@
 ﻿import { NextResponse } from "next/server";
 
 import { normalizeUsername, validateUsername } from "@/lib/account/username";
+import { createLogger, logError } from "@/lib/logger";
 import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+const log = createLogger("api.username-availability");
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -35,9 +38,11 @@ export async function GET(request: Request) {
   ]);
 
   if (currentError || duplicateError) {
-    console.error("[username-availability] query failed", {
-      currentError: currentError?.message,
-      duplicateError: duplicateError?.message
+    logError(log, currentError ?? duplicateError, {
+      event: "query.failed",
+      user_id: userId,
+      duplicate_error: duplicateError?.message,
+      message: "app_profile lookup failed"
     });
     return NextResponse.json(
       { available: false, reason: "Verification impossible pour le moment.", normalized: username },

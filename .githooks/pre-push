@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Pre-push gate — mirrors scripts/verify.sh. Blocks `git push` on typecheck
+# or test failure. Bypass only in a genuine emergency with `--no-verify`.
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+exec "$repo_root/scripts/verify.sh"
