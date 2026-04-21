@@ -1,145 +1,147 @@
-# Claude Code — Project Rules
+# PoliticoResto — Project Rules for Claude Code
 
-## MANDATORY: Engineering standards
+Forum politique. Next.js 16 (app router, TS, Tailwind v4) + Supabase (SQL, RLS, RPC).
+Vercel pour l'hébergement. Le backend est la source de vérité métier.
 
-**Code comme un ingénieur Google, pas comme un étudiant dans sa chambre.**
+## Binding external standards (consult before writing code)
 
-Priorité absolue : **simplicité et élégance**. Un diff court et lisible bat un diff clever et long. Moins de code = moins de bugs = moins de maintenance.
+- [Vercel Style Guide](https://github.com/vercel/style-guide)
+- [Next.js Project Structure](https://nextjs.org/docs/app/getting-started/project-structure)
+- [Supabase SQL Style Guide](https://supabase.com/docs/guides/getting-started/ai-prompts/code-format-sql)
+- [Supabase Auth for Next.js](https://supabase.com/docs/guides/auth/server-side/nextjs)
+- [Supabase Local Development](https://supabase.com/docs/guides/local-development)
+- [Vercel CLI](https://vercel.com/docs/cli)
+- [Pino](https://getpino.io)
 
-Règles opérationnelles :
+Verify conventions against these sources rather than extrapolating from existing code.
 
-1. **Diagnostique avant de patcher.** Si un truc est lent, cherche la cause racine (latence réseau, N+1, appel redondant) — ne le cache pas derrière un cache / loader / optimistic UI / debounce. Ces outils sont légitimes, mais seulement après avoir éliminé la cause.
-2. **Pas de quick-fix qui ripoline.** Un workaround temporaire doit être explicitement annoté `// TODO:` avec le vrai fix à faire. Sinon, on fait le vrai fix directement.
-3. **Zéro duplication réseau.** Un même `auth.getUser()` / RPC / requête ne doit **jamais** être appelé deux fois dans le même parcours de requête (middleware + action + data fetcher = trois fois le coût).
-4. **Trust the backend.** RLS Supabase et RPC `security definer` sont la source de vérité. Ne reprogramme pas les validations côté client ou action. Un RPC qui raise `28000` suffit, pas besoin de double-checker avec `auth.getUser()` avant.
-5. **Supprime avant d'ajouter.** Avant d'ajouter une abstraction, vérifie si une existante peut faire le job. Avant d'ajouter un état local, vérifie si l'état serveur suffit.
-6. **Mesure, n'intuite pas.** Perf = chiffres (`performance.now()`, logs `rpcMs`). UX = usage réel. Pas de décision perf sans mesure avant/après.
-7. **Pas de feature flags mort-nés, pas de props "au cas où", pas de `try/catch` décoratif.** Si ce n'est pas utilisé aujourd'hui, ça n'existe pas.
+## Hard rules (non-negotiable)
 
-## MANDATORY: Pre-push checklist
+1. **Local-first.** All iteration happens locally via `supabase start` + `vercel dev`.
+   `npm run --prefix frontend verify` must pass before any `git push`. Never push
+   speculatively to a Vercel Preview to "see if it works".
+2. **Log everything via `lib/logger.ts`.** Zero `console.*` in `frontend/app`,
+   `frontend/lib`, `frontend/components`. Tests and `scripts/*` excepted.
+   Structured objects only: `log.info({ fields }, "msg")`. Secrets are redacted
+   at the logger level — never inline secret values in call sites.
+3. **Auth** (detail finalised in Session 2):
+   - One library: `@supabase/ssr`. No custom auth code.
+   - Canonical client factories live in `lib/supabase/`. No ad-hoc createClient.
+   - Use `getUser()` (not `getSession()`) in server contexts.
+   - Auth state is fetched **once per request**. Pass it down; never re-query.
+4. **Every new table:** RLS enabled **and** at least one policy in the same migration.
+5. **`service_role` keys never reach client or Edge code.** Server-only paths only.
+6. **Libraries over custom code** for all solved problems (validation, forms,
+   date math, accessible primitives, env parsing). Before writing a utility,
+   check if a library already does it.
+7. **Existing code is not evidence of necessity.** Three pivots have left
+   residue. Verify actual usage before preserving anything.
+8. **Always simplify.** Deletions are progress. But applied migrations are
+   **never rewritten** — forward-only, additive.
+9. **Diagnose, don't mask.** If a thing is slow, find the root cause before
+   hiding it behind cache / debounce / optimistic UI.
+10. **No speculative code.** No feature flags mort-nés, no props "au cas où",
+    no `try/catch` décoratif. If it's not used today, it doesn't exist.
 
-**NEVER push to git without running these two commands first and confirming they pass:**
+## Local dev quick reference
 
 ```bash
-# 1. Build must succeed with zero errors
-cd frontend && npm run build
-
-# 2. All tests must pass (503 tests across 79 files)
-cd frontend && ./node_modules/.bin/vitest run
+cp frontend/.env.local.example frontend/.env.local   # first time only
+supabase start                                       # Postgres + Auth + Storage + Inbucket
+supabase db reset                                    # apply migrations + seed (test@example.com / password123)
+./scripts/dev.sh                                     # boots stack if needed + vercel dev
+npm run --prefix frontend verify                     # pre-push gate (typecheck + tests)
 ```
 
-If either command fails, fix the issue before committing. No exceptions.
+Local URLs: app `http://localhost:3000`, Studio `http://127.0.0.1:54323`,
+Inbucket (mail capture) `http://127.0.0.1:54324`.
 
-## MANDATORY: Production-level logging
+See skill `local-dev` for the full playbook including reset, troubleshooting, and
+the current baseline-migration blocker.
 
-Every server-side operation **must** emit structured `console.info/warn/error` logs so Vercel logs are useful.
+## Logging quick reference
 
-Rules:
-- **Server Actions** — log start (inputs sans PII), success (IDs + redirect path), and every error branch
-- **Route Handlers** — log each request entry point and all error returns
-- **Data fetchers** (`lib/data/`) — log query start, row count on success, and full error on failure
-- **Middleware / proxy** — log auth redirects and `getUser` failures
-- Format: `[module][operation] message`, structured object second arg:
-  ```ts
-  console.info("[auth/callback] session exchanged OK", { userId: user.id });
-  console.error("[home] v_feed_global query failed", { message: error.message, code: error.code });
-  ```
-- Never log passwords, full tokens, or raw cookie values
+```ts
+import { createLogger, logError, withUser } from "@/lib/logger";
 
-## ⚠️ Missing config / tool / CLI / MCP — READ THIS
+const log = createLogger("auth");  // context name — keep stable per module
 
-When a required environment variable, CLI tool, MCP server, or external service is **missing or misconfigured**, STOP and display a prominent notice:
+log.info({ event: "login.start", user_id: userId }, "login requested");
 
-```
-🚨 CONFIGURATION MANQUANTE
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-❌ NEXT_PUBLIC_SUPABASE_URL is not set
-👉 Add it to .env.local and to Vercel environment variables
-📖 See: https://supabase.com/dashboard/project/_/settings/api
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+try { /* ... */ }
+catch (err) { logError(log, err, { event: "login.failed", user_id: userId }); throw err; }
 ```
 
-Never silently swallow a missing-config error.
+Levels: `trace`/`debug` (dev-only) · `info` (operational) · `warn` (unexpected,
+recoverable) · `error` (attention needed) · `fatal` (subsystem failure).
 
-## Local tooling available
+See skill `logging` for field conventions, the event catalog, and request
+correlation.
 
-The following tools are installed on the developer Mac and can be used by Claude directly:
+## CI / deployment summary
 
-### Core runtime & package management
-- **node** v25.9.0 — Next.js 16 runtime (CI runs Node 20 LTS; watch for version drift)
-- **npm** 11.12.1 — scripts: `dev`, `build`, `start`, `typecheck`, `test`, `test:unit`, `test:e2e`, `test:e2e:ui`
-- **git** 2.50.1, **brew** 5.1.6
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `ci.yml` | PR → main, push → main | typecheck + vitest + build |
+| `deploy-preview.yml` | After CI green on main | migrate-staging → Vercel Preview |
+| `deploy-production.yml` | GitHub Release published | migrate-production → build + tests → Vercel Production |
 
-### Deployment & backend
-- **vercel** 51.7.0 — `vercel dev`, `vercel deploy`, `vercel logs`, `vercel env pull`
-- **supabase** 2.90.0 — `supabase start/stop/status`, `supabase db reset`, `supabase gen types`, `supabase migration new`
-- **psql** 14.22 — direct DB access (local: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`)
-- **docker** 27.4.0 — required by Supabase local (ports 54321-54324) and by `act`
-
-### GitHub & CI
-- **gh** 2.90.0 — `gh pr create/view/checks`, `gh run list/view`, `gh workflow run`
-- **act** 0.2.87 — runs GitHub Actions locally. Config at `~/Library/Application Support/act/actrc` uses `catthehacker/ubuntu:act-latest` with `--container-architecture linux/amd64`. Run from repo root: `act -j build -n` (dry-run).
-
-### CI/CD pipeline — `.github/workflows/`
-
-GitHub Actions est **l'unique source de vérité** pour les déploiements. Aucun `vercel deploy` manuel en prod/staging.
-
-| File | Trigger | Jobs |
-|------|---------|------|
-| `ci.yml` | PR → main, push → main | quality (typecheck) + coverage (vitest) → build |
-| `deploy-preview.yml` | After `ci.yml` succeeds on main | **migrate-staging → Vercel preview** (séquentiel) |
-| `deploy-production.yml` | GitHub Release published | **migrate-production → build + tests → Vercel prod** |
-| `migrate-staging.yml` | `workflow_dispatch` only | hotfix DB staging sans redéploiement |
-| `migrate-production.yml` | `workflow_dispatch` only | hotfix DB prod sans redéploiement |
-
-**Règles clés :**
-- Vercel Git integration désactivée via `frontend/vercel.json` (`github.enabled: false`)
-- Preview déploie uniquement si **CI vert ET migration staging OK** (sinon on servirait une preview sur une DB stale)
-- Production déploie uniquement depuis une GitHub Release — jamais sur push direct, et migration prod gate le build
-- Les workflows `migrate-*` standalone sont `workflow_dispatch` only (pas de race avec les déploiements)
-- Secrets requis : `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `CODECOV_TOKEN`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_STAGING_DB_PASSWORD`, `SUPABASE_PROD_DB_PASSWORD`
-
-### Testing
-- **vitest** — unit tests in `frontend/tests/unit/` (503 tests, 79 files)
-- **playwright** — E2E via `npm run test:e2e` (run `npx playwright install` once to fetch browsers)
-
-### Quick validation chain (full local CI)
-```bash
-cd frontend && npm run build && ./node_modules/.bin/vitest run
-act -j build -n   # dry-run from repo root
-```
-
-## Environnements Supabase
-
-Deux projets Supabase permanents :
-- **Production** (ref prod) — consommé par Vercel Production
-- **Staging** (`nvwpvckjsvicsyzpzjfi`) — consommé par Vercel Preview + dev local habituel
-
-Vercel injecte les env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) selon le scope (Production/Preview). Pas de logique conditionnelle côté code. Les migrations sont poussées auto vers staging via `.github/workflows/migrate-staging.yml` sur push `main`. Détails complets dans le README racine (section "Environnements").
-
-## Project structure
-
-- `frontend/` — Next.js 16 app (TypeScript, Tailwind v4, Supabase SSR)
-- `supabase/migrations/` — PostgreSQL migrations applied in timestamp order on fresh DB
-- Tests: `frontend/tests/unit/` — Vitest + React Testing Library
+Vercel Git integration is disabled (`frontend/vercel.json`). GitHub Actions is
+the only path to production.
 
 ## Supabase migration rules
 
-- All `CREATE TRIGGER` must be preceded by `DROP TRIGGER IF EXISTS` (idempotent)
-- Triggers on `user_visibility_settings` must be wrapped in a DO block checking `relkind = 'r'` (it becomes a VIEW in migration 20260416184000)
-- `DROP TRIGGER IF EXISTS` on a VIEW also fails — always guard with pg_class check
-- Never add BOM (UTF-8 byte order mark) to `.sql` files
-- Use `CREATE OR REPLACE` for functions and views; use DROP+CREATE for views with type changes
-- Cast enum literals explicitly (e.g., `'bloc'::public.space_role`)
+- Every `CREATE TRIGGER` preceded by `DROP TRIGGER IF EXISTS` (idempotent).
+- Triggers on `user_visibility_settings` must be wrapped in a `DO` block checking
+  `relkind = 'r'` (it becomes a VIEW in migration `20260416184000`).
+- `DROP TRIGGER IF EXISTS` on a VIEW also fails — always guard with `pg_class`.
+- No BOM in `.sql` files.
+- `CREATE OR REPLACE` for functions/views; DROP+CREATE for views with type changes.
+- Cast enum literals explicitly: `'bloc'::public.space_role`.
 
 ## Next.js 16 conventions
 
-- Use `proxy.ts` (not `middleware.ts`) — Next.js 16 renamed the file convention
-- Export the function as `proxy()` not `middleware()`
-- `next` version is pinned to exact `16.2.4` in `package.json` (no `^` caret)
+- Middleware file is `proxy.ts` (renamed in Next 16); export is `proxy()`.
+- `next` pinned to exact `16.2.4` (no caret).
 
 ## Test environment
 
-- `window.localStorage` must be explicitly mocked in tests that render components using it
-- Do NOT use `vi.useFakeTimers()` with `waitFor()` — use real timers for debounce tests
-- Server components: render with `await Page({ searchParams: ... })` pattern
+- `window.localStorage` must be mocked explicitly in component tests that use it.
+- Do **not** combine `vi.useFakeTimers()` with `waitFor()` — use real timers
+  for debounce tests.
+- Server components: render with `await Page({ searchParams: ... })`.
+
+## Known deviations
+
+- **Baseline migration is staging schema as-of 2026-04-21**
+  (`supabase/migrations/20260402193700_remote_baseline.sql`). Before the next
+  `supabase db push` to staging/prod, run
+  `supabase migration repair --status applied 20260402193700` on those envs so
+  the CLI does not try to re-apply it.
+- **No ESLint/Prettier** yet — Session 3 will install them and wire CI.
+- **~55 `console.*` call sites** remain in app code — Session 2 (auth paths)
+  and Session 3 (the rest) convert them.
+- **`seed/polls_demo.sql` disabled** — references the dropped RPC
+  `recompute_post_poll_snapshot`; rewrite needed against the consolidated
+  RPCs from migration `20260420240000`.
+
+## Project-specific decisions
+
+*(One line each; populated as decisions are taken across sessions.)*
+
+- 2026-04-21 — Pino chosen as the single logging library. See `.claude/skills/logging`.
+- 2026-04-21 — Local seed test user: `test@example.com` / `password123`.
+
+## Instructions to future sessions
+
+1. **Read this file first.** Verify conventions against the linked external
+   guides before relying on existing code patterns.
+2. **Library-first.** Before writing a utility, check if a library does it.
+3. **Verify usage before preserving.** Three pivots, much residue.
+4. **Log everything** via `lib/logger.ts`. No `console.*` in app code.
+5. **Never push-to-test.** Local first. `verify` must be green.
+6. **Fetch current docs when uncertain.** Auth, logging, and Supabase/Vercel
+   CLIs evolve — do not trust stale memory.
+7. **Skills** live in `.claude/skills/`. Load them when doing work in their
+   domain: `local-dev`, `logging`. Session 2 adds `authentication`; Session 3
+   adds `supabase-migration`, `nextjs-component`, `library-first`.

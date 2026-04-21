@@ -31,8 +31,9 @@ yarn-error.log*
 # vercel
 .vercel
 
-# Claude Code ephemeral worktrees + runtime state
-.claude/
+# Claude Code runtime state — keep project skills versioned, ignore the rest.
+.claude/*
+!.claude/skills/
 
 # typescript
 *.tsbuildinfo

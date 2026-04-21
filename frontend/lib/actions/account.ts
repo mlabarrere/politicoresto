@@ -4,8 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { normalizeUsername, validateUsername } from "@/lib/account/username";
+import { createLogger, logError } from "@/lib/logger";
 import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+const log = createLogger("account");
 
 function safeRedirectPath(value: string) {
   if (!value.startsWith("/")) return "/me";
@@ -17,19 +20,19 @@ export async function setUsernameAction(formData: FormData) {
   const nextPath = safeRedirectPath(String(formData.get("next") ?? "/").trim() || "/");
   const usernameInput = String(formData.get("username") ?? "").trim();
 
-  console.info("[account][setUsername] start", { usernameInput, nextPath });
+  log.info({ event: "setUsername.start", nextPath }, "set username requested");
 
   const username = normalizeUsername(usernameInput);
   const usernameError = validateUsername(username);
   if (usernameError) {
-    console.warn("[account][setUsername] validation failed", { usernameError });
+    log.warn({ event: "setUsername.validation_failed", usernameError }, "username invalid");
     throw new Error(usernameError);
   }
 
   const supabase = await createServerSupabaseClient();
   const userId = await getAuthUserId(supabase);
   if (!userId) {
-    console.error("[account][setUsername] no authenticated user");
+    log.error({ event: "setUsername.unauthenticated" }, "no authenticated user");
     throw new Error("Authentication required");
   }
 
@@ -41,7 +44,7 @@ export async function setUsernameAction(formData: FormData) {
     .maybeSingle();
 
   if (duplicateResult.data) {
-    console.warn("[account][setUsername] username taken", { username });
+    log.warn({ event: "setUsername.duplicate", user_id: userId, username }, "username already taken");
     throw new Error("Ce username est deja pris.");
   }
 
@@ -51,11 +54,18 @@ export async function setUsernameAction(formData: FormData) {
     .eq("user_id", userId);
 
   if (error) {
-    console.error("[account][setUsername] update failed", { message: error.message });
+    logError(log, error, {
+      event: "setUsername.update_failed",
+      user_id: userId,
+      message: "app_profile update failed"
+    });
     throw new Error("Enregistrement impossible pour le moment.");
   }
 
-  console.info("[account][setUsername] username set OK", { userId, username, nextPath });
+  log.info(
+    { event: "setUsername.success", user_id: userId, username, nextPath },
+    "username set"
+  );
   revalidatePath("/");
   redirect(nextPath as never);
 }

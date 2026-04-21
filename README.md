@@ -18,22 +18,99 @@ Forum politique base sur un frontend Next.js (Catalyst UI) et un backend Supabas
 - `docs/`: documentation transversale produit + technique.
 - `Ressources/`: assets de reference (logo, kit Catalyst local).
 
-## Demarrage rapide
+## Local development
 
-### Frontend local
+Target: clean clone → running app in under 10 minutes.
 
-```powershell
-cd frontend
-npm install
-npm run dev
+### Prerequisites
+
+- Docker Desktop running
+- Node.js ≥ 20.19 (CI uses 20 LTS; local 25.x is fine — watch drift)
+- CLIs: `supabase` (2.x), `vercel`, `gh`
+
+### First-time setup
+
+```bash
+# 1. Install deps
+cd frontend && npm install && cd ..
+
+# 2. Copy env template and fill in the anon key after `supabase start`
+cp frontend/.env.local.example frontend/.env.local
+
+# 3. Boot the local stack (Postgres + Auth + Storage + Inbucket + Studio)
+supabase start
+# → copy the printed "anon key" into NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+#   in frontend/.env.local
+
+# 4. Apply migrations + seed (creates test@example.com / password123)
+supabase db reset
+
+# 5. Run the app
+./scripts/dev.sh        # or: npm run --prefix frontend dev:full
 ```
 
-Variables minimales (`frontend/.env.local`):
+After that, daily boot is just `./scripts/dev.sh` (idempotent; add `--reset` to
+re-apply migrations + seed).
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+### Local service URLs
+
+| Service   | URL                       | Purpose                                  |
+| --------- | ------------------------- | ---------------------------------------- |
+| App       | http://localhost:3000     | `vercel dev`                             |
+| API       | http://127.0.0.1:54321    | PostgREST + GoTrue + Realtime + Storage  |
+| Studio    | http://127.0.0.1:54323    | Supabase admin UI                        |
+| Inbucket  | http://127.0.0.1:54324    | Captures all outbound auth emails locally |
+| Postgres  | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` | Direct `psql` |
+
+### Seed test user
+
+Available immediately after `supabase db reset`:
+
+- Email: `test@example.com`
+- Password: `password123`
+
+Email confirmation is disabled locally (`supabase/config.toml` → `[auth.email]`),
+so the user signs in without any Inbucket click-through. Any additional
+signups you perform locally also bypass confirmation.
+
+### Reading logs locally
+
+Once Phase 3 (`lib/logger.ts`) lands, `LOG_PRETTY=true` in `.env.local` streams
+human-readable logs to the `vercel dev` terminal via `pino-pretty`. Until then,
+`console.*` calls surface raw in the same terminal.
+
+### Pre-push verification
+
+```bash
+npm run --prefix frontend verify     # typecheck + unit tests
 ```
+
+A tracked pre-push Git hook runs the same pipeline automatically. **Activate
+it once per clone:**
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Session 3 will extend `verify` with lint, format, knip, and a matching CI job.
+Do not push without a green `verify`.
+
+### Schema baseline
+
+The full schema lives in `supabase/migrations/20260402193700_remote_baseline.sql`
+(pulled from staging on 2026-04-21). Subsequent migrations are incremental
+on top of that baseline. `supabase db reset` from a clean clone produces
+a fully working local DB with 27 public tables + all RLS + all RPCs.
+
+**Important for CI / remote push:** the baseline migration reflects schema
+that already exists on staging/prod. Before the next `supabase db push` to
+those environments, run:
+
+```bash
+supabase migration repair --status applied 20260402193700
+```
+
+…on staging and prod, so the CLI does not try to re-apply it.
 
 ## Environnements
 
