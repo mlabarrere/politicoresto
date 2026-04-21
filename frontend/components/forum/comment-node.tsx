@@ -215,7 +215,6 @@ function CommentNodeBase({
                 ); }
               }
               mentionPrefix={`@${node.author.username} `}
-              autoFocus
             />
           </div> : null}
 

@@ -141,6 +141,7 @@ export function AppVoteHistoryEditor({
         await fn();
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Action impossible.';
+        // eslint-disable-next-line no-console -- client boundary; no logger import available
         console.error('[vote-history][editor] action failed', { message: msg });
         setError(msg);
       }
@@ -294,7 +295,7 @@ function CandidateTile({
     ? `${result.candidate_name}${result.list_label ? ` — ${result.list_label}` : ''}`
     : (result.list_label ?? 'Candidat');
   const pctLabel =
-    result.pct_exprimes != null
+    result.pct_exprimes !== null && result.pct_exprimes !== undefined
       ? ` (${result.pct_exprimes.toFixed(2).replace('.', ',')}%)`
       : '';
 

@@ -17,4 +17,5 @@ const nextConfig: NextConfig = {
   },
 };
 
+// eslint-disable-next-line import/no-default-export -- Next.js convention: next.config.ts must default-export the config object
 export default nextConfig;

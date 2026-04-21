@@ -12,7 +12,6 @@ export function CommentComposerShell({
   submitErrorLabel,
   onSubmit,
   onCancel,
-  autoFocus,
   testId,
 }: {
   initialValue: string;
@@ -22,7 +21,6 @@ export function CommentComposerShell({
   submitErrorLabel: string;
   onSubmit: (body: string) => Promise<void>;
   onCancel: () => void;
-  autoFocus?: boolean;
   testId: string;
 }) {
   const [body, setBody] = useState(initialValue);
@@ -52,7 +50,6 @@ export function CommentComposerShell({
       data-testid={testId}
     >
       <AppTextarea
-        autoFocus={autoFocus}
         rows={3}
         value={body}
         onChange={(event) => { setBody(event.target.value); }}

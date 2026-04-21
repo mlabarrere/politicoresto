@@ -170,6 +170,7 @@ export const PostCard = memo(function PostCard({
       ) : null}
 
       {item.feed_poll_summary ? (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- onClick exists only to stopPropagation so the parent card link is not triggered when interacting with the embedded poll; keyboard users interact with the controls inside, not this wrapper
         <div className="mt-3" onClick={stopCardNavigation}>
           <PollCardInline
             poll={item.feed_poll_summary}
@@ -178,6 +179,7 @@ export const PostCard = memo(function PostCard({
         </div>
       ) : null}
 
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- onClick exists only to stopPropagation so the parent card link is not triggered when clicking the reaction/share bar; keyboard users interact with the buttons inside, not this wrapper */}
       <div
         className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3"
         onClick={stopCardNavigation}

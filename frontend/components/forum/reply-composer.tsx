@@ -9,7 +9,6 @@ export function ReplyComposer({
   parentCommentId,
   initialValue = '',
   mentionPrefix,
-  autoFocus,
   onSubmit,
   onCancel,
 }: ReplyComposerProps) {
@@ -23,7 +22,6 @@ export function ReplyComposer({
       submittingLabel="Publication..."
       submitErrorLabel="Echec d'enregistrement."
       onCancel={onCancel}
-      autoFocus={autoFocus}
       testId="reply-composer"
       onSubmit={async (body) => {
         await onSubmit({

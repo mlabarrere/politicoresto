@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
+import { createLogger, withRequest } from '@/lib/logger';
 import { normalizePostPollSummary } from '@/lib/polls/summary';
 import { getAuthUserId } from '@/lib/supabase/auth-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 const POLL_VOTE_ERROR = 'Poll vote failed';
+
+const baseLog = createLogger('api.polls.vote');
 
 interface VotePayload {
   postItemId: string;
@@ -22,6 +25,7 @@ function isVotePayload(value: unknown): value is VotePayload {
 }
 
 export async function POST(request: Request) {
+  const log = withRequest(baseLog, request);
   const supabase = await createServerSupabaseClient();
   const userId = await getAuthUserId(supabase);
   if (!userId) {
@@ -47,10 +51,14 @@ export async function POST(request: Request) {
   );
 
   if (voteError) {
-    console.error('[polls][vote] rpc failed', {
-      message: voteError.message,
-      code: voteError.code,
-    });
+    log.error(
+      {
+        event: 'polls.vote.rpc_failed',
+        message: voteError.message,
+        code: voteError.code,
+      },
+      'poll vote rpc failed',
+    );
     return NextResponse.json({ error: POLL_VOTE_ERROR }, { status: 400 });
   }
 

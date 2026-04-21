@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createLogger, withRequest } from '@/lib/logger';
 import {
   REACTION_SIDE_TO_TYPE,
   REACTION_TYPE_TO_SIDE,
@@ -9,6 +10,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { fromBackendVoteSide } from '@/lib/forum/vote';
 
 const REACTION_MUTATION_ERROR = 'Reaction operation failed';
+
+const baseLog = createLogger('api.reactions');
 
 interface ReactionPayload {
   targetType: 'post' | 'comment';
@@ -32,6 +35,7 @@ function isReactionPayload(value: unknown): value is ReactionPayload {
 }
 
 export async function POST(request: Request) {
+  const log = withRequest(baseLog, request);
   const supabase = await createServerSupabaseClient();
   const userId = await getAuthUserId(supabase);
   if (!userId) {
@@ -59,10 +63,14 @@ export async function POST(request: Request) {
       .maybeSingle();
 
   if (existingReactionError) {
-    console.error('[reactions] fetch existing failed', {
-      message: existingReactionError.message,
-      code: existingReactionError.code,
-    });
+    log.error(
+      {
+        event: 'reactions.fetch_existing.failed',
+        message: existingReactionError.message,
+        code: existingReactionError.code,
+      },
+      'reaction fetch existing failed',
+    );
     return NextResponse.json(
       { error: REACTION_MUTATION_ERROR },
       { status: 400 },
@@ -92,10 +100,14 @@ export async function POST(request: Request) {
   });
 
   if (rpcError) {
-    console.error('[reactions] rpc failed', {
-      message: rpcError.message,
-      code: rpcError.code,
-    });
+    log.error(
+      {
+        event: 'reactions.rpc.failed',
+        message: rpcError.message,
+        code: rpcError.code,
+      },
+      'reaction rpc failed',
+    );
     return NextResponse.json(
       { error: REACTION_MUTATION_ERROR },
       { status: 400 },
@@ -116,10 +128,14 @@ export async function POST(request: Request) {
           .maybeSingle();
 
   if (countsResult.error) {
-    console.error('[reactions] read counts failed', {
-      message: countsResult.error.message,
-      code: countsResult.error.code,
-    });
+    log.error(
+      {
+        event: 'reactions.read_counts.failed',
+        message: countsResult.error.message,
+        code: countsResult.error.code,
+      },
+      'reaction counts read failed',
+    );
     return NextResponse.json(
       { error: REACTION_MUTATION_ERROR },
       { status: 400 },

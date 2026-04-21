@@ -2,6 +2,7 @@ import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
+// eslint-disable-next-line import/no-default-export -- Vitest convention: vitest.config.ts must default-export defineConfig
 export default defineConfig({
   plugins: [react()],
   resolve: {

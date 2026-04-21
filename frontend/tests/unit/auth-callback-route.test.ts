@@ -37,7 +37,7 @@ function makeSupabaseClient(
 ) {
   return {
     auth: {
-      exchangeCodeForSession: vi.fn(async (code: string) => {
+      exchangeCodeForSession: vi.fn(async (_code: string) => {
         // Emule ce que fait @supabase/ssr sur un succès : pose le cookie auth
         // via le callback setAll qu'on lui a donné. C'est CE comportement qui a
         // régressé 5 fois — on le pin ici.

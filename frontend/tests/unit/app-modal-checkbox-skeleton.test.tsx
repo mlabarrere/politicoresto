@@ -31,7 +31,7 @@ describe('appCheckbox', () => {
 
   it('accepts checked prop', () => {
     const { container } = render(<AppCheckbox defaultChecked />);
-    const input = container.querySelector(
+    const input = container.querySelector<HTMLInputElement>(
       "input[type='checkbox']",
     )!;
     expect(input.defaultChecked).toBe(true);

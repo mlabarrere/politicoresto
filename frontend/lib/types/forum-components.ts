@@ -67,7 +67,6 @@ export interface ReplyComposerProps {
   parentCommentId?: string;
   initialValue?: string;
   mentionPrefix?: string;
-  autoFocus?: boolean;
   onSubmit: (draft: ReplyDraft) => Promise<void>;
   onCancel: () => void;
 }

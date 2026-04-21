@@ -8,10 +8,6 @@ export interface CommentNode {
   reactionTotal: number;
 }
 
-function reactionTotal(comment: CommentView) {
-  return Number(comment.gauche_count ?? 0) + Number(comment.droite_count ?? 0);
-}
-
 function buildLegacyNodes(tree: CommentTreeNode[]): CommentNode[] {
   return tree.map((node) => ({
     comment: {

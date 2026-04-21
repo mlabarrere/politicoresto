@@ -13,7 +13,12 @@ export default function PostError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    // eslint-disable-next-line no-console -- client boundary; no logger import available
+    console.error('[post-error-boundary] rendered fallback', {
+      message: error.message,
+      digest: error.digest,
+      stack: error.stack,
+    });
   }, [error]);
 
   return (

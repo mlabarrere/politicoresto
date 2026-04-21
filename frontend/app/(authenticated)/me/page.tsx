@@ -84,11 +84,12 @@ export default async function MePage({
                   defaultValue={data.profile?.avatar_url ?? null}
                 />
 
-                <label className="block space-y-2">
+                <label htmlFor="me-display-name" className="block space-y-2">
                   <span className="text-xs font-medium text-muted-foreground">
                     Nom public
                   </span>
                   <AppInput
+                    id="me-display-name"
                     name="display_name"
                     required
                     defaultValue={data.profile?.display_name ?? ''}
@@ -97,19 +98,21 @@ export default async function MePage({
 
                 <AppUsernameField defaultValue={data.profile?.username ?? ''} />
 
-                <label className="block space-y-2">
+                <label htmlFor="me-bio" className="block space-y-2">
                   <span className="text-xs font-medium text-muted-foreground">
                     Bio publique
                   </span>
                   <AppTextarea
+                    id="me-bio"
                     name="bio"
                     rows={3}
                     defaultValue={data.profile?.bio ?? ''}
                   />
                 </label>
 
-                <label className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm text-foreground">
+                <label htmlFor="me-is-public-profile" className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm text-foreground">
                   <AppCheckbox
+                    id="me-is-public-profile"
                     name="is_public_profile_enabled"
                     defaultChecked={Boolean(
                       data.profile?.is_public_profile_enabled,
@@ -147,18 +150,19 @@ export default async function MePage({
                   value="/me?section=profile"
                 />
 
-                <label className="block space-y-2">
+                <label htmlFor="me-email" className="block space-y-2">
                   <span className="text-xs font-medium text-muted-foreground">
                     Email (non public)
                   </span>
-                  <AppInput value={data.email} disabled readOnly />
+                  <AppInput id="me-email" value={data.email} disabled readOnly />
                 </label>
 
-                <label className="block space-y-2">
+                <label htmlFor="me-notes-private" className="block space-y-2">
                   <span className="text-xs font-medium text-muted-foreground">
                     Notes personnelles
                   </span>
                   <AppTextarea
+                    id="me-notes-private"
                     name="notes_private"
                     rows={5}
                     defaultValue={data.privateProfile?.notes_private ?? ''}

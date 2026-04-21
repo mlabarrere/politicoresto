@@ -19,9 +19,7 @@ describe('statusBadge', () => {
   });
 
   it('renders with danger tone', () => {
-    const { container } = render(
-      <StatusBadge label="Supprimé" tone="danger" />,
-    );
+    render(<StatusBadge label="Supprimé" tone="danger" />);
     expect(screen.getByText('Supprimé')).toBeTruthy();
   });
 

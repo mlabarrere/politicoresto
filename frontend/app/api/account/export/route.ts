@@ -1,5 +1,8 @@
 ﻿import { NextResponse } from 'next/server';
 import { getAccountWorkspaceData } from '@/lib/data/authenticated/account-workspace';
+import { createLogger, logError } from '@/lib/logger';
+
+const log = createLogger('api.account.export');
 
 export async function GET() {
   try {
@@ -10,11 +13,11 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Content-Disposition': `attachment; filename=\"${filename}\"`,
+        'Content-Disposition': `attachment; filename="${filename}"`,
       },
     });
   } catch (error) {
-    console.error('[account][export] failed', { error });
+    logError(log, error, { event: 'account.export.failed' });
     return NextResponse.json(
       {
         error: 'Export impossible',

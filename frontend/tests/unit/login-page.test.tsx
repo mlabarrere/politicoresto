@@ -4,6 +4,7 @@ import LoginPage from '@/app/auth/login/page';
 
 vi.mock('next/image', () => ({
   default: ({ alt, ...props }: { alt: string; [key: string]: unknown }) => (
+    // eslint-disable-next-line @next/next/no-img-element -- mocking next/image in a unit test; optimization is out of scope for the mock
     <img alt={alt} {...(props as Record<string, unknown>)} />
   ),
 }));

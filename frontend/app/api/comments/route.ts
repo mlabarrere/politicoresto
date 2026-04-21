@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { parseNonEmptyString } from '@/lib/domain/comments/validation';
+import { createLogger, logError, withRequest } from '@/lib/logger';
 import { mapCommentViewToForumNode } from '@/lib/forum/mappers';
 import {
   canCreateCommentToday,
@@ -10,6 +11,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { CommentView } from '@/lib/types/views';
 
 const COMMENT_MUTATION_ERROR = 'Comment operation failed';
+
+const baseLog = createLogger('api.comments');
 
 async function getPostIdBySlug(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
@@ -86,6 +89,7 @@ async function fetchCommentView(
 }
 
 export async function POST(request: Request) {
+  const log = withRequest(baseLog, request);
   const supabase = await createServerSupabaseClient();
   const userId = await getAuthUserId(supabase);
   if (!userId) {
@@ -125,10 +129,14 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error('[comments][POST] rpc error', {
-        message: error.message,
-        code: error.code,
-      });
+      log.error(
+        {
+          event: 'comments.create.rpc_failed',
+          message: error.message,
+          code: error.code,
+        },
+        'comment rpc failed',
+      );
       return NextResponse.json(
         { error: COMMENT_MUTATION_ERROR },
         { status: 400 },
@@ -145,7 +153,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ comment: node });
   } catch (error) {
-    console.error('[comments][POST] failed', { error });
+    logError(log, error, { event: 'comments.create.failed' });
     return NextResponse.json(
       { error: COMMENT_MUTATION_ERROR },
       { status: 400 },
@@ -154,6 +162,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const log = withRequest(baseLog, request);
   const supabase = await createServerSupabaseClient();
   const userId = await getAuthUserId(supabase);
   if (!userId) {
@@ -180,10 +189,14 @@ export async function PATCH(request: Request) {
   });
 
   if (error) {
-    console.error('[comments][PATCH] rpc error', {
-      message: error.message,
-      code: error.code,
-    });
+    log.error(
+      {
+        event: 'comments.update.rpc_failed',
+        message: error.message,
+        code: error.code,
+      },
+      'comment update rpc failed',
+    );
     return NextResponse.json(
       { error: COMMENT_MUTATION_ERROR },
       { status: 400 },
@@ -194,6 +207,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const log = withRequest(baseLog, request);
   const supabase = await createServerSupabaseClient();
   const userId = await getAuthUserId(supabase);
   if (!userId) {
@@ -217,10 +231,14 @@ export async function DELETE(request: Request) {
   });
 
   if (error) {
-    console.error('[comments][DELETE] rpc error', {
-      message: error.message,
-      code: error.code,
-    });
+    log.error(
+      {
+        event: 'comments.delete.rpc_failed',
+        message: error.message,
+        code: error.code,
+      },
+      'comment delete rpc failed',
+    );
     return NextResponse.json(
       { error: COMMENT_MUTATION_ERROR },
       { status: 400 },

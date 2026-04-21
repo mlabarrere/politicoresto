@@ -21,6 +21,7 @@ export function CatalystAlertTitle({
   ...props
 }: HTMLAttributes<HTMLHeadingElement>) {
   return (
+    // eslint-disable-next-line jsx-a11y/heading-has-content -- children are forwarded via the spread props by callers
     <h3
       {...props}
       className={clsx('text-sm font-semibold text-foreground', className)}

@@ -1,7 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createLogger } from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+const log = createLogger('vote-history');
 
 type ChoiceKind =
   | 'vote'
@@ -49,22 +52,30 @@ export async function upsertVoteHistoryAction(input: {
   const rpcMs = Math.round(performance.now() - t0);
 
   if (error) {
-    console.error('[vote-history][upsert] rpc failed', {
-      message: error.message,
-      code: error.code,
-      rpcMs,
-    });
+    log.error(
+      {
+        event: 'vote_history.upsert.rpc_failed',
+        message: error.message,
+        code: error.code,
+        rpc_ms: rpcMs,
+      },
+      'vote history upsert rpc failed',
+    );
     if (error.code === '28000') {
       throw new Error('Authentication required');
     }
     throw new Error('Enregistrement impossible pour le moment.');
   }
 
-  console.info('[vote-history][upsert] OK', {
-    electionSlug,
-    choiceKind,
-    rpcMs,
-  });
+  log.info(
+    {
+      event: 'vote_history.upsert.ok',
+      election_slug: electionSlug,
+      choice_kind: choiceKind,
+      rpc_ms: rpcMs,
+    },
+    'vote history upserted',
+  );
   revalidatePath('/me');
 }
 
@@ -81,17 +92,28 @@ export async function deleteVoteHistoryAction(electionSlug: string) {
   const rpcMs = Math.round(performance.now() - t0);
 
   if (error) {
-    console.error('[vote-history][delete] rpc failed', {
-      message: error.message,
-      code: error.code,
-      rpcMs,
-    });
+    log.error(
+      {
+        event: 'vote_history.delete.rpc_failed',
+        message: error.message,
+        code: error.code,
+        rpc_ms: rpcMs,
+      },
+      'vote history delete rpc failed',
+    );
     if (error.code === '28000') {
       throw new Error('Authentication required');
     }
     throw new Error('Suppression impossible pour le moment.');
   }
 
-  console.info('[vote-history][delete] OK', { electionSlug: slug, rpcMs });
+  log.info(
+    {
+      event: 'vote_history.delete.ok',
+      election_slug: slug,
+      rpc_ms: rpcMs,
+    },
+    'vote history deleted',
+  );
   revalidatePath('/me');
 }

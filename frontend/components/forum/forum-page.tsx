@@ -190,7 +190,6 @@ export function ForumPage({
             targetId={post.id}
             onSubmit={(draft) => handleRootReplySubmit({ body: draft.body })}
             onCancel={() => { setShowRootComposer(false); }}
-            autoFocus
           />
         ) : null}
 

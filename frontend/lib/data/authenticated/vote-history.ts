@@ -1,4 +1,7 @@
+import { createLogger } from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+const log = createLogger('data.vote-history');
 
 export interface ElectionResultRow {
   id: string;
@@ -68,7 +71,7 @@ function isCapabilityMissing(
 export async function getVoteHistoryEditorData(): Promise<VoteHistoryEditorData> {
   const supabase = await createServerSupabaseClient();
 
-  console.info('[vote-history][editor] load start');
+  log.info({ event: 'vote_history.editor.load_start' }, 'load start');
 
   const [electionResult, resultRows, votesResult] = await Promise.all([
     supabase
@@ -86,10 +89,14 @@ export async function getVoteHistoryEditorData(): Promise<VoteHistoryEditorData>
   ]);
 
   if (electionResult.error) {
-    console.error('[vote-history][editor] election query failed', {
-      message: electionResult.error.message,
-      code: electionResult.error.code,
-    });
+    log.error(
+      {
+        event: 'vote_history.editor.election_query_failed',
+        message: electionResult.error.message,
+        code: electionResult.error.code,
+      },
+      'election query failed',
+    );
     if (isCapabilityMissing(electionResult.error)) {
       return {
         elections: [],
@@ -107,10 +114,14 @@ export async function getVoteHistoryEditorData(): Promise<VoteHistoryEditorData>
   }
 
   if (resultRows.error) {
-    console.error('[vote-history][editor] result query failed', {
-      message: resultRows.error.message,
-      code: resultRows.error.code,
-    });
+    log.error(
+      {
+        event: 'vote_history.editor.result_query_failed',
+        message: resultRows.error.message,
+        code: resultRows.error.code,
+      },
+      'result query failed',
+    );
     if (isCapabilityMissing(resultRows.error)) {
       return {
         elections: [],
@@ -155,16 +166,24 @@ export async function getVoteHistoryEditorData(): Promise<VoteHistoryEditorData>
       votesByElectionId[v.election_id] = v;
     }
   } else {
-    console.warn('[vote-history][editor] votes RPC failed', {
-      message: votesResult.error.message,
-      code: votesResult.error.code,
-    });
+    log.warn(
+      {
+        event: 'vote_history.editor.votes_rpc_failed',
+        message: votesResult.error.message,
+        code: votesResult.error.code,
+      },
+      'votes rpc failed',
+    );
   }
 
-  console.info('[vote-history][editor] load OK', {
-    electionsCount: elections.length,
-    votesCount: Object.keys(votesByElectionId).length,
-  });
+  log.info(
+    {
+      event: 'vote_history.editor.load_ok',
+      elections_count: elections.length,
+      votes_count: Object.keys(votesByElectionId).length,
+    },
+    'load ok',
+  );
 
   return { elections, votesByElectionId, status: 'ready', message: null };
 }

@@ -116,6 +116,7 @@ export function PostComposer({
 
   useEffect(() => {
     if (!initialError) return;
+    // eslint-disable-next-line no-console -- client boundary; no logger import available
     console.error('[PostComposer] initialError', { message: initialError });
   }, [initialError]);
 
@@ -161,11 +162,12 @@ export function PostComposer({
 
   const postTab = (
     <div className="space-y-4">
-      <label className="block space-y-2">
+      <label htmlFor="post-composer-body" className="block space-y-2">
         <span className="text-xs font-medium text-muted-foreground">
           Corps (Markdown)
         </span>
         <AppTextarea
+          id="post-composer-body"
           name="body"
           required
           rows={9}
@@ -197,11 +199,12 @@ export function PostComposer({
           Configuration du sondage
         </p>
 
-        <label className="block space-y-2">
+        <label htmlFor="post-composer-poll-question" className="block space-y-2">
           <span className="text-xs font-medium text-muted-foreground">
             Question
           </span>
           <AppInput
+            id="post-composer-poll-question"
             name="poll_question"
             required={draft.mode === 'poll'}
             value={draft.poll_question}
@@ -215,11 +218,12 @@ export function PostComposer({
           />
         </label>
 
-        <label className="block space-y-2">
+        <label htmlFor="post-composer-poll-deadline" className="block space-y-2">
           <span className="text-xs font-medium text-muted-foreground">
             Deadline
           </span>
           <AppSelect
+            id="post-composer-poll-deadline"
             name="poll_deadline_hours"
             value={draft.poll_deadline_hours}
             onChange={(event) =>
@@ -243,6 +247,7 @@ export function PostComposer({
           </span>
           {draft.poll_options.map((option, index) => (
             <div
+              // eslint-disable-next-line react/no-array-index-key -- poll options are plain editable strings with no stable id; reordering is not supported, only append/remove-by-index
               key={`poll-option-${index}`}
               className="flex items-center gap-2"
             >
@@ -324,11 +329,12 @@ export function PostComposer({
         ))}
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-2">
+          <label htmlFor="post-composer-title" className="space-y-2">
             <span className="text-xs font-medium text-muted-foreground">
               Titre
             </span>
             <AppInput
+              id="post-composer-title"
               name="title"
               required
               value={draft.title}
@@ -339,11 +345,12 @@ export function PostComposer({
             />
           </label>
 
-          <label className="space-y-2">
+          <label htmlFor="post-composer-source-url" className="space-y-2">
             <span className="text-xs font-medium text-muted-foreground">
               Lien source (optionnel)
             </span>
             <AppInput
+              id="post-composer-source-url"
               name="source_url"
               value={draft.source_url}
               onChange={(event) =>

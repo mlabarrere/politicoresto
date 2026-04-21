@@ -39,6 +39,7 @@ describe('safeNextPath', () => {
   });
 
   it('rejects javascript: URLs', () => {
+    // eslint-disable-next-line no-script-url -- this test asserts that safeNextPath rejects javascript: URLs; the literal is the input under test
     expect(safeNextPath('javascript:alert(1)')).toBe('/');
   });
 

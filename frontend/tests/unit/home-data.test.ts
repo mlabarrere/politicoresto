@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getHomeScreenData } from '@/lib/data/public/home';
 import { getAuthUserId } from '@/lib/supabase/auth-user';
+import type * as AuthUserModuleType from '@/lib/supabase/auth-user';
 import { getPollSummariesByPostItemIds } from '@/lib/data/public/polls';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
@@ -10,7 +11,7 @@ vi.mock('@/lib/supabase/server', () => ({
 
 vi.mock('@/lib/supabase/auth-user', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('@/lib/supabase/auth-user')>();
+    await importOriginal<typeof AuthUserModuleType>();
   return {
     ...actual,
     getAuthUserId: vi.fn(async () => null),

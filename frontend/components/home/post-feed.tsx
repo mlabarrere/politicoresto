@@ -36,7 +36,8 @@ function applyFilter(
     const aliasSet = new Set([bloc.slug, ...bloc.aliases]);
     return items.filter(
       (item) =>
-        item.primary_taxonomy_slug != null &&
+        item.primary_taxonomy_slug !== null &&
+        item.primary_taxonomy_slug !== undefined &&
         aliasSet.has(item.primary_taxonomy_slug),
     );
   }
@@ -60,7 +61,7 @@ function applyFilter(
 function sortItems(items: PostFeedItemView[], sortMode: FeedSortMode) {
   if (sortMode === 'sondages') {
     return items
-      .filter((item) => item.feed_poll_summary != null)
+      .filter((item) => item.feed_poll_summary !== null && item.feed_poll_summary !== undefined)
       .sort((a, b) =>
         Number((b.editorial_feed_score ?? 0) - (a.editorial_feed_score ?? 0)),
       );

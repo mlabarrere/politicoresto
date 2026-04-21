@@ -19,10 +19,12 @@ beforeAll(() => {
         store[key] = value;
       },
       removeItem: (key: string) => {
-        delete store[key];
+        store[key] = undefined as unknown as string;
       },
       clear: () => {
-        Object.keys(store).forEach((k) => delete store[k]);
+        Object.keys(store).forEach((k) => {
+          store[k] = undefined as unknown as string;
+        });
       },
     });
   }

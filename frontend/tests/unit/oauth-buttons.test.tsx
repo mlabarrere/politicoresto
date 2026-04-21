@@ -42,7 +42,7 @@ describe('oAuthButtons', () => {
     );
 
     await waitFor(() => { expect(signInMock).toHaveBeenCalledTimes(1); });
-    const [[payload]] = signInMock.mock.calls;
+    const [[payload]] = signInMock.mock.calls as [[{ provider: string; options: { redirectTo: string } }]];
     expect(payload.provider).toBe('google');
     expect(payload.options.redirectTo).toBe(
       `${ORIGIN}/auth/callback?next=${encodeURIComponent('/me')}`,
@@ -61,7 +61,7 @@ describe('oAuthButtons', () => {
     );
 
     await waitFor(() => { expect(signInMock).toHaveBeenCalled(); });
-    const [[payload]] = signInMock.mock.calls;
+    const [[payload]] = signInMock.mock.calls as [[{ options: { redirectTo: string } }]];
     expect(payload.options.redirectTo).toBe(
       `${ORIGIN}/auth/callback?next=${encodeURIComponent('/')}`,
     );

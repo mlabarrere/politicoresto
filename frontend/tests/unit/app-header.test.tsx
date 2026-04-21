@@ -21,6 +21,7 @@ interface MockButtonProps {
 
 vi.mock('next/image', () => ({
   default: ({ alt, ...props }: MockImageProps) => (
+    // eslint-disable-next-line @next/next/no-img-element -- mocking next/image in a unit test; optimization is out of scope for the mock
     <img alt={alt ?? ''} {...props} />
   ),
 }));

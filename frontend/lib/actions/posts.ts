@@ -2,8 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { createLogger, logError } from '@/lib/logger';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { fetchUrlPreview, normalizeSourceUrl } from '@/lib/utils/url-preview';
+
+const log = createLogger('posts');
 
 const VALIDATION_ERRORS = new Set([
   'Title required',
@@ -100,11 +103,15 @@ export async function createPostAction(formData: FormData) {
       if (VALIDATION_ERRORS.has(message)) {
         throw new Error(message);
       }
-      console.error('[createPostAction] rpc failed', {
-        message,
-        code: error.code,
-        rpcMs,
-      });
+      log.error(
+        {
+          event: 'posts.create.rpc_failed',
+          message,
+          code: error.code,
+          rpc_ms: rpcMs,
+        },
+        'create post rpc failed',
+      );
       throw new Error('Publication impossible.');
     }
 
@@ -115,13 +122,17 @@ export async function createPostAction(formData: FormData) {
       throw new Error('Publication impossible.');
     }
 
-    console.info('[createPostAction] post created', {
-      mode,
-      threadId,
-      postItemId,
-      redirectPath,
-      rpcMs,
-    });
+    log.info(
+      {
+        event: 'posts.create.ok',
+        mode,
+        thread_id: threadId,
+        post_item_id: postItemId,
+        redirect_path: redirectPath,
+        rpc_ms: rpcMs,
+      },
+      'post created',
+    );
 
     revalidatePath('/');
     if (redirectPath !== '/') revalidatePath(redirectPath);
@@ -133,7 +144,7 @@ export async function createPostAction(formData: FormData) {
       throw error;
     }
 
-    console.error('[createPostAction] failed', { message, error });
+    logError(log, error, { event: 'posts.create.failed', message });
     redirect(
       `/post/new?error=${encodeURIComponent(GENERIC_ERROR_CODE)}` as never,
     );

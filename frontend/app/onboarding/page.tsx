@@ -36,11 +36,12 @@ export default async function OnboardingPage({
 
           <form action={setUsernameAction} className="space-y-4">
             <input type="hidden" name="next" value={nextPath} />
-            <label className="block space-y-2">
+            <label htmlFor="onboarding-username" className="block space-y-2">
               <span className="text-xs font-medium text-muted-foreground">
                 Pseudo
               </span>
               <AppInput
+                id="onboarding-username"
                 name="username"
                 required
                 placeholder="ex: jean_dupont"

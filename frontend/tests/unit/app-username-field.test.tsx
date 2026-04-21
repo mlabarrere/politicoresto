@@ -25,7 +25,8 @@ describe('appUsernameField', () => {
 
   it('renders with defaultValue pre-filled', () => {
     render(<AppUsernameField defaultValue="citoyen_actif" />);
-    const input = screen.getByRole('textbox');
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- narrow HTMLElement to HTMLInputElement so `.value` is typed at the expect() call
+    const input = screen.getByRole('textbox') as HTMLInputElement;
     expect(input.value).toBe('citoyen_actif');
   });
 
