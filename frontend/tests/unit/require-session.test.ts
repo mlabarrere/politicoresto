@@ -15,8 +15,9 @@ import { requireSession } from "@/lib/guards/require-session";
 function makeClient(userId: string | null) {
   return {
     auth: {
-      getClaims: async () => ({
-        data: { claims: userId ? { sub: userId } : null }
+      getUser: async () => ({
+        data: { user: userId ? { id: userId } : null },
+        error: null
       })
     }
   };
