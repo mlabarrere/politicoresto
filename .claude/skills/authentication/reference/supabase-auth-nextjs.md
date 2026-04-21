@@ -8,7 +8,7 @@ https://supabase.com/docs/guides/auth/server-side/nextjs
 
 | Area | Official | Here | Reason |
 |---|---|---|---|
-| Session validation | `auth.getClaims()` | `auth.getUser()` | Project on HS256 legacy keys; `getClaims()` returns null silently. See `auth-user.ts` header. |
+| Session validation | `auth.getClaims()` | `auth.getClaims()` | Match — asymmetric JWT keys active since 2026-04-21. |
 | Middleware | Cookie refresh + `getClaims()` only | + `/me` redirect if unauthenticated | Product routing choice (the home page is public; `/me` must force login at the edge for a cleaner UX than a late redirect). |
 | OAuth callback | Redirect to `/` on success | Redirect to `/onboarding` if the user has no `username` in `app_profile` | Onboarding is mandatory before entering the app; the callback is the cheapest place to enforce it. |
 | OAuth button | Server action | Client-side `signInWithOAuth` | Both patterns are documented by Supabase. Client-side keeps the redirect under the user's own origin and is simpler to reason about. |
@@ -26,7 +26,7 @@ table so the skill stays searchable.
 | Event | Level | Required fields | Where |
 |---|---|---|---|
 | `auth.session.cookie_rotation` | debug | `path`, `cookie_names[]` | `lib/supabase/middleware.ts` — fires when Supabase rotates session cookies |
-| `auth.session.getuser_failed` | warn | serialized `err` | same — `getUser()` returned an error |
+| `auth.session.getclaims_failed` | warn | serialized `err` | same — `getClaims()` returned an error |
 | `auth.gate.redirect` | info | `path`, `reason` | same — `/me` gate triggered a redirect to login |
 
 ### `auth.oauth.*` — callback route
@@ -106,26 +106,16 @@ Two rules that burn six times each if you break them:
    reconstructs `response = NextResponse.next(...)` and copies the cookies.
    This is the official pattern and it is load-bearing.
 
-## HS256 → asymmetric migration (future)
+## JWT keys — historical note
 
-To unblock `getClaims()`:
+Until 2026-04-21 this project ran HS256 legacy symmetric keys, which forced
+us off `getClaims()` (it requires a JWKS endpoint that only asymmetric keys
+expose). Staging and prod rotated to asymmetric keys (ES256/RS256) on that
+date; the HS256 compat path is decommissioned and the codebase is now
+identical for both environments (only env vars differ).
 
-1. Supabase Dashboard → Project Settings → JWT Keys → rotate to asymmetric
-   (ES256 or RS256). Stage first; prod after a verification window.
-2. Once rotated, the project exposes a JWKS endpoint at
-   `<project-url>/auth/v1/.well-known/jwks.json`, and `getClaims()` can
-   validate tokens locally (no round-trip to `/auth/v1/user`).
-3. Swap the call in `lib/supabase/auth-user.ts:resolveAuth`:
-   ```ts
-   const { data, error } = await client.auth.getClaims();
-   if (error || !data?.claims) return null;
-   return { id: data.claims.sub, email: data.claims.email ?? null };
-   ```
-4. Update this skill's `getUser()` rule section.
-5. Run all 8 smoke tests from the skill's local-test section.
-
-Do not attempt this inside a normal session — it's a keys rotation, not a
-code change.
+The git trail of that period is in commits #33 and #34 — informational now,
+not authoritative.
 
 ## Useful upstream links
 

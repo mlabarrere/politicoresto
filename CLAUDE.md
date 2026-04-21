@@ -28,11 +28,14 @@ Verify conventions against these sources rather than extrapolating from existing
    - Four factories in `frontend/lib/supabase/`: `client.ts` (browser),
      `server.ts` (RSC / actions / route handlers), `middleware.ts` (proxy),
      `auth-user.ts` (request-memoized user resolution via `react.cache()`).
-   - Always `auth.getUser()` in server contexts. **Never** `auth.getSession()`
-     (reads cookie without verification). **Never** `auth.getClaims()` on this
-     project: staging/prod still run HS256 legacy keys; `getClaims()` returns
-     `null` silently and breaks auth. See `auth-user.ts` header + commits #33,
-     #34. Reopens once Supabase keys are rotated to asymmetric.
+   - **`auth.getClaims()` is the default** in server contexts (middleware,
+     `auth-user.ts`). Staging and prod run asymmetric JWT keys (ES256/RS256)
+     since 2026-04-21 — legacy HS256 decommissioned. `getClaims()` validates
+     the JWT locally via JWKS, falling back to `getUser()` internally when
+     signature verification fails. Single codebase for both environments.
+   - **Never** `auth.getSession()` (reads cookie without verification).
+     `auth.getUser()` is only used in the OAuth callback immediately after
+     `exchangeCodeForSession` (fresh session, tutorial pattern).
    - Auth state fetched **exactly once per request** via `react.cache()` in
      `auth-user.ts`. Pass the client down; never re-instantiate inside leaves.
    - OAuth callback at `app/auth/callback/route.ts`. Failures redirect to
@@ -138,9 +141,9 @@ the only path to production.
   `eslint-disable` pending the `/api/_log` client→server forwarder (Session 3).
   Non-auth app code still carries `console.*` — Session 3 converts them under
   ESLint enforcement.
-- **Auth on HS256 legacy keys.** `auth.getClaims()` unsafe on this project
-  until Supabase staging/prod rotate to asymmetric keys. See `lib/supabase/
-  auth-user.ts` header and commits #33/#34. Separate migration session.
+- **Auth on asymmetric JWT keys since 2026-04-21.** HS256 legacy decommissioned
+  on staging and prod. `auth.getClaims()` is now the default in server
+  contexts (see `auth-user.ts` header). Single codebase for both environments.
 - **`seed/polls_demo.sql` disabled** — references the dropped RPC
   `recompute_post_poll_snapshot`; rewrite needed against the consolidated
   RPCs from migration `20260420240000`.
@@ -152,9 +155,10 @@ the only path to production.
 - 2026-04-21 — Pino chosen as the single logging library. See `.claude/skills/logging`.
 - 2026-04-21 — Local seed test user: `test@example.com` / `password123`.
 - 2026-04-21 — Session 2: auth consolidated on `@supabase/ssr`. Four factories,
-  `getUser()` over `getClaims()` (HS256 constraint), `react.cache()` on the
-  request-scoped user resolve, `/auth/auth-code-error` page for OAuth failures.
-  See `.claude/skills/authentication`.
+  `react.cache()` on the request-scoped user resolve, `/auth/auth-code-error`
+  page for OAuth failures. See `.claude/skills/authentication`.
+- 2026-04-21 — Supabase asymmetric JWT keys enabled on staging + prod; HS256
+  legacy decommissioned. `auth.getClaims()` is now the default server-side.
 
 ## Instructions to future sessions
 

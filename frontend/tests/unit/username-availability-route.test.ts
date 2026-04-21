@@ -4,7 +4,7 @@ import { makeAuthMock } from "../fixtures/auth-mock";
 
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
-  getUser: vi.fn(),
+  getClaims: vi.fn(),
   fromMock: vi.fn()
 }));
 

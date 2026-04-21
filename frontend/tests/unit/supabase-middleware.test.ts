@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   createServerClient: vi.fn(),
-  getUser: vi.fn()
+  getClaims: vi.fn()
 }));
 
 vi.mock("@supabase/ssr", () => ({
@@ -23,10 +23,10 @@ function makeRequest(pathname: string, init?: { method?: string; headers?: Recor
   return new NextRequest(`http://localhost:3000${pathname}`, init);
 }
 
-function makeClient(user: unknown = null) {
+function makeClient(claims: unknown = null) {
   return {
     auth: {
-      getUser: mocks.getUser.mockResolvedValue({ data: { user } })
+      getClaims: mocks.getClaims.mockResolvedValue({ data: { claims } })
     }
   };
 }
@@ -55,7 +55,7 @@ describe("updateSession", () => {
       if (options?.cookies?.getAll) options.cookies.getAll();
       return {
         auth: {
-          getUser: mocks.getUser.mockResolvedValue({ data: { user: { id: "user-1" } } })
+          getClaims: mocks.getClaims.mockResolvedValue({ data: { claims: { sub: "user-1" } } })
         }
       };
     });
@@ -84,7 +84,7 @@ describe("updateSession", () => {
     expect(location).toContain(encodeURIComponent("/me/settings"));
   });
 
-  it("skips auth.getUser() on server action POSTs (next-action header)", async () => {
+  it("skips auth.getClaims() on server action POSTs (next-action header)", async () => {
     const request = makeRequest("/me", {
       method: "POST",
       headers: { "next-action": "some-action-id" }
@@ -93,16 +93,17 @@ describe("updateSession", () => {
     expect(response.status).toBe(200);
     // Le seul but du middleware etant de rediriger les GET non-auth, il ne doit
     // pas consommer un round-trip Supabase Auth sur les server actions.
-    expect(mocks.getUser).not.toHaveBeenCalled();
+    expect(mocks.getClaims).not.toHaveBeenCalled();
   });
 
-  it("always calls auth.getUser() on GET navigations to refresh expired JWT (anti-regression)", async () => {
+  it("always calls auth.getClaims() on GET navigations to refresh expired JWT (anti-regression)", async () => {
     // Sans ce call, le access_token expire après ~1h et l'app pense que
     // l'utilisateur est anonyme, même si le refresh_token est toujours valide.
-    // Pattern officiel Supabase SSR.
+    // Pattern officiel Supabase SSR (getClaims : validation JWT locale via JWKS,
+    // fallback interne sur getUser si signature échoue).
     const request = makeRequest("/post/some-slug");
     const response = await updateSession(request);
     expect(response.status).toBe(200);
-    expect(mocks.getUser).toHaveBeenCalledTimes(1);
+    expect(mocks.getClaims).toHaveBeenCalledTimes(1);
   });
 });

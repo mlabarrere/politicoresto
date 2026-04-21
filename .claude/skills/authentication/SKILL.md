@@ -1,6 +1,6 @@
 ---
 name: authentication
-description: How auth works in this Next.js 16 + Supabase app. Use when touching `lib/supabase/`, `app/auth/`, `components/auth/`, `proxy.ts`, or any code calling `supabase.auth.*`. Covers the four client factories, the HS256 `getUser`-only rule, protecting routes, adding a provider, required log events, and local testing.
+description: How auth works in this Next.js 16 + Supabase app. Use when touching `lib/supabase/`, `app/auth/`, `components/auth/`, `proxy.ts`, or any code calling `supabase.auth.*`. Covers the four client factories, the `getClaims()` server-side rule (asymmetric JWT keys), protecting routes, adding a provider, required log events, and local testing.
 ---
 
 # authentication — Supabase SSR, the PoliticoResto edition
@@ -22,23 +22,25 @@ official Supabase Next.js pattern.
 anywhere else in the codebase. If a new caller needs auth, reuse one of the
 four factories.
 
-## The `getUser()` rule — and why **not** `getClaims()`
+## The session-validation rule — `getClaims()` default, `getUser()` post-exchange
 
-- **Always** `supabase.auth.getUser()` in server contexts. It validates the
-  access token against the Supabase Auth API.
+- **Default**: `supabase.auth.getClaims()` in server contexts (middleware and
+  `auth-user.ts`). Asymmetric JWT keys (ES256/RS256) are active on staging
+  and prod since 2026-04-21 — legacy HS256 decommissioned. `getClaims()`
+  validates the JWT locally via JWKS on the happy path; when local
+  verification fails it falls back internally to `getUser()` for revalidation.
+  Zero network round-trip on fresh tokens. Matches the Supabase official
+  Next.js tutorial exactly.
+- **Exception**: `supabase.auth.getUser()` in `app/auth/callback/route.ts`
+  immediately after `exchangeCodeForSession`. The tutorial uses `getUser()`
+  here because the session was just minted and reading it back confirms the
+  cookie write propagated. Do not replace.
 - **Never** `supabase.auth.getSession()`. It reads the cookie without
   revalidation — spoofable.
-- **Never** `supabase.auth.getClaims()` on this project. Supabase staging and
-  prod still run **HS256 legacy symmetric keys**. `getClaims()` tries local
-  JWT verification, which requires asymmetric keys exposed via JWKS — not
-  available on HS256 projects. Symptom: `getClaims()` returns `null`
-  silently, the user appears logged out, auth breaks. This was tried in
-  commits #33 and #34; the burn is documented in the header of
-  `frontend/lib/supabase/auth-user.ts`.
 
-  Once Supabase rotates this project's keys to asymmetric (separate session,
-  Dashboard → Project Settings → JWT Keys), `getClaims()` becomes usable and
-  preferred. Until then, `getUser()` is the only option.
+Commits #33 and #34 in the git history are the historical record of when
+HS256 forced a different compromise; they're informational now, not
+authoritative.
 
 ## Protecting a Server Component / Server Action / Route Handler
 
@@ -127,7 +129,7 @@ Every auth operation emits a structured Pino event. Full taxonomy in
 | Operation | Event | Level |
 |---|---|---|
 | Middleware session cookie rotation | `auth.session.cookie_rotation` | debug |
-| Middleware `getUser()` fails | `auth.session.getuser_failed` | warn (via `logError`) |
+| Middleware `getClaims()` fails | `auth.session.getclaims_failed` | warn (via `logError`) |
 | Middleware `/me` unauth redirect | `auth.gate.redirect` | info |
 | Callback received | `auth.oauth.callback.received` | info |
 | Callback missing code | `auth.oauth.callback.missing_code` | warn |
