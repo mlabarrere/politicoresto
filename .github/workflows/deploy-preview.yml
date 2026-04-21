@@ -108,21 +108,33 @@ jobs:
   # ────────────────────────────────────────────────────────────
   # 3. E2E auth sur staging (vraie Supabase, vrai cookie jar)
   # ────────────────────────────────────────────────────────────
-  # Couvre les régressions silencieuses du cookie de session après login.
-  # Skip si les secrets E2E ne sont pas là (ex: premier run avant setup).
+  # Couvre les régressions silencieuses du cookie de session.
+  # Skip gracieusement si les secrets E2E_* ne sont pas set (avant setup).
   e2e-auth-staging:
     name: E2E auth (staging)
     needs: deploy-preview
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    env:
+      # Pour pouvoir tester la présence d'un secret dans un `if:` de step,
+      # on le passe en env job. Pas de fuite de valeur — Actions masque.
+      HAS_E2E_SECRETS: ${{ secrets.E2E_TEST_USER_PASSWORD != '' && 'yes' || '' }}
 
     steps:
+      - name: Notice when skipped
+        if: ${{ env.HAS_E2E_SECRETS == '' }}
+        run: |
+          echo "::notice::E2E staging tests skipped — secrets E2E_TEST_USER_EMAIL/PASSWORD/E2E_SUPABASE_PUBLISHABLE_KEY not set"
+          echo "Once set, every deploy will auto-validate that the session cookie persists after login."
+
       - name: Checkout
+        if: ${{ env.HAS_E2E_SECRETS == 'yes' }}
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node
+        if: ${{ env.HAS_E2E_SECRETS == 'yes' }}
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -130,14 +142,17 @@ jobs:
           cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Install deps
+        if: ${{ env.HAS_E2E_SECRETS == 'yes' }}
         working-directory: frontend
         run: npm ci
 
       - name: Install Playwright Chromium
+        if: ${{ env.HAS_E2E_SECRETS == 'yes' }}
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E auth
+        if: ${{ env.HAS_E2E_SECRETS == 'yes' }}
         working-directory: frontend
         env:
           E2E_BASE_URL: https://politicoresto-staging.vercel.app
@@ -148,7 +163,7 @@ jobs:
         run: npx playwright test --project=staging-auth
 
       - name: Upload traces on failure
-        if: failure()
+        if: ${{ failure() && env.HAS_E2E_SECRETS == 'yes' }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-traces-staging-auth
