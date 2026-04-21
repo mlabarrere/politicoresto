@@ -24,17 +24,32 @@ type AuthCapableClient = {
 
 type AuthUser = { id: string; email: string | null };
 
-async function resolveAuth(client: AuthCapableClient): Promise<AuthUser | null> {
+import { cache } from "react";
+
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("auth.user");
+
+/**
+ * Memoized per-request. React's `cache()` keys by reference equality on the
+ * arguments — `createServerSupabaseClient()` returns a fresh client per
+ * request, so the cache is naturally scoped to the current request. Within a
+ * single request, identical calls (same client instance) return the same
+ * Promise, guaranteeing one `auth.getUser()` round-trip even if the middleware,
+ * a layout, a page, and a data loader all ask.
+ */
+const resolveAuth = cache(async (client: AuthCapableClient): Promise<AuthUser | null> => {
   const fn = client.auth?.getUser;
   if (typeof fn !== "function") return null;
   try {
     const { data, error } = await fn();
     if (error || !data?.user?.id) return null;
+    log.debug({ event: "auth.user.resolved", user_id: data.user.id }, "user resolved");
     return { id: data.user.id, email: data.user.email ?? null };
   } catch {
     return null;
   }
-}
+});
 
 export async function getAuthUserId(client: AuthCapableClient): Promise<string | null> {
   return (await resolveAuth(client))?.id ?? null;

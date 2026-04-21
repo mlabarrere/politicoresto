@@ -20,7 +20,10 @@ export default async function AuthCodeErrorPage({
 }) {
   const { reason, next } = await searchParams;
   const safeNext = safeNextPath(next);
-  const retryHref = safeNext === "/" ? "/auth/login" : `/auth/login?next=${encodeURIComponent(safeNext)}`;
+  const retryHref =
+    safeNext === "/"
+      ? { pathname: "/auth/login" as const }
+      : { pathname: "/auth/login" as const, query: { next: safeNext } };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

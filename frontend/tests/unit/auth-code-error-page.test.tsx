@@ -4,9 +4,21 @@ import { describe, expect, it, vi } from "vitest";
 import AuthCodeErrorPage from "@/app/auth/auth-code-error/page";
 
 vi.mock("next/link", () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  )
+  default: ({
+    children,
+    href
+  }: {
+    children: React.ReactNode;
+    href: string | { pathname: string; query?: Record<string, string> };
+  }) => {
+    const resolved =
+      typeof href === "string"
+        ? href
+        : href.query
+          ? `${href.pathname}?${new URLSearchParams(href.query).toString()}`
+          : href.pathname;
+    return <a href={resolved}>{children}</a>;
+  }
 }));
 
 describe("AuthCodeErrorPage", () => {
