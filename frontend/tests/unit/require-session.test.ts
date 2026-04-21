@@ -2,8 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   redirect: vi.fn(),
-  createServerSupabaseClient: vi.fn(),
-  getSession: vi.fn()
+  createServerSupabaseClient: vi.fn()
 }));
 
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
@@ -13,10 +12,12 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import { requireSession } from "@/lib/guards/require-session";
 
-function makeClient(session: unknown) {
+function makeClient(userId: string | null) {
   return {
     auth: {
-      getSession: async () => ({ data: { session } })
+      getClaims: async () => ({
+        data: { claims: userId ? { sub: userId } : null }
+      })
     }
   };
 }
@@ -41,11 +42,10 @@ describe("requireSession", () => {
     expect(url).toContain(encodeURIComponent("/dashboard"));
   });
 
-  it("returns supabase client and session when authenticated", async () => {
-    const session = { user: { id: "user-123" }, access_token: "tok" };
-    mocks.createServerSupabaseClient.mockResolvedValue(makeClient(session));
+  it("returns supabase client and userId when authenticated", async () => {
+    mocks.createServerSupabaseClient.mockResolvedValue(makeClient("user-123"));
     const result = await requireSession();
-    expect(result.session).toEqual(session);
+    expect(result.userId).toBe("user-123");
     expect(result.supabase).toBeTruthy();
     expect(mocks.redirect).not.toHaveBeenCalled();
   });
