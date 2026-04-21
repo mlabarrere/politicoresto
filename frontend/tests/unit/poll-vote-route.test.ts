@@ -24,7 +24,7 @@ describe("poll vote route", () => {
 
   it("rejects unauthenticated request", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) }
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: null } }) }
     } as never);
 
     const response = await POST(makeRequest({ postItemId: "p1", optionId: "o1" }));
@@ -33,7 +33,7 @@ describe("poll vote route", () => {
 
   it("rejects invalid payload", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }) }
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: { sub: "u1" } } }) }
     } as never);
 
     const response = await POST(makeRequest({ foo: "bar" }));
@@ -42,7 +42,7 @@ describe("poll vote route", () => {
 
   it("returns safe error message when vote rpc fails", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }) },
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: { sub: "u1" } } }) },
       rpc: vi.fn().mockResolvedValue({ error: { message: "Poll is closed" } })
     } as never);
 
@@ -52,40 +52,31 @@ describe("poll vote route", () => {
   });
 
   it("returns normalized poll payload on success", async () => {
-    const fromMock = vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          maybeSingle: vi.fn().mockResolvedValue({
-            error: null,
-            data: {
-              post_item_id: "p1",
-              post_id: "t1",
-              post_slug: "slug",
-              post_title: "Title",
-              question: "Q?",
-              deadline_at: "2026-04-18T10:00:00.000Z",
-              poll_status: "open",
-              sample_size: 20,
-              effective_sample_size: 14,
-              representativity_score: 55,
-              coverage_score: 60,
-              distance_score: 45,
-              stability_score: 50,
-              anti_brigading_score: 70,
-              raw_results: [],
-              corrected_results: [],
-              options: [],
-              selected_option_id: "o1"
-            }
-          })
-        })
-      })
-    });
+    // Le RPC retourne SETOF v_post_poll_summary — un tableau de lignes.
+    const pollRow = {
+      post_item_id: "p1",
+      post_id: "t1",
+      post_slug: "slug",
+      post_title: "Title",
+      question: "Q?",
+      deadline_at: "2026-04-18T10:00:00.000Z",
+      poll_status: "open",
+      sample_size: 20,
+      effective_sample_size: 14,
+      representativity_score: 55,
+      coverage_score: 60,
+      distance_score: 45,
+      stability_score: 50,
+      anti_brigading_score: 70,
+      raw_results: [],
+      corrected_results: [],
+      options: [],
+      selected_option_id: "o1"
+    };
 
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }) },
-      rpc: vi.fn().mockResolvedValue({ error: null }),
-      from: fromMock
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: { sub: "u1" } } }) },
+      rpc: vi.fn().mockResolvedValue({ data: [pollRow], error: null })
     } as never);
 
     const response = await POST(makeRequest({ postItemId: "p1", optionId: "o1" }));

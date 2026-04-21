@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { REACTION_SIDE_TO_TYPE, REACTION_TYPE_TO_SIDE, type ReactionSide } from "@/lib/reactions";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fromBackendVoteSide } from "@/lib/forum/vote";
 
@@ -29,11 +30,8 @@ function isReactionPayload(value: unknown): value is ReactionPayload {
 
 export async function POST(request: Request) {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
 
@@ -47,7 +45,7 @@ export async function POST(request: Request) {
     .select("reaction_type")
     .eq("target_type", body.targetType === "post" ? "thread_post" : "comment")
     .eq("target_id", body.targetId)
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (existingReactionError) {

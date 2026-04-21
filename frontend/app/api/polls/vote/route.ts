@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { normalizePostPollSummary } from "@/lib/polls/summary";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const POLL_VOTE_ERROR = "Poll vote failed";
@@ -23,11 +24,8 @@ function isVotePayload(value: unknown): value is VotePayload {
 
 export async function POST(request: Request) {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
 
@@ -36,7 +34,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const { error: voteError } = await supabase.rpc("submit_post_poll_vote", {
+  // Le RPC retourne directement SETOF v_post_poll_summary : un seul
+  // round-trip réseau au lieu de deux (upsert puis refetch).
+  const { data: rpcRows, error: voteError } = await supabase.rpc("submit_post_poll_vote", {
     p_post_item_id: body.postItemId,
     p_option_id: body.optionId
   });
@@ -46,20 +46,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: POLL_VOTE_ERROR }, { status: 400 });
   }
 
-  const { data: pollRow, error: pollError } = await supabase
-    .from("v_post_poll_summary")
-    .select("*")
-    .eq("post_item_id", body.postItemId)
-    .maybeSingle();
-
-  if (pollError || !pollRow) {
-    if (pollError) {
-      console.error("[polls][vote] read summary failed", { message: pollError.message, code: pollError.code });
-    }
+  const row = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
+  if (!row) {
     return NextResponse.json({ error: "Poll not found" }, { status: 404 });
   }
 
-  const poll = normalizePostPollSummary(pollRow as Record<string, unknown>);
+  const poll = normalizePostPollSummary(row as Record<string, unknown>);
   if (!poll) {
     return NextResponse.json({ error: "Poll payload invalid" }, { status: 500 });
   }

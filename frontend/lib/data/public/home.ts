@@ -1,6 +1,6 @@
 import type { HomeScreenData, LoadState, SubjectView } from "@/lib/types/screens";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { resolveCurrentUserId } from "@/lib/supabase/auth-user";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { emptyQueryResult } from "@/lib/supabase/query-utils";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { toHomeFeedTopic } from "./canonical";
@@ -44,7 +44,7 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
           .in("thread_id", postRootIds)
           .order("created_at", { ascending: true })
       : emptyQueryResult<Record<string, unknown>>(),
-    resolveCurrentUserId(supabase, currentUserId)
+    currentUserId ?? getAuthUserId(supabase)
   ]);
 
   const postByRootId = new Map<

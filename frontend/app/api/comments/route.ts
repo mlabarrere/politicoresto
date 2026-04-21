@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { parseNonEmptyString } from "@/lib/domain/comments/validation";
 import { mapCommentViewToForumNode } from "@/lib/forum/mappers";
 import { canCreateCommentToday, RATE_LIMIT_MESSAGES } from "@/lib/security/rate-limit";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CommentView } from "@/lib/types/views";
 
@@ -74,15 +75,12 @@ async function fetchCommentView(
 
 export async function POST(request: Request) {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
 
-  const rateLimit = await canCreateCommentToday(supabase, user.id);
+  const rateLimit = await canCreateCommentToday(supabase, userId);
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: RATE_LIMIT_MESSAGES.comment }, { status: 429 });
   }
@@ -118,7 +116,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Create failed" }, { status: 500 });
     }
 
-    const comment = await fetchCommentView(supabase, insertedId, user.id);
+    const comment = await fetchCommentView(supabase, insertedId, userId);
     const node = mapCommentViewToForumNode(comment);
 
     return NextResponse.json({ comment: node });
@@ -133,11 +131,8 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
 
@@ -164,11 +159,8 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const userId = await getAuthUserId(supabase);
+  if (!userId) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
 

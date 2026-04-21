@@ -1,29 +1,13 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-const POSTS_PER_DAY_LIMIT = 8;
+// Post rate limit : déplacé dans la RPC rpc_create_post_full (check côté DB,
+// errcode P0001, message "Daily post limit reached"). L'app ne le duplique plus.
 const COMMENTS_PER_DAY_LIMIT = 40;
 
 function dayStartIso() {
   const now = new Date();
   now.setUTCHours(0, 0, 0, 0);
   return now.toISOString();
-}
-
-export async function canCreatePostToday(
-  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
-  userId: string
-) {
-  const { count, error } = await supabase
-    .from("thread_post")
-    .select("id", { count: "exact", head: true })
-    .eq("created_by", userId)
-    .gte("created_at", dayStartIso());
-
-  if (error) {
-    return { allowed: false, reason: "rate_limit_check_failed" as const };
-  }
-
-  return { allowed: Number(count ?? 0) < POSTS_PER_DAY_LIMIT, reason: "ok" as const };
 }
 
 export async function canCreateCommentToday(
@@ -45,6 +29,5 @@ export async function canCreateCommentToday(
 }
 
 export const RATE_LIMIT_MESSAGES = {
-  post: `Limite journalière atteinte (${POSTS_PER_DAY_LIMIT} posts).`,
   comment: `Limite journalière atteinte (${COMMENTS_PER_DAY_LIMIT} commentaires).`
 } as const;

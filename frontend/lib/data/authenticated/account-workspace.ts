@@ -1,4 +1,5 @@
-﻿import { createServerSupabaseClient } from "@/lib/supabase/server";
+﻿import { getAuthUser } from "@/lib/supabase/auth-user";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type AppProfileRow = {
   user_id: string;
@@ -161,13 +162,9 @@ async function fetchPublicationRows(
 
 export async function getAccountWorkspaceData(): Promise<AccountWorkspaceData> {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    throw new Error(userError?.message ?? "Authentication required");
+  const user = await getAuthUser(supabase);
+  if (!user) {
+    throw new Error("Authentication required");
   }
 
   const sectionStatus: AccountSectionStatuses = {

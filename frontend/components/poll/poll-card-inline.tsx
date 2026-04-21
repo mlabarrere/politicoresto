@@ -5,8 +5,6 @@ import Link from "next/link";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppCard } from "@/components/app/app-card";
-import { PollConfidenceCard } from "@/components/poll/poll-confidence-card";
-import { PollProfilePrompt } from "@/components/poll/poll-profile-prompt";
 import { PollResults } from "@/components/poll/poll-results";
 import { PollStatusBadge } from "@/components/poll/poll-status-badge";
 import type { PollCardInlineProps } from "@/lib/types/polls";
@@ -86,21 +84,14 @@ export function PollCardInline({ poll, isAuthenticated, onVoted }: PollCardInlin
           ))}
         </div>
       ) : (
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Resultat brut
-            </p>
-            <PollResults poll={model} mode="raw" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Estimation corrigee
-            </p>
-            <PollResults poll={model} mode="corrected" />
-          </div>
-          <PollConfidenceCard poll={model} />
-          <PollProfilePrompt />
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Resultats
+          </p>
+          <PollResults poll={model} />
+          <p className="text-xs text-muted-foreground">
+            {model.sample_size} vote{model.sample_size > 1 ? "s" : ""}
+          </p>
         </div>
       )}
 

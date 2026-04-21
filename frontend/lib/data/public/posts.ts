@@ -1,6 +1,6 @@
 import type { PostDetailScreenData } from "@/lib/types/screens";
 import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
-import { resolveCurrentUserId } from "@/lib/supabase/auth-user";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { emptyQueryResult } from "@/lib/supabase/query-utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toThreadRow } from "./canonical";
@@ -65,7 +65,7 @@ export async function getPostDetail(
   // Resolve user identity and topic detail in parallel — neither depends on the other
   const [{ data: topic, error }, resolvedCurrentUserId] = await Promise.all([
     fetchTopicDetail({ supabase, slug }),
-    resolveCurrentUserId(supabase, currentUserId)
+    currentUserId ?? getAuthUserId(supabase)
   ]);
 
   if (error) throw error;
