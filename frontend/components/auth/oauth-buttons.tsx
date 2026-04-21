@@ -42,18 +42,24 @@ export function OAuthButtons({
     setErrorMessage(null);
     setPending("google");
     const safeNext = normalizeNextPath(next);
+    const origin = window.location.origin;
+    const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(safeNext)}`;
 
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`;
+    console.info("[oauth/google] start", { origin, redirectTo, next: safeNext });
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo
-      }
+      options: { redirectTo }
     });
 
     if (error) {
       setPending(null);
+      console.error("[oauth/google] signInWithOAuth failed", {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        origin
+      });
       const normalized = `${error.message}`.toLowerCase();
       if (normalized.includes("provider is not enabled") || normalized.includes("unsupported provider")) {
         setErrorMessage(
@@ -61,17 +67,21 @@ export function OAuthButtons({
         );
         return;
       }
-      setErrorMessage("Connexion Google impossible. Verifiez la configuration OAuth Supabase.");
+      setErrorMessage(
+        `Connexion Google impossible (${error.status ?? "?"} — ${error.name ?? "?"}). Voir la console pour le detail.`
+      );
       return;
     }
 
     if (data.url) {
+      console.info("[oauth/google] redirecting to provider");
       window.location.assign(data.url);
       return;
     }
 
     setPending(null);
-    setErrorMessage("Impossible d'ouvrir la connexion Google.");
+    console.error("[oauth/google] signInWithOAuth returned no URL", { origin });
+    setErrorMessage("Impossible d'ouvrir la connexion Google (pas d'URL renvoyee par Supabase).");
   }
 
   return (
