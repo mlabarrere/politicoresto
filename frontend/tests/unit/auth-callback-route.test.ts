@@ -125,28 +125,26 @@ describe("GET /auth/callback", () => {
 
   // --- Anti-régression bug "login SSO → home non-logué" ---
   // Le symptôme : le cookie de session n'arrive jamais sur le navigateur.
-  // Ces tests pinent le comportement attendu : exchangeCodeForSession
-  // DOIT appeler cookieStore.set via le setAll callback, sinon pas de session.
+  // Supabase SSR écrit les cookies via setAll qu'on passe — ils DOIVENT être
+  // attachés à l'objet NextResponse retourné (pas à `cookies()` de next/headers
+  // qui n'est pas toujours propagé à `NextResponse.redirect`).
 
-  it("persists session cookies when exchange succeeds (anti-regression)", async () => {
+  it("persists session cookies on the response when exchange succeeds (anti-regression)", async () => {
     mocks.createServerClient.mockReturnValue(makeSupabaseClient(null));
     const request = makeRequest("http://localhost:3000/auth/callback?code=abc&next=/");
-    await GET(request);
-    expect(mocks.cookieStore.set).toHaveBeenCalled();
-    expect(mocks.cookieStore.set).toHaveBeenCalledWith(
-      "sb-example-auth-token",
-      "session-payload",
-      expect.objectContaining({ path: "/", httpOnly: true })
-    );
+    const response = await GET(request);
+    const setCookie = response.cookies.get("sb-example-auth-token");
+    expect(setCookie).toBeDefined();
+    expect(setCookie?.value).toBe("session-payload");
   });
 
-  it("does not touch cookies when exchange fails", async () => {
+  it("does not post session cookies when exchange fails", async () => {
     mocks.createServerClient.mockReturnValue(
       makeSupabaseClient({ message: "invalid grant", status: 400, code: "invalid_grant", name: "AuthApiError" })
     );
     const request = makeRequest("http://localhost:3000/auth/callback?code=bad");
-    await GET(request);
-    expect(mocks.cookieStore.set).not.toHaveBeenCalled();
+    const response = await GET(request);
+    expect(response.cookies.get("sb-example-auth-token")).toBeUndefined();
   });
 
   it("logs rich diagnostic on exchange failure", async () => {
