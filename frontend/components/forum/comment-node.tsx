@@ -143,11 +143,11 @@ function CommentNodeBase({
             canEdit={canEdit}
             canDelete={canEdit}
             disabled={isSubmitting}
-            onEdit={() =>
-              { setMode((previous) =>
+            onEdit={() => {
+              setMode((previous) =>
                 transitionCommentNodeMode(previous, { type: 'START_EDIT' }),
-              ); }
-            }
+              );
+            }}
             onDelete={() => void handleDelete()}
             onCopyLink={handleCopyLink}
           />
@@ -164,11 +164,11 @@ function CommentNodeBase({
               variant="secondary"
               size="sm"
               disabled={isSubmitting}
-              onClick={() =>
-                { setMode((previous) =>
+              onClick={() => {
+                setMode((previous) =>
                   transitionCommentNodeMode(previous, { type: 'START_REPLY' }),
-                ); }
-              }
+                );
+              }}
               aria-label="Répondre au commentaire"
             >
               <CornerDownLeft className="size-3.5" />
@@ -203,20 +203,22 @@ function CommentNodeBase({
           ) : null}
         </div>
 
-        {canReply && (mode === 'replying' || mode === 'submittingReply') ? <div className="mt-3">
+        {canReply && (mode === 'replying' || mode === 'submittingReply') ? (
+          <div className="mt-3">
             <ReplyComposer
               targetType="comment"
               targetId={node.id}
               parentCommentId={node.id}
               onSubmit={(draft) => handleReply({ body: draft.body })}
-              onCancel={() =>
-                { setMode((previous) =>
+              onCancel={() => {
+                setMode((previous) =>
                   transitionCommentNodeMode(previous, { type: 'CANCEL' }),
-                ); }
-              }
+                );
+              }}
               mentionPrefix={`@${node.author.username} `}
             />
-          </div> : null}
+          </div>
+        ) : null}
 
         {(mode === 'editing' || mode === 'submittingEdit') && (
           <div className="mt-3">
@@ -224,11 +226,11 @@ function CommentNodeBase({
               commentId={node.id}
               initialValue={node.body}
               onSubmit={(draft) => handleEdit({ body: draft.body })}
-              onCancel={() =>
-                { setMode((previous) =>
+              onCancel={() => {
+                setMode((previous) =>
                   transitionCommentNodeMode(previous, { type: 'CANCEL' }),
-                ); }
-              }
+                );
+              }}
             />
           </div>
         )}

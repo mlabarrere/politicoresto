@@ -1,28 +1,41 @@
 name: CI
 
 # Runs on every PR targeting main, and on every push to main.
-# On both: quality + coverage run in parallel → build waits for both.
-# Deploy is handled by separate workflows (deploy-preview.yml, deploy-production.yml).
+# Single source of truth: scripts/verify.sh (same script devs run locally).
+#
+# Cost-aware:
+# - Skipped on doc-only changes (see paths-ignore below).
+# - Skipped on draft PRs (see `if:` on jobs).
+# - npm cache keyed on frontend/package-lock.json.
 
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/skills/**'
+      - 'LICENSE'
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/skills/**'
+      - 'LICENSE'
 
 permissions:
   contents: read
 
-# ─────────────────────────────────────────
-# JOB 1 — Code quality (TypeScript)
-# ─────────────────────────────────────────
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  quality:
-    name: Code Quality
+  verify:
+    name: Verify (lint + typecheck + tests)
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -33,16 +46,17 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        working-directory: frontend
         run: npm ci
 
-      - name: TypeScript type check
-        run: npm run typecheck
+      # Parity: the exact same gate developers run locally.
+      - name: scripts/verify.sh (prettier + eslint + auth-guards + typecheck + vitest)
+        run: bash scripts/verify.sh
 
-# ─────────────────────────────────────────
-# JOB 2 — Tests & coverage (Vitest + Codecov)
-# ─────────────────────────────────────────
   coverage:
     name: Tests & Coverage
+    if: github.event.pull_request.draft != true
+    needs: [verify]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -70,12 +84,10 @@ jobs:
           flags: frontend
           fail_ci_if_error: false
 
-# ─────────────────────────────────────────
-# JOB 3 — Build (waits for quality + coverage)
-# ─────────────────────────────────────────
   build:
     name: Build
-    needs: [quality, coverage]
+    if: github.event.pull_request.draft != true
+    needs: [verify]
     runs-on: ubuntu-latest
     defaults:
       run:

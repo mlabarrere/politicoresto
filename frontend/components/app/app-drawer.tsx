@@ -35,7 +35,9 @@ export function AppDrawer({
         <span
           role="button"
           tabIndex={0}
-          onClick={() => { setOpen(true); }}
+          onClick={() => {
+            setOpen(true);
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault();

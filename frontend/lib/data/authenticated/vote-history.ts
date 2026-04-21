@@ -139,7 +139,9 @@ export async function getVoteHistoryEditorData(): Promise<VoteHistoryEditorData>
   }
 
   const resultsByElection = new Map<string, ElectionResultRow[]>();
-  for (const r of (resultRows.data ?? []) as (ElectionResultRow & { election_id: string })[]) {
+  for (const r of (resultRows.data ?? []) as (ElectionResultRow & {
+    election_id: string;
+  })[]) {
     const list = resultsByElection.get(r.election_id) ?? [];
     list.push({
       id: r.id,

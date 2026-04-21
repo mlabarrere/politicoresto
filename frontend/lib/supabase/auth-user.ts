@@ -32,7 +32,10 @@ interface AuthCapableClient {
   auth?: { getClaims?: GetClaimsFn };
 }
 
-interface AuthUser { id: string; email: string | null }
+interface AuthUser {
+  id: string;
+  email: string | null;
+}
 
 async function resolveAuth(
   client: AuthCapableClient,
@@ -46,7 +49,7 @@ async function resolveAuth(
     if (error || !claims?.sub) return null;
     return {
       id: claims.sub,
-      email: (claims.email) ?? null,
+      email: claims.email ?? null,
     };
   } catch {
     return null;

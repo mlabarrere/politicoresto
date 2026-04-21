@@ -106,10 +106,10 @@ describe('post feed card', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Partager' }));
 
-    await waitFor(() =>
-      { expect(writeText).toHaveBeenCalledWith(
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
         expect.stringContaining('/post/share-thread'),
-      ); },
-    );
+      );
+    });
   });
 });

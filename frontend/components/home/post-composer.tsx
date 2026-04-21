@@ -172,9 +172,9 @@ export function PostComposer({
           required
           rows={9}
           value={draft.body}
-          onChange={(event) =>
-            { setDraft((prev) => ({ ...prev, body: event.target.value })); }
-          }
+          onChange={(event) => {
+            setDraft((prev) => ({ ...prev, body: event.target.value }));
+          }}
           placeholder={
             '# Votre position\n\nExpliquez votre point de vue avec du **Markdown**.'
           }
@@ -199,7 +199,10 @@ export function PostComposer({
           Configuration du sondage
         </p>
 
-        <label htmlFor="post-composer-poll-question" className="block space-y-2">
+        <label
+          htmlFor="post-composer-poll-question"
+          className="block space-y-2"
+        >
           <span className="text-xs font-medium text-muted-foreground">
             Question
           </span>
@@ -208,17 +211,20 @@ export function PostComposer({
             name="poll_question"
             required={draft.mode === 'poll'}
             value={draft.poll_question}
-            onChange={(event) =>
-              { setDraft((prev) => ({
+            onChange={(event) => {
+              setDraft((prev) => ({
                 ...prev,
                 poll_question: event.target.value,
-              })); }
-            }
+              }));
+            }}
             placeholder="Question unique"
           />
         </label>
 
-        <label htmlFor="post-composer-poll-deadline" className="block space-y-2">
+        <label
+          htmlFor="post-composer-poll-deadline"
+          className="block space-y-2"
+        >
           <span className="text-xs font-medium text-muted-foreground">
             Deadline
           </span>
@@ -226,12 +232,12 @@ export function PostComposer({
             id="post-composer-poll-deadline"
             name="poll_deadline_hours"
             value={draft.poll_deadline_hours}
-            onChange={(event) =>
-              { setDraft((prev) => ({
+            onChange={(event) => {
+              setDraft((prev) => ({
                 ...prev,
                 poll_deadline_hours: event.target.value,
-              })); }
-            }
+              }));
+            }}
           >
             <option value="6">6h</option>
             <option value="12">12h</option>
@@ -285,12 +291,12 @@ export function PostComposer({
         <AppButton
           type="button"
           variant="secondary"
-          onClick={() =>
-            { setDraft((prev) => ({
+          onClick={() => {
+            setDraft((prev) => ({
               ...prev,
               poll_options: [...prev.poll_options, ''],
-            })); }
-          }
+            }));
+          }}
         >
           Ajouter option
         </AppButton>
@@ -338,9 +344,9 @@ export function PostComposer({
               name="title"
               required
               value={draft.title}
-              onChange={(event) =>
-                { setDraft((prev) => ({ ...prev, title: event.target.value })); }
-              }
+              onChange={(event) => {
+                setDraft((prev) => ({ ...prev, title: event.target.value }));
+              }}
               placeholder="Titre du post"
             />
           </label>
@@ -353,12 +359,12 @@ export function PostComposer({
               id="post-composer-source-url"
               name="source_url"
               value={draft.source_url}
-              onChange={(event) =>
-                { setDraft((prev) => ({
+              onChange={(event) => {
+                setDraft((prev) => ({
                   ...prev,
                   source_url: event.target.value,
-                })); }
-              }
+                }));
+              }}
               placeholder="https://..."
             />
           </label>
@@ -376,7 +382,9 @@ export function PostComposer({
                   <button
                     key={subject.id}
                     type="button"
-                    onClick={() => { toggleSubject(subject.id); }}
+                    onClick={() => {
+                      toggleSubject(subject.id);
+                    }}
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
                       active
@@ -406,7 +414,9 @@ export function PostComposer({
                   key={party.slug}
                   type="button"
                   disabled={disabled}
-                  onClick={() => { toggleParty(party.slug); }}
+                  onClick={() => {
+                    toggleParty(party.slug);
+                  }}
                   className={cn(
                     'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors',
                     active
@@ -424,12 +434,12 @@ export function PostComposer({
 
         <AppTabs
           value={draft.mode}
-          onValueChange={(mode) =>
-            { setDraft((prev) => ({
+          onValueChange={(mode) => {
+            setDraft((prev) => ({
               ...prev,
               mode: mode === 'poll' ? 'poll' : 'post',
-            })); }
-          }
+            }));
+          }}
           items={[
             { key: 'post', label: 'Post', content: postTab },
             { key: 'poll', label: 'Sondage', content: pollTab },
@@ -440,7 +450,9 @@ export function PostComposer({
           <AppButton
             type="button"
             variant="ghost"
-            onClick={() => { persistDraft(draft, 'manual'); }}
+            onClick={() => {
+              persistDraft(draft, 'manual');
+            }}
           >
             Enregistrer le brouillon
           </AppButton>

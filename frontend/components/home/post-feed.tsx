@@ -61,7 +61,11 @@ function applyFilter(
 function sortItems(items: PostFeedItemView[], sortMode: FeedSortMode) {
   if (sortMode === 'sondages') {
     return items
-      .filter((item) => item.feed_poll_summary !== null && item.feed_poll_summary !== undefined)
+      .filter(
+        (item) =>
+          item.feed_poll_summary !== null &&
+          item.feed_poll_summary !== undefined,
+      )
       .sort((a, b) =>
         Number((b.editorial_feed_score ?? 0) - (a.editorial_feed_score ?? 0)),
       );
@@ -114,9 +118,9 @@ export function PostFeed({
     if (!raw) return;
     const y = Number(raw);
     if (Number.isFinite(y) && y >= 0) {
-      window.requestAnimationFrame(() =>
-        { window.scrollTo({ top: y, behavior: 'auto' }); },
-      );
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: y, behavior: 'auto' });
+      });
     }
   }, []);
 
@@ -126,7 +130,9 @@ export function PostFeed({
       window.sessionStorage.setItem(HOME_SCROLL_KEY, String(window.scrollY));
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => { window.removeEventListener('scroll', onScroll); };
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   if (!cappedItems.length) {
@@ -154,11 +160,11 @@ export function PostFeed({
           <AppButton
             type="button"
             variant="secondary"
-            onClick={() =>
-              { setVisibleCount((value) =>
+            onClick={() => {
+              setVisibleCount((value) =>
                 Math.min(value + LOAD_MORE_STEP, MAX_VISIBLE_ITEMS),
-              ); }
-            }
+              );
+            }}
           >
             {HOME_STRINGS.loadMore}
           </AppButton>

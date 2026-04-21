@@ -34,9 +34,9 @@ export function PublicProfileTabs({
   return (
     <AppTabs
       value={tab}
-      onValueChange={(value) =>
-        { setTab(value === 'comments' ? 'comments' : 'posts'); }
-      }
+      onValueChange={(value) => {
+        setTab(value === 'comments' ? 'comments' : 'posts');
+      }}
       items={[
         {
           key: 'posts',

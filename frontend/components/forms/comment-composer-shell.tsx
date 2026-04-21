@@ -52,7 +52,9 @@ export function CommentComposerShell({
       <AppTextarea
         rows={3}
         value={body}
-        onChange={(event) => { setBody(event.target.value); }}
+        onChange={(event) => {
+          setBody(event.target.value);
+        }}
         placeholder={placeholder}
         className="resize-y"
       />

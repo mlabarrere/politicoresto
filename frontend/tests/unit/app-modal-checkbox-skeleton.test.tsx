@@ -40,9 +40,7 @@ describe('appCheckbox', () => {
   it('calls onChange handler', () => {
     const handler = vi.fn();
     const { container } = render(<AppCheckbox onChange={handler} />);
-    const input = container.querySelector(
-      "input[type='checkbox']",
-    )!;
+    const input = container.querySelector("input[type='checkbox']")!;
     fireEvent.click(input);
     expect(handler).toHaveBeenCalled();
   });

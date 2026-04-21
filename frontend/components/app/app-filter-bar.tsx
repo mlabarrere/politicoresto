@@ -25,7 +25,9 @@ export function AppFilterBar<T extends string>({
           key={option.value}
           type="button"
           variant={value === option.value ? 'primary' : 'secondary'}
-          onClick={() => { onChange(option.value); }}
+          onClick={() => {
+            onChange(option.value);
+          }}
         >
           {option.label}
         </AppButton>

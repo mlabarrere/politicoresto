@@ -74,7 +74,9 @@ export function extractUrlPreviewFromHtml(
 
 export async function fetchUrlPreview(url: string): Promise<UrlPreview | null> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => { controller.abort(); }, 3000);
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 3000);
 
   try {
     const response = await fetch(url, {

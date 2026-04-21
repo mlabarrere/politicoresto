@@ -9,7 +9,10 @@ vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
 
-interface QueryResult { data: unknown; error: unknown }
+interface QueryResult {
+  data: unknown;
+  error: unknown;
+}
 
 function makeClient(opts: {
   elections: QueryResult;

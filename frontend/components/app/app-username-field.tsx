@@ -93,7 +93,9 @@ export function AppUsernameField({
         name="username"
         required
         value={value}
-        onChange={(event) => { setValue(event.target.value); }}
+        onChange={(event) => {
+          setValue(event.target.value);
+        }}
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}

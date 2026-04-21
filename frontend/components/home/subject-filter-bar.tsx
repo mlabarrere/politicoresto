@@ -27,11 +27,11 @@ export function SubjectFilterBar({
           <button
             key={subject.slug}
             type="button"
-            onClick={() =>
-              { onFilterChange(
+            onClick={() => {
+              onFilterChange(
                 isActive ? null : { type: 'subject', slug: subject.slug },
-              ); }
-            }
+              );
+            }}
             className={cn(
               'inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
               isActive

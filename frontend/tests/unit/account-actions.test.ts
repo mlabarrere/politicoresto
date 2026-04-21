@@ -43,11 +43,9 @@ function makeSupabaseMock({
   duplicateError?: unknown;
 } = {}) {
   const eqMock = vi.fn().mockResolvedValue({ error: updateError, data: null });
-  const neqMock = vi
-    .fn()
-    .mockReturnValue({
-      maybeSingle: async () => ({ data: duplicateData, error: duplicateError }),
-    });
+  const neqMock = vi.fn().mockReturnValue({
+    maybeSingle: async () => ({ data: duplicateData, error: duplicateError }),
+  });
   const selectMock = vi
     .fn()
     .mockReturnValue({ eq: vi.fn().mockReturnValue({ neq: neqMock }) });

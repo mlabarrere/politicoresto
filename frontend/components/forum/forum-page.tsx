@@ -142,11 +142,7 @@ export function ForumPage({
 
     if (result.comment) {
       setTree((previous) =>
-        insertReply(
-          previous,
-          payload.targetId,
-          result.comment!,
-        ),
+        insertReply(previous, payload.targetId, result.comment!),
       );
     }
   }
@@ -181,7 +177,9 @@ export function ForumPage({
           rightCount={post.rightCount}
           isAuthenticated={Boolean(currentUserId)}
           redirectPath={redirectPath}
-          onReplyClick={() => { setShowRootComposer(true); }}
+          onReplyClick={() => {
+            setShowRootComposer(true);
+          }}
         />
 
         {showRootComposer ? (
@@ -189,7 +187,9 @@ export function ForumPage({
             targetType="post"
             targetId={post.id}
             onSubmit={(draft) => handleRootReplySubmit({ body: draft.body })}
-            onCancel={() => { setShowRootComposer(false); }}
+            onCancel={() => {
+              setShowRootComposer(false);
+            }}
           />
         ) : null}
 

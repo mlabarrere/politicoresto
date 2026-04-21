@@ -150,7 +150,10 @@ function serializeError(err: unknown): object {
 // runtimes (Next.js ships an ALS polyfill for Edge).
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface RequestStoreEntry { requestId: string; logger: Logger }
+interface RequestStoreEntry {
+  requestId: string;
+  logger: Logger;
+}
 const requestStore = new AsyncLocalStorage<RequestStoreEntry>();
 
 export function runWithRequest<T>(
@@ -210,9 +213,11 @@ if (
       process.exit(1);
     };
 
-    process.on('unhandledRejection', (reason) =>
-      { crash(reason, 'unhandledRejection'); },
-    );
-    process.on('uncaughtException', (err) => { crash(err, 'uncaughtException'); });
+    process.on('unhandledRejection', (reason) => {
+      crash(reason, 'unhandledRejection');
+    });
+    process.on('uncaughtException', (err) => {
+      crash(err, 'uncaughtException');
+    });
   }
 }

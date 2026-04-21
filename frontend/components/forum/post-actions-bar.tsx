@@ -43,12 +43,16 @@ export function PostActionsBar({
       setFeedback('Partage annulé');
     }
 
-    window.setTimeout(() => { setFeedback(null); }, 1800);
+    window.setTimeout(() => {
+      setFeedback(null);
+    }, 1800);
   }
 
   function onReport() {
     setFeedback('Signalement enregistré');
-    window.setTimeout(() => { setFeedback(null); }, 1800);
+    window.setTimeout(() => {
+      setFeedback(null);
+    }, 1800);
   }
 
   return (

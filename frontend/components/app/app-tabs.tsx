@@ -33,9 +33,9 @@ export function AppTabs({
   return (
     <CatalystTabs
       selectedIndex={selectedIndex}
-      onChange={(index) =>
-        { onValueChange(items[index]?.key ?? items[0]?.key ?? ''); }
-      }
+      onChange={(index) => {
+        onValueChange(items[index]?.key ?? items[0]?.key ?? '');
+      }}
     >
       <CatalystTabsList>
         {items.map((item) => (

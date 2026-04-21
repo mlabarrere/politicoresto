@@ -110,7 +110,10 @@ export default async function MePage({
                   />
                 </label>
 
-                <label htmlFor="me-is-public-profile" className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm text-foreground">
+                <label
+                  htmlFor="me-is-public-profile"
+                  className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm text-foreground"
+                >
                   <AppCheckbox
                     id="me-is-public-profile"
                     name="is_public_profile_enabled"
@@ -154,7 +157,12 @@ export default async function MePage({
                   <span className="text-xs font-medium text-muted-foreground">
                     Email (non public)
                   </span>
-                  <AppInput id="me-email" value={data.email} disabled readOnly />
+                  <AppInput
+                    id="me-email"
+                    value={data.email}
+                    disabled
+                    readOnly
+                  />
                 </label>
 
                 <label htmlFor="me-notes-private" className="block space-y-2">

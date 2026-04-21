@@ -10,8 +10,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 vi.mock('@/lib/supabase/auth-user', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof AuthUserModuleType>();
+  const actual = await importOriginal<typeof AuthUserModuleType>();
   return {
     ...actual,
     getAuthUserId: vi.fn(async () => null),

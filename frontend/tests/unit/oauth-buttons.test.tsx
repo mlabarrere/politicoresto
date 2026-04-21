@@ -41,8 +41,12 @@ describe('oAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() => { expect(signInMock).toHaveBeenCalledTimes(1); });
-    const [[payload]] = signInMock.mock.calls as [[{ provider: string; options: { redirectTo: string } }]];
+    await waitFor(() => {
+      expect(signInMock).toHaveBeenCalledTimes(1);
+    });
+    const [[payload]] = signInMock.mock.calls as [
+      [{ provider: string; options: { redirectTo: string } }],
+    ];
     expect(payload.provider).toBe('google');
     expect(payload.options.redirectTo).toBe(
       `${ORIGIN}/auth/callback?next=${encodeURIComponent('/me')}`,
@@ -60,8 +64,12 @@ describe('oAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() => { expect(signInMock).toHaveBeenCalled(); });
-    const [[payload]] = signInMock.mock.calls as [[{ options: { redirectTo: string } }]];
+    await waitFor(() => {
+      expect(signInMock).toHaveBeenCalled();
+    });
+    const [[payload]] = signInMock.mock.calls as [
+      [{ options: { redirectTo: string } }],
+    ];
     expect(payload.options.redirectTo).toBe(
       `${ORIGIN}/auth/callback?next=${encodeURIComponent('/')}`,
     );
@@ -78,11 +86,11 @@ describe('oAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() =>
-      { expect(assignMock).toHaveBeenCalledWith(
+    await waitFor(() => {
+      expect(assignMock).toHaveBeenCalledWith(
         'https://accounts.google.com/oauth2/xyz',
-      ); },
-    );
+      );
+    });
   });
 
   it('shows a diagnostic error message when signInWithOAuth fails', async () => {
@@ -100,11 +108,11 @@ describe('oAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() =>
-      { expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
         'connexion google impossible',
-      ); },
-    );
+      );
+    });
     expect(screen.getByRole('alert').textContent).toMatch(/503/);
     expect(screen.getByRole('alert').textContent).toMatch(
       /AuthRetryableFetchError/,
@@ -126,11 +134,11 @@ describe('oAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() =>
-      { expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
         'activez le provider google',
-      ); },
-    );
+      );
+    });
   });
 
   it('shows explicit error when no URL returned by Supabase', async () => {
@@ -141,10 +149,10 @@ describe('oAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() =>
-      { expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
         "pas d'url",
-      ); },
-    );
+      );
+    });
   });
 });

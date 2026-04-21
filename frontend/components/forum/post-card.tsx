@@ -74,7 +74,9 @@ export function PostCard({
             type="button"
             variant="ghost"
             className="h-auto px-0 py-0 text-xs underline-offset-2 hover:underline"
-            onClick={() => { setExpanded((previous) => !previous); }}
+            onClick={() => {
+              setExpanded((previous) => !previous);
+            }}
             aria-expanded={expanded}
           >
             {expanded ? 'Réduire' : 'Lire plus'}

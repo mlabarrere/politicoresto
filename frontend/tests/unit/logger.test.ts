@@ -151,11 +151,15 @@ describe('lib/logger', () => {
 
     await Promise.all([
       runWithRequest({ requestId: 'a', logger: loggerA }, async () => {
-        await new Promise((r) => { setTimeout(r, 5); });
+        await new Promise((r) => {
+          setTimeout(r, 5);
+        });
         results.push(`A:${getRequestId()}`);
       }),
       runWithRequest({ requestId: 'b', logger: loggerB }, async () => {
-        await new Promise((r) => { setTimeout(r, 1); });
+        await new Promise((r) => {
+          setTimeout(r, 1);
+        });
         results.push(`B:${getRequestId()}`);
       }),
     ]);
