@@ -11,7 +11,7 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn(async () => ({
     auth: {
-      getClaims: vi.fn(async () => ({ data: { claims: null } }))
+      getUser: vi.fn(async () => ({ data: { user: null }, error: null }))
     }
   }))
 }));

@@ -3,36 +3,45 @@ import { describe, expect, it } from "vitest";
 import { getAuthUser, getAuthUserId } from "@/lib/supabase/auth-user";
 
 describe("getAuthUserId", () => {
-  it("returns sub from getClaims() when available", async () => {
+  it("returns user.id from getUser() when authenticated", async () => {
     const client = {
       auth: {
-        getClaims: async () => ({ data: { claims: { sub: "user-123" } } })
+        getUser: async () => ({ data: { user: { id: "user-123" } }, error: null })
       }
     };
     expect(await getAuthUserId(client)).toBe("user-123");
   });
 
-  it("returns null when getClaims returns no sub", async () => {
+  it("returns null when getUser returns no user", async () => {
     const client = {
       auth: {
-        getClaims: async () => ({ data: { claims: null } })
+        getUser: async () => ({ data: { user: null }, error: null })
       }
     };
     expect(await getAuthUserId(client)).toBeNull();
   });
 
-  it("returns null when getClaims throws", async () => {
+  it("returns null when getUser returns an error", async () => {
     const client = {
       auth: {
-        getClaims: async () => {
-          throw new Error("jwks unavailable");
+        getUser: async () => ({ data: { user: null }, error: { message: "bad jwt" } })
+      }
+    };
+    expect(await getAuthUserId(client)).toBeNull();
+  });
+
+  it("returns null when getUser throws", async () => {
+    const client = {
+      auth: {
+        getUser: async () => {
+          throw new Error("network");
         }
       }
     };
     expect(await getAuthUserId(client)).toBeNull();
   });
 
-  it("returns null when getClaims is absent", async () => {
+  it("returns null when getUser is absent", async () => {
     expect(await getAuthUserId({ auth: {} })).toBeNull();
   });
 
@@ -42,21 +51,22 @@ describe("getAuthUserId", () => {
 });
 
 describe("getAuthUser", () => {
-  it("returns id + email from claims", async () => {
+  it("returns id + email when authenticated", async () => {
     const client = {
       auth: {
-        getClaims: async () => ({
-          data: { claims: { sub: "user-xyz", email: "u@example.com" } }
+        getUser: async () => ({
+          data: { user: { id: "user-xyz", email: "u@example.com" } },
+          error: null
         })
       }
     };
     expect(await getAuthUser(client)).toEqual({ id: "user-xyz", email: "u@example.com" });
   });
 
-  it("returns null email when claims has no email", async () => {
+  it("returns null email when user has no email", async () => {
     const client = {
       auth: {
-        getClaims: async () => ({ data: { claims: { sub: "uid-1" } } })
+        getUser: async () => ({ data: { user: { id: "uid-1" } }, error: null })
       }
     };
     expect(await getAuthUser(client)).toEqual({ id: "uid-1", email: null });

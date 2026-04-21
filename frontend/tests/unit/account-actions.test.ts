@@ -50,12 +50,9 @@ function makeSupabaseMock({
 
   return {
     auth: {
-      getClaims: async () => ({
-        data: { claims: authError ? null : { sub: userId } },
+      getUser: async () => ({
+        data: { user: authError ? null : { id: userId } },
         error: authError
-      }),
-      getSession: async () => ({
-        data: { session: authError ? null : { user: { id: userId } } }
       }),
       signOut: mocks.signOut
     },

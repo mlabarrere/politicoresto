@@ -1,15 +1,14 @@
 /**
- * Fabrique un mock `auth` compatible avec `getAuthUserId` / `getAuthUser`
- * (getClaims prioritaire, fallback getSession). Tests route/action.
+ * Fabrique un mock `auth` compatible avec `getAuthUserId` / `getAuthUser`.
+ *
+ * Supabase SSR utilise `auth.getUser()` (seul appel qui marche sur HS256
+ * legacy + asymétrique). On mock donc uniquement getUser.
  */
 export function makeAuthMock(userId: string | null = "user-1") {
-  const sub = userId;
   return {
-    getClaims: async () => ({
-      data: { claims: sub ? { sub } : null }
-    }),
-    getSession: async () => ({
-      data: { session: sub ? { user: { id: sub } } : null }
+    getUser: async () => ({
+      data: { user: userId ? { id: userId } : null },
+      error: null
     })
   };
 }
