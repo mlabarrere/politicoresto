@@ -8,54 +8,48 @@
  * - On n'appelle **jamais** `getUser()` : round-trip HTTP superflu quand la
  *   source de vérité est la RLS + les RPC `security definer`.
  */
-type ClaimsResult = {
-  data?: { claims?: { sub?: string; email?: string | null } | null } | null;
-};
+type AuthUser = { id: string; email: string | null };
 
-type SessionResult = {
+type ClaimsFn = () => Promise<{
+  data?: { claims?: { sub?: string; email?: string | null } | null } | null;
+}>;
+
+type SessionFn = () => Promise<{
   data?: {
     session?: { user?: { id?: string; email?: string | null } | null } | null;
   };
-};
+}>;
 
 type AuthCapableClient = {
-  auth?: {
-    getClaims?: () => Promise<ClaimsResult>;
-    getSession?: () => Promise<SessionResult>;
-  };
+  auth?: { getClaims?: ClaimsFn; getSession?: SessionFn };
 };
 
-async function resolveAuth(
-  client: AuthCapableClient
-): Promise<{ id: string; email: string | null } | null> {
-  if (typeof client.auth?.getClaims === "function") {
-    try {
-      const result = await client.auth.getClaims();
-      const sub = result?.data?.claims?.sub;
-      if (typeof sub === "string" && sub.length > 0) {
-        return { id: sub, email: result?.data?.claims?.email ?? null };
-      }
-    } catch {
-      /* fallthrough to session */
-    }
+async function fromClaims(fn?: ClaimsFn): Promise<AuthUser | null> {
+  if (typeof fn !== "function") return null;
+  try {
+    const { data } = await fn();
+    const claims = data?.claims;
+    return claims?.sub ? { id: claims.sub, email: claims.email ?? null } : null;
+  } catch {
+    return null;
   }
+}
 
-  if (typeof client.auth?.getSession === "function") {
-    const result = await client.auth.getSession();
-    const user = result.data?.session?.user;
-    if (user?.id) return { id: user.id, email: user.email ?? null };
-  }
+async function fromSession(fn?: SessionFn): Promise<AuthUser | null> {
+  if (typeof fn !== "function") return null;
+  const { data } = await fn();
+  const user = data?.session?.user;
+  return user?.id ? { id: user.id, email: user.email ?? null } : null;
+}
 
-  return null;
+async function resolveAuth(client: AuthCapableClient): Promise<AuthUser | null> {
+  return (await fromClaims(client.auth?.getClaims)) ?? (await fromSession(client.auth?.getSession));
 }
 
 export async function getAuthUserId(client: AuthCapableClient): Promise<string | null> {
-  const user = await resolveAuth(client);
-  return user?.id ?? null;
+  return (await resolveAuth(client))?.id ?? null;
 }
 
-export async function getAuthUser(
-  client: AuthCapableClient
-): Promise<{ id: string; email: string | null } | null> {
+export async function getAuthUser(client: AuthCapableClient): Promise<AuthUser | null> {
   return resolveAuth(client);
 }
