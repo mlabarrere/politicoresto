@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getAuthUser, getAuthUserId } from "@/lib/supabase/auth-user";
 
 describe("getAuthUserId", () => {
-  it("returns sub from getClaims() when available (fast path, no round-trip)", async () => {
+  it("returns sub from getClaims() when available", async () => {
     const client = {
       auth: {
         getClaims: async () => ({ data: { claims: { sub: "user-123" } } })
@@ -12,53 +12,37 @@ describe("getAuthUserId", () => {
     expect(await getAuthUserId(client)).toBe("user-123");
   });
 
-  it("falls back to getSession when getClaims returns no sub", async () => {
+  it("returns null when getClaims returns no sub", async () => {
     const client = {
       auth: {
-        getClaims: async () => ({ data: { claims: null } }),
-        getSession: async () => ({ data: { session: { user: { id: "session-user-456" } } } })
-      }
-    };
-    expect(await getAuthUserId(client)).toBe("session-user-456");
-  });
-
-  it("falls back to getSession when getClaims throws", async () => {
-    const client = {
-      auth: {
-        getClaims: async () => {
-          throw new Error("jwks unavailable");
-        },
-        getSession: async () => ({ data: { session: { user: { id: "session-user-789" } } } })
-      }
-    };
-    expect(await getAuthUserId(client)).toBe("session-user-789");
-  });
-
-  it("uses getSession directly when getClaims is absent", async () => {
-    const client = {
-      auth: {
-        getSession: async () => ({ data: { session: { user: { id: "only-session" } } } })
-      }
-    };
-    expect(await getAuthUserId(client)).toBe("only-session");
-  });
-
-  it("returns null when no session is available", async () => {
-    const client = {
-      auth: {
-        getSession: async () => ({ data: { session: null } })
+        getClaims: async () => ({ data: { claims: null } })
       }
     };
     expect(await getAuthUserId(client)).toBeNull();
   });
 
-  it("returns null when auth is absent", async () => {
+  it("returns null when getClaims throws", async () => {
+    const client = {
+      auth: {
+        getClaims: async () => {
+          throw new Error("jwks unavailable");
+        }
+      }
+    };
+    expect(await getAuthUserId(client)).toBeNull();
+  });
+
+  it("returns null when getClaims is absent", async () => {
+    expect(await getAuthUserId({ auth: {} })).toBeNull();
+  });
+
+  it("returns null when auth is absent (no crash)", async () => {
     expect(await getAuthUserId({})).toBeNull();
   });
 });
 
 describe("getAuthUser", () => {
-  it("returns id + email from claims when present", async () => {
+  it("returns id + email from claims", async () => {
     const client = {
       auth: {
         getClaims: async () => ({
@@ -78,7 +62,7 @@ describe("getAuthUser", () => {
     expect(await getAuthUser(client)).toEqual({ id: "uid-1", email: null });
   });
 
-  it("returns null when no user is available", async () => {
+  it("returns null when no auth", async () => {
     expect(await getAuthUser({})).toBeNull();
   });
 });
