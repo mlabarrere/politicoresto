@@ -96,10 +96,13 @@ describe("updateSession", () => {
     expect(mocks.getUser).not.toHaveBeenCalled();
   });
 
-  it("skips auth check on non-/me paths even when GET (public routes)", async () => {
+  it("always calls auth.getUser() on GET navigations to refresh expired JWT (anti-regression)", async () => {
+    // Sans ce call, le access_token expire après ~1h et l'app pense que
+    // l'utilisateur est anonyme, même si le refresh_token est toujours valide.
+    // Pattern officiel Supabase SSR.
     const request = makeRequest("/post/some-slug");
     const response = await updateSession(request);
     expect(response.status).toBe(200);
-    expect(mocks.getUser).not.toHaveBeenCalled();
+    expect(mocks.getUser).toHaveBeenCalledTimes(1);
   });
 });
