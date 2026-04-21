@@ -1,6 +1,6 @@
-import { AppCard } from "@/components/app/app-card";
-import { AppSkeleton } from "@/components/app/app-skeleton";
-import { PageContainer } from "@/components/layout/page-container";
+import { AppCard } from '@/components/app/app-card';
+import { AppSkeleton } from '@/components/app/app-skeleton';
+import { PageContainer } from '@/components/layout/page-container';
 
 export default function LoadingPostDetail() {
   return (

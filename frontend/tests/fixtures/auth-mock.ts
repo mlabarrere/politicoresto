@@ -5,11 +5,11 @@
  * Supabase depuis la migration aux clés asymétriques 2026-04-21). On mock
  * donc uniquement getClaims.
  */
-export function makeAuthMock(userId: string | null = "user-1") {
+export function makeAuthMock(userId: string | null = 'user-1') {
   return {
     getClaims: async () => ({
       data: { claims: userId ? { sub: userId } : null },
-      error: null
-    })
+      error: null,
+    }),
   };
 }

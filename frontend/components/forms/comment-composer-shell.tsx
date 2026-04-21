@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
-import { AppButton } from "@/components/app/app-button";
-import { AppTextarea } from "@/components/app/app-textarea";
+import { AppButton } from '@/components/app/app-button';
+import { AppTextarea } from '@/components/app/app-textarea';
 
 export function CommentComposerShell({
   initialValue,
@@ -14,7 +14,7 @@ export function CommentComposerShell({
   onSubmit,
   onCancel,
   autoFocus,
-  testId
+  testId,
 }: {
   initialValue: string;
   placeholder?: string;
@@ -32,7 +32,7 @@ export function CommentComposerShell({
 
   async function handleSubmit() {
     if (!body.trim()) {
-      setError("Contenu requis.");
+      setError('Contenu requis.');
       return;
     }
 
@@ -48,7 +48,10 @@ export function CommentComposerShell({
   }
 
   return (
-    <div className="space-y-2 rounded-xl border border-border/70 bg-background/80 p-3" data-testid={testId}>
+    <div
+      className="space-y-2 rounded-xl border border-border/70 bg-background/80 p-3"
+      data-testid={testId}
+    >
       <AppTextarea
         autoFocus={autoFocus}
         rows={3}
@@ -59,10 +62,21 @@ export function CommentComposerShell({
       />
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
       <div className="flex items-center justify-end gap-2">
-        <AppButton type="button" variant="secondary" size="sm" disabled={isSubmitting} onClick={onCancel}>
+        <AppButton
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={isSubmitting}
+          onClick={onCancel}
+        >
           Annuler
         </AppButton>
-        <AppButton type="button" size="sm" disabled={isSubmitting} onClick={() => void handleSubmit()}>
+        <AppButton
+          type="button"
+          size="sm"
+          disabled={isSubmitting}
+          onClick={() => void handleSubmit()}
+        >
           {isSubmitting ? submittingLabel : submitLabel}
         </AppButton>
       </div>

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 import {
   CatalystTabs,
   CatalystTabsList,
   CatalystTabsPanel,
   CatalystTabsPanels,
-  CatalystTabsTrigger
-} from "@/components/catalyst/tabs";
+  CatalystTabsTrigger,
+} from '@/components/catalyst/tabs';
 
 type TabItem = {
   key: string;
@@ -20,18 +20,23 @@ type TabItem = {
 export function AppTabs({
   value,
   onValueChange,
-  items
+  items,
 }: {
   value: string;
   onValueChange: (value: string) => void;
   items: TabItem[];
 }) {
-  const selectedIndex = Math.max(0, items.findIndex((item) => item.key === value));
+  const selectedIndex = Math.max(
+    0,
+    items.findIndex((item) => item.key === value),
+  );
 
   return (
     <CatalystTabs
       selectedIndex={selectedIndex}
-      onChange={(index) => onValueChange(items[index]?.key ?? items[0]?.key ?? "")}
+      onChange={(index) =>
+        onValueChange(items[index]?.key ?? items[0]?.key ?? '')
+      }
     >
       <CatalystTabsList>
         {items.map((item) => (
@@ -42,7 +47,9 @@ export function AppTabs({
       </CatalystTabsList>
       <CatalystTabsPanels>
         {items.map((item) => (
-          <CatalystTabsPanel key={`${item.key}-panel`}>{item.content}</CatalystTabsPanel>
+          <CatalystTabsPanel key={`${item.key}-panel`}>
+            {item.content}
+          </CatalystTabsPanel>
         ))}
       </CatalystTabsPanels>
     </CatalystTabs>

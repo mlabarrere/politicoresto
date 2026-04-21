@@ -1,6 +1,6 @@
-﻿export type VoteSide = "left" | "right" | null;
+﻿export type VoteSide = 'left' | 'right' | null;
 
-export type ReactionSide = "gauche" | "droite";
+export type ReactionSide = 'gauche' | 'droite';
 
 export type UserSummary = {
   id: string;
@@ -8,5 +8,3 @@ export type UserSummary = {
   slug?: string | null;
   avatarUrl?: string;
 };
-
-

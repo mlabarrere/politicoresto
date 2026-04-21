@@ -1,24 +1,32 @@
-"use client";
+'use client';
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { useRouter } from "next/navigation";
-import type { Route } from "next";
-import { CornerDownLeft, MessageSquare, Share2 } from "lucide-react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+} from 'react';
+import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
+import { CornerDownLeft, MessageSquare, Share2 } from 'lucide-react';
 
-import { ReactionBar } from "@/components/social/reaction-bar";
-import { PollCardInline } from "@/components/poll/poll-card-inline";
-import { AppCard } from "@/components/app/app-card";
-import { AppBadge } from "@/components/app/app-badge";
-import { AppButton } from "@/components/app/app-button";
-import type { PostFeedItemView } from "@/lib/types/views";
-import { formatDate, formatNumber } from "@/lib/utils/format";
-import { normalizeMultilineText } from "@/lib/utils/multiline";
+import { ReactionBar } from '@/components/social/reaction-bar';
+import { PollCardInline } from '@/components/poll/poll-card-inline';
+import { AppCard } from '@/components/app/app-card';
+import { AppBadge } from '@/components/app/app-badge';
+import { AppButton } from '@/components/app/app-button';
+import type { PostFeedItemView } from '@/lib/types/views';
+import { formatDate, formatNumber } from '@/lib/utils/format';
+import { normalizeMultilineText } from '@/lib/utils/multiline';
 
 const PREVIEW_LIMIT = 500;
 
 function truncatePreview(value: string) {
   const text = normalizeMultilineText(value).trim();
-  if (!text) return "";
+  if (!text) return '';
   if (text.length <= PREVIEW_LIMIT) return text;
   return `${text.slice(0, PREVIEW_LIMIT).trimEnd()}...`;
 }
@@ -26,7 +34,7 @@ function truncatePreview(value: string) {
 export const PostCard = memo(function PostCard({
   item,
   featured = false,
-  isAuthenticated = false
+  isAuthenticated = false,
 }: {
   item: PostFeedItemView;
   featured?: boolean;
@@ -37,9 +45,10 @@ export const PostCard = memo(function PostCard({
   const shareFeedbackTimeoutRef = useRef<number | null>(null);
 
   const authorLabel =
-    (item as unknown as { author_display_name?: string | null }).author_display_name ??
+    (item as unknown as { author_display_name?: string | null })
+      .author_display_name ??
     (item as unknown as { author_username?: string | null }).author_username ??
-    "Pseudo indisponible";
+    'Pseudo indisponible';
 
   const postHref = `/post/${item.topic_slug}` as Route;
   const replyHref = `/post/${item.topic_slug}#reply-form` as Route;
@@ -47,9 +56,17 @@ export const PostCard = memo(function PostCard({
   const commentCount = item.feed_comment_count ?? item.visible_post_count ?? 0;
 
   const previewText = useMemo(() => {
-    const source = item.feed_post_content ?? item.discussion_payload.excerpt_text ?? item.topic_description ?? "";
+    const source =
+      item.feed_post_content ??
+      item.discussion_payload.excerpt_text ??
+      item.topic_description ??
+      '';
     return truncatePreview(source);
-  }, [item.feed_post_content, item.discussion_payload.excerpt_text, item.topic_description]);
+  }, [
+    item.feed_post_content,
+    item.discussion_payload.excerpt_text,
+    item.topic_description,
+  ]);
 
   const openPost = useCallback(() => {
     router.push(postHref);
@@ -73,22 +90,28 @@ export const PostCard = memo(function PostCard({
       event.stopPropagation();
 
       const shareUrl =
-        typeof window !== "undefined"
+        typeof window !== 'undefined'
           ? `${window.location.origin}/post/${item.topic_slug}`
           : `/post/${item.topic_slug}`;
 
       try {
-        if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        if (
+          typeof navigator !== 'undefined' &&
+          typeof navigator.share === 'function'
+        ) {
           await navigator.share({ title: item.topic_title, url: shareUrl });
-          setShareFeedback("Partage lance");
-        } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+          setShareFeedback('Partage lance');
+        } else if (
+          typeof navigator !== 'undefined' &&
+          navigator.clipboard?.writeText
+        ) {
           await navigator.clipboard.writeText(shareUrl);
-          setShareFeedback("Lien copie");
+          setShareFeedback('Lien copie');
         } else {
-          setShareFeedback("Partage indisponible");
+          setShareFeedback('Partage indisponible');
         }
       } catch {
-        setShareFeedback("Partage annule");
+        setShareFeedback('Partage annule');
       }
 
       if (shareFeedbackTimeoutRef.current !== null) {
@@ -98,18 +121,18 @@ export const PostCard = memo(function PostCard({
         setShareFeedback(null);
       }, 1800);
     },
-    [item.topic_slug, item.topic_title]
+    [item.topic_slug, item.topic_title],
   );
 
   return (
     <AppCard
       as="article"
       className={
-        featured ? "cursor-pointer px-5 py-4" : "cursor-pointer px-4 py-3"
+        featured ? 'cursor-pointer px-5 py-4' : 'cursor-pointer px-4 py-3'
       }
       onClick={openPost}
       onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
+        if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           openPost();
         }
@@ -123,7 +146,9 @@ export const PostCard = memo(function PostCard({
         <span>|</span>
         <span>{formatDate(item.last_activity_at)}</span>
         <span>|</span>
-        <span>{item.primary_taxonomy_label ?? item.space_name ?? "Global"}</span>
+        <span>
+          {item.primary_taxonomy_label ?? item.space_name ?? 'Global'}
+        </span>
       </div>
 
       <div className="mt-2">
@@ -133,15 +158,24 @@ export const PostCard = memo(function PostCard({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {item.primary_taxonomy_label ? <AppBadge label={item.primary_taxonomy_label} tone="accent" /> : null}
+        {item.primary_taxonomy_label ? (
+          <AppBadge label={item.primary_taxonomy_label} tone="accent" />
+        ) : null}
         <AppBadge label={item.topic_status} tone="muted" />
       </div>
 
-      {previewText ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/90">{previewText}</p> : null}
+      {previewText ? (
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-foreground/90">
+          {previewText}
+        </p>
+      ) : null}
 
       {item.feed_poll_summary ? (
         <div className="mt-3" onClick={stopCardNavigation}>
-          <PollCardInline poll={item.feed_poll_summary} isAuthenticated={isAuthenticated} />
+          <PollCardInline
+            poll={item.feed_poll_summary}
+            isAuthenticated={isAuthenticated}
+          />
         </div>
       ) : null}
 
@@ -164,7 +198,10 @@ export const PostCard = memo(function PostCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <a href={replyHref} className="inline-flex items-center gap-1 font-medium text-foreground hover:underline">
+          <a
+            href={replyHref}
+            className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
+          >
             <CornerDownLeft className="size-3.5" />
             <span>Repondre direct</span>
           </a>
@@ -182,15 +219,10 @@ export const PostCard = memo(function PostCard({
             onClick={onShare}
           >
             <Share2 className="size-3.5" />
-            <span>{shareFeedback ?? "Partager"}</span>
+            <span>{shareFeedback ?? 'Partager'}</span>
           </AppButton>
         </div>
       </div>
     </AppCard>
   );
 });
-
-
-
-
-

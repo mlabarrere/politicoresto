@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export default function ErrorBoundary({
   error,
-  reset
+  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -15,10 +15,10 @@ export default function ErrorBoundary({
     // with a structured payload so it surfaces in Vercel client logs.
     // Session 3 will add a `/api/_log` endpoint for client→server log forwarding.
     // eslint-disable-next-line no-console -- client-side boundary; no logger import available
-    console.error("[error-boundary] rendered fallback", {
+    console.error('[error-boundary] rendered fallback', {
       message: error.message,
       digest: error.digest,
-      stack: error.stack
+      stack: error.stack,
     });
   }, [error]);
 
@@ -26,7 +26,7 @@ export default function ErrorBoundary({
     <div className="mx-auto max-w-xl p-8 text-center">
       <h2 className="text-lg font-semibold">Une erreur est survenue.</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        {error.digest ? `Référence: ${error.digest}` : "Merci de réessayer."}
+        {error.digest ? `Référence: ${error.digest}` : 'Merci de réessayer.'}
       </p>
       <button
         type="button"

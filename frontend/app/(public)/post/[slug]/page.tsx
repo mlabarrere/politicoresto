@@ -1,16 +1,19 @@
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation';
 
-import { ForumPage } from "@/components/forum/forum-page";
-import { EmptyState } from "@/components/layout/empty-state";
-import { PageContainer } from "@/components/layout/page-container";
-import { ScreenState } from "@/components/layout/screen-state";
-import { getPostDetail } from "@/lib/data/public/posts";
-import { buildForumCommentTree, mapPostViewToForumPost } from "@/lib/forum/mappers";
-import { getAuthUserId } from "@/lib/supabase/auth-user";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { ForumPage } from '@/components/forum/forum-page';
+import { EmptyState } from '@/components/layout/empty-state';
+import { PageContainer } from '@/components/layout/page-container';
+import { ScreenState } from '@/components/layout/screen-state';
+import { getPostDetail } from '@/lib/data/public/posts';
+import {
+  buildForumCommentTree,
+  mapPostViewToForumPost,
+} from '@/lib/forum/mappers';
+import { getAuthUserId } from '@/lib/supabase/auth-user';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export default async function PostDetailPage({
-  params
+  params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
@@ -22,9 +25,10 @@ export default async function PostDetailPage({
   try {
     detail = await getPostDetail(slug, currentUserId);
   } catch (error) {
-    const code = String((error as { code?: string }).code ?? "");
-    const message = String((error as { message?: string }).message ?? "");
-    const isForbidden = code === "42501" || message.toLowerCase().includes("permission denied");
+    const code = String((error as { code?: string }).code ?? '');
+    const message = String((error as { message?: string }).message ?? '');
+    const isForbidden =
+      code === '42501' || message.toLowerCase().includes('permission denied');
 
     if (isForbidden) {
       return (
@@ -53,7 +57,7 @@ export default async function PostDetailPage({
         {op ? (
           <ForumPage
             post={mapPostViewToForumPost(op, post.title)}
-            comments={buildForumCommentTree(detail.comments, "top")}
+            comments={buildForumCommentTree(detail.comments, 'top')}
             currentUserId={currentUserId}
             postSlug={post.slug}
           />

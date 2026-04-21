@@ -2,8 +2,8 @@
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export const AppDropdownMenu = DropdownMenu;
 export const AppDropdownMenuContent = DropdownMenuContent;

@@ -11,19 +11,19 @@ Statut: majoritairement applique, a maintenir en continu.
 
 ## Matrice de convergence
 
-| Existant | Cible | Action |
-|---|---|---|
-| `components/ui/button` + variantes locales | `AppButton` | Fusionne |
-| `components/ui/input` + inputs libres | `AppInput` | Fusionne |
-| `components/ui/textarea` + textareas libres | `AppTextarea` | Fusionne |
-| `components/ui/select` | `AppSelect` | Fusionne |
-| `components/ui/tabs` | `AppTabs` | Remplace |
-| classes `app-card`/`soft-*` | `AppCard` | Supprime |
-| `components/ui/alert` + etats locaux | `AppBanner`/`AppEmptyState` | Fusionne |
-| `components/ui/sheet` + drawers locaux | `AppDrawer`/`AppModal` | Standardise |
-| barres filtres ad hoc | `AppFilterBar` | Fusionne |
-| cartes feed divergentes | `AppFeedItem` | Unifie |
-| headers ad hoc | `AppPageHeader` | Remplace |
+| Existant                                    | Cible                       | Action      |
+| ------------------------------------------- | --------------------------- | ----------- |
+| `components/ui/button` + variantes locales  | `AppButton`                 | Fusionne    |
+| `components/ui/input` + inputs libres       | `AppInput`                  | Fusionne    |
+| `components/ui/textarea` + textareas libres | `AppTextarea`               | Fusionne    |
+| `components/ui/select`                      | `AppSelect`                 | Fusionne    |
+| `components/ui/tabs`                        | `AppTabs`                   | Remplace    |
+| classes `app-card`/`soft-*`                 | `AppCard`                   | Supprime    |
+| `components/ui/alert` + etats locaux        | `AppBanner`/`AppEmptyState` | Fusionne    |
+| `components/ui/sheet` + drawers locaux      | `AppDrawer`/`AppModal`      | Standardise |
+| barres filtres ad hoc                       | `AppFilterBar`              | Fusionne    |
+| cartes feed divergentes                     | `AppFeedItem`               | Unifie      |
+| headers ad hoc                              | `AppPageHeader`             | Remplace    |
 
 ## Guardrails
 

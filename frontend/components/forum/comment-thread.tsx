@@ -1,22 +1,22 @@
-﻿"use client";
+﻿'use client';
 
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
-import { CommentNode } from "@/components/forum/comment-node";
-import type { CommentThreadProps } from "@/lib/types/forum-components";
+import { CommentNode } from '@/components/forum/comment-node';
+import type { CommentThreadProps } from '@/lib/types/forum-components';
 
 function sortTree(
-  comments: CommentThreadProps["comments"],
-  mode: CommentThreadProps["sortMode"]
+  comments: CommentThreadProps['comments'],
+  mode: CommentThreadProps['sortMode'],
 ) {
   const sorted = [...comments];
 
   sorted.sort((a, b) => {
-    if (mode === "recent") {
+    if (mode === 'recent') {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
 
-    if (mode === "oldest") {
+    if (mode === 'oldest') {
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     }
 
@@ -30,8 +30,15 @@ function sortTree(
   return sorted;
 }
 
-export function CommentThread({ comments, sortMode, ...rest }: CommentThreadProps) {
-  const sortedComments = useMemo(() => sortTree(comments, sortMode), [comments, sortMode]);
+export function CommentThread({
+  comments,
+  sortMode,
+  ...rest
+}: CommentThreadProps) {
+  const sortedComments = useMemo(
+    () => sortTree(comments, sortMode),
+    [comments, sortMode],
+  );
 
   if (!sortedComments.length) {
     return (

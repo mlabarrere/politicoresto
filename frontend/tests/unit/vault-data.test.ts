@@ -1,31 +1,31 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
-  rpcMock: vi.fn()
+  rpcMock: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({
-  createServerSupabaseClient: mocks.createServerSupabaseClient
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
 
-import { getVaultSettingsData } from "@/lib/data/authenticated/vault";
+import { getVaultSettingsData } from '@/lib/data/authenticated/vault';
 
-describe("getVaultSettingsData", () => {
+describe('getVaultSettingsData', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.createServerSupabaseClient.mockResolvedValue({
-      rpc: mocks.rpcMock
+      rpc: mocks.rpcMock,
     });
   });
 
-  it("returns profile data when rpc succeeds", async () => {
+  it('returns profile data when rpc succeeds', async () => {
     const profile = {
-      user_id: "user-1",
+      user_id: 'user-1',
       political_interest_level: 3,
-      notes_private: "notes",
+      notes_private: 'notes',
       profile_payload: null,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
     mocks.rpcMock.mockResolvedValue({ data: profile, error: null });
     const result = await getVaultSettingsData();
@@ -33,16 +33,19 @@ describe("getVaultSettingsData", () => {
     expect(result.error).toBeNull();
   });
 
-  it("returns null profile when rpc returns null data", async () => {
+  it('returns null profile when rpc returns null data', async () => {
     mocks.rpcMock.mockResolvedValue({ data: null, error: null });
     const result = await getVaultSettingsData();
     expect(result.profile).toBeNull();
     expect(result.error).toBeNull();
   });
 
-  it("returns error string when rpc fails", async () => {
-    mocks.rpcMock.mockResolvedValue({ data: null, error: { message: "rpc error" } });
+  it('returns error string when rpc fails', async () => {
+    mocks.rpcMock.mockResolvedValue({
+      data: null,
+      error: { message: 'rpc error' },
+    });
     const result = await getVaultSettingsData();
-    expect(result.error).toContain("rpc error");
+    expect(result.error).toContain('rpc error');
   });
 });

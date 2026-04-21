@@ -1,4 +1,4 @@
-import type { PostPollSummaryView } from "@/lib/types/views";
+import type { PostPollSummaryView } from '@/lib/types/views';
 
 export type PollCardInlineProps = {
   poll: PostPollSummaryView;

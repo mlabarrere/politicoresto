@@ -1,9 +1,9 @@
-﻿import type { PropsWithChildren } from "react";
+﻿import type { PropsWithChildren } from 'react';
 
-import { requireSession } from "@/lib/guards/require-session";
+import { requireSession } from '@/lib/guards/require-session';
 
 export default async function AuthenticatedLayout({
-  children
+  children,
 }: PropsWithChildren) {
   await requireSession();
 

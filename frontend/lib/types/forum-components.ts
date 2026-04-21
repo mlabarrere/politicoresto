@@ -3,13 +3,13 @@
   EditDraft,
   ForumPost,
   ReplyDraft,
-  VoteSide
-} from "@/lib/types/forum";
+  VoteSide,
+} from '@/lib/types/forum';
 
 export type ForumPageState = {
-  postStatus: "loading" | "ready" | "error";
-  commentsStatus: "loading" | "ready" | "error";
-  sortMode: "top" | "recent" | "oldest";
+  postStatus: 'loading' | 'ready' | 'error';
+  commentsStatus: 'loading' | 'ready' | 'error';
+  sortMode: 'top' | 'recent' | 'oldest';
   collapsedAll: boolean;
   focusedBranchId?: string;
 };
@@ -37,10 +37,9 @@ export type PostActionsBarProps = {
   onReplyClick: () => void;
 };
 
-
 export type CommentThreadProps = {
   comments: CommentTreeNode[];
-  sortMode: "top" | "recent" | "oldest";
+  sortMode: 'top' | 'recent' | 'oldest';
   currentUserId?: string | null;
   maxInlineDepth: number;
   collapsedAll: boolean;
@@ -63,7 +62,7 @@ export type CommentNodeProps = {
 };
 
 export type ReplyComposerProps = {
-  targetType: "post" | "comment";
+  targetType: 'post' | 'comment';
   targetId: string;
   parentCommentId?: string;
   initialValue?: string;
@@ -90,6 +89,6 @@ export type CommentActionsMenuProps = {
 };
 
 export type PostToolbarProps = {
-  sortMode: "top" | "recent" | "oldest";
-  onSortChange: (next: "top" | "recent" | "oldest") => void;
+  sortMode: 'top' | 'recent' | 'oldest';
+  onSortChange: (next: 'top' | 'recent' | 'oldest') => void;
 };

@@ -1,27 +1,27 @@
-﻿"use client";
+﻿'use client';
 
-import { Plus } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { Plus } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { AppButton } from "@/components/app/app-button";
+import { AppButton } from '@/components/app/app-button';
 
 function toSafeNext(pathname: string | null): string {
-  if (!pathname || !pathname.startsWith("/")) return "/";
-  if (pathname.startsWith("//")) return "/";
+  if (!pathname || !pathname.startsWith('/')) return '/';
+  if (pathname.startsWith('//')) return '/';
   return pathname;
 }
 
 export function AppPrimaryCTA({
-  mode = "inline",
-  isAuthenticated
+  mode = 'inline',
+  isAuthenticated,
 }: {
-  mode?: "inline" | "fab";
+  mode?: 'inline' | 'fab';
   isAuthenticated: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const className = mode === "fab" ? "shadow-[var(--shadow-md)]" : undefined;
+  const className = mode === 'fab' ? 'shadow-[var(--shadow-md)]' : undefined;
 
   function handleClick() {
     if (!isAuthenticated) {
@@ -30,14 +30,14 @@ export function AppPrimaryCTA({
       return;
     }
 
-    router.push("/post/new");
+    router.push('/post/new');
   }
 
   return (
     <AppButton
       type="button"
       variant="primary"
-      size={mode === "fab" ? "md" : "sm"}
+      size={mode === 'fab' ? 'md' : 'sm'}
       className={className}
       icon={<Plus className="size-4" />}
       aria-label="Creer"

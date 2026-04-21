@@ -1,19 +1,19 @@
-﻿"use client";
+﻿'use client';
 
-import { CommentComposerShell } from "@/components/forms/comment-composer-shell";
-import type { ReplyComposerProps } from "@/lib/types/forum-components";
+import { CommentComposerShell } from '@/components/forms/comment-composer-shell';
+import type { ReplyComposerProps } from '@/lib/types/forum-components';
 
 export function ReplyComposer({
   targetType,
   targetId,
   parentCommentId,
-  initialValue = "",
+  initialValue = '',
   mentionPrefix,
   autoFocus,
   onSubmit,
-  onCancel
+  onCancel,
 }: ReplyComposerProps) {
-  const initialBody = `${mentionPrefix ?? ""}${initialValue}`.trimStart();
+  const initialBody = `${mentionPrefix ?? ''}${initialValue}`.trimStart();
 
   return (
     <CommentComposerShell
@@ -30,11 +30,9 @@ export function ReplyComposer({
           targetType,
           targetId,
           parentCommentId,
-          body
+          body,
         });
       }}
     />
   );
 }
-
-

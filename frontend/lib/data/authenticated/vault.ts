@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export type PrivateProfileRow = {
   user_id: string;
@@ -10,11 +10,14 @@ export type PrivateProfileRow = {
 
 export async function getVaultSettingsData() {
   const supabase = await createServerSupabaseClient();
-  const profileResult = await supabase.rpc("rpc_get_private_political_profile");
-  const errors = [profileResult.error].filter(Boolean).map((item) => item?.message).filter(Boolean);
+  const profileResult = await supabase.rpc('rpc_get_private_political_profile');
+  const errors = [profileResult.error]
+    .filter(Boolean)
+    .map((item) => item?.message)
+    .filter(Boolean);
 
   return {
     profile: (profileResult.data ?? null) as PrivateProfileRow | null,
-    error: errors.length ? errors.join(" | ") : null
+    error: errors.length ? errors.join(' | ') : null,
   };
 }

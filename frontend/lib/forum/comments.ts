@@ -1,6 +1,6 @@
-import type { CommentView } from "@/lib/types/views";
-import type { CommentTreeNode } from "@/lib/types/forum";
-import { buildForumCommentTree } from "@/lib/forum/mappers";
+import type { CommentView } from '@/lib/types/views';
+import type { CommentTreeNode } from '@/lib/types/forum';
+import { buildForumCommentTree } from '@/lib/forum/mappers';
 
 export type CommentNode = {
   comment: CommentView;
@@ -16,7 +16,7 @@ function buildLegacyNodes(tree: CommentTreeNode[]): CommentNode[] {
   return tree.map((node) => ({
     comment: {
       id: node.id,
-      post_id: "",
+      post_id: '',
       post_item_id: null,
       parent_post_id: node.parentCommentId ?? null,
       depth: node.depth,
@@ -27,30 +27,32 @@ function buildLegacyNodes(tree: CommentTreeNode[]): CommentNode[] {
       body_markdown: node.body,
       created_at: node.createdAt,
       updated_at: node.updatedAt ?? node.createdAt,
-      post_status: "visible",
+      post_status: 'visible',
       gauche_count: node.leftCount,
       droite_count: node.rightCount,
       user_reaction_side:
-        node.currentUserVote === "left"
-          ? "gauche"
-          : node.currentUserVote === "right"
-            ? "droite"
+        node.currentUserVote === 'left'
+          ? 'gauche'
+          : node.currentUserVote === 'right'
+            ? 'droite'
             : null,
-      comment_score: null
+      comment_score: null,
     },
     reactionTotal: node.leftCount + node.rightCount,
-    children: buildLegacyNodes(node.children)
+    children: buildLegacyNodes(node.children),
   }));
 }
 
 export function buildCommentTree(comments: CommentView[]): CommentNode[] {
-  return buildLegacyNodes(buildForumCommentTree(comments, "top"));
+  return buildLegacyNodes(buildForumCommentTree(comments, 'top'));
 }
 
-export function getIndentPx(depth: number, maxInlineDepth: number, compactMode: boolean) {
+export function getIndentPx(
+  depth: number,
+  maxInlineDepth: number,
+  compactMode: boolean,
+) {
   const hardCap = compactMode ? Math.min(maxInlineDepth, 3) : maxInlineDepth;
   const level = Math.min(depth, hardCap);
   return level * (compactMode ? 10 : 14);
 }
-
-

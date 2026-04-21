@@ -62,6 +62,7 @@ Les pages ne doivent pas parler directement a Supabase si une fonction dediee pe
 ## Do / Don't
 
 ### Do
+
 - utiliser `AppButton`, `AppInput`, `AppTextarea`, `AppSelect`, `AppTabs`
 - utiliser `AppBanner` et `AppEmptyState` pour les etats d'information
 - utiliser `AppDrawer` / `AppModal` pour navigation et dialogues
@@ -69,6 +70,7 @@ Les pages ne doivent pas parler directement a Supabase si une fonction dediee pe
 - centraliser les variations visuelles dans les tokens de `app/globals.css`
 
 ### Don't
+
 - ne pas ajouter de classes ad hoc pour simuler une nouvelle primitive
 - ne pas multiplier les variantes locales d'un meme composant
 - ne pas reintroduire `app-card`, `soft-panel`, `soft-section`, `eyebrow`, `editorial-title`

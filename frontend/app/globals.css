@@ -1,6 +1,6 @@
 /* stylelint-disable no-invalid-position-at-import-rule */
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 /* stylelint-enable no-invalid-position-at-import-rule */
 @config "../tailwind.config.ts";
 
@@ -69,7 +69,11 @@
   body {
     min-height: 100vh;
     @apply bg-background text-foreground antialiased;
-    background-image: radial-gradient(circle at top right, hsl(42 92% 95%), hsl(var(--background)) 58%);
+    background-image: radial-gradient(
+      circle at top right,
+      hsl(42 92% 95%),
+      hsl(var(--background)) 58%
+    );
   }
 
   a {

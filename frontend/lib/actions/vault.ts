@@ -1,4 +1,4 @@
 ﻿export {
   clearPrivateProfileAction,
-  upsertPrivateProfileAction
-} from "@/lib/actions/account";
+  upsertPrivateProfileAction,
+} from '@/lib/actions/account';

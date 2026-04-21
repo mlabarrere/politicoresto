@@ -1,6 +1,6 @@
-﻿import { NextResponse } from "next/server";
+﻿import { NextResponse } from 'next/server';
 
-import { getAccountWorkspaceData } from "@/lib/data/authenticated/account-workspace";
+import { getAccountWorkspaceData } from '@/lib/data/authenticated/account-workspace';
 
 export async function GET() {
   try {
@@ -10,17 +10,17 @@ export async function GET() {
     return new NextResponse(JSON.stringify(data, null, 2), {
       status: 200,
       headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Content-Disposition": `attachment; filename=\"${filename}\"`
-      }
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Disposition': `attachment; filename=\"${filename}\"`,
+      },
     });
   } catch (error) {
-    console.error("[account][export] failed", { error });
+    console.error('[account][export] failed', { error });
     return NextResponse.json(
       {
-        error: "Export impossible"
+        error: 'Export impossible',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

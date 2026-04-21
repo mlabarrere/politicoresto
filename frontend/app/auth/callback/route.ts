@@ -1,11 +1,11 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-import { createLogger, logError, withRequest } from "@/lib/logger";
-import { supabaseEnv } from "@/lib/supabase/env";
-import { safeNextPath } from "@/lib/utils/safe-path";
+import { createLogger, logError, withRequest } from '@/lib/logger';
+import { supabaseEnv } from '@/lib/supabase/env';
+import { safeNextPath } from '@/lib/utils/safe-path';
 
-const moduleLog = createLogger("auth.callback");
+const moduleLog = createLogger('auth.callback');
 
 /**
  * Callback OAuth — pattern officiel @supabase/ssr pour Next.js Route Handlers.
@@ -22,22 +22,22 @@ const moduleLog = createLogger("auth.callback");
 export async function GET(request: NextRequest) {
   const log = withRequest(moduleLog, request);
   const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
-  const next = safeNextPath(requestUrl.searchParams.get("next"));
+  const code = requestUrl.searchParams.get('code');
+  const next = safeNextPath(requestUrl.searchParams.get('next'));
 
   log.info(
-    { event: "auth.oauth.callback.received", has_code: Boolean(code), next },
-    "oauth callback received"
+    { event: 'auth.oauth.callback.received', has_code: Boolean(code), next },
+    'oauth callback received',
   );
 
   if (!code) {
     log.warn(
-      { event: "auth.oauth.callback.missing_code", query: requestUrl.search },
-      "missing OAuth code"
+      { event: 'auth.oauth.callback.missing_code', query: requestUrl.search },
+      'missing OAuth code',
     );
-    const errUrl = new URL("/auth/auth-code-error", request.url);
-    errUrl.searchParams.set("reason", "oauth_missing_code");
-    errUrl.searchParams.set("next", next);
+    const errUrl = new URL('/auth/auth-code-error', request.url);
+    errUrl.searchParams.set('reason', 'oauth_missing_code');
+    errUrl.searchParams.set('next', next);
     return NextResponse.redirect(errUrl);
   }
 
@@ -54,77 +54,87 @@ export async function GET(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }>) {
+        setAll(
+          cookiesToSet: Array<{
+            name: string;
+            value: string;
+            options: CookieOptions;
+          }>,
+        ) {
           for (const { name, value, options } of cookiesToSet) {
             response.cookies.set(name, value, options);
             cookieNamesPosted.push(name);
           }
-        }
-      }
-    }
+        },
+      },
+    },
   );
 
-  log.debug({ event: "auth.oauth.exchange.start" }, "exchanging code for session");
+  log.debug(
+    { event: 'auth.oauth.exchange.start' },
+    'exchanging code for session',
+  );
 
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  const { error: exchangeError } =
+    await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
     logError(log, exchangeError, {
-      event: "auth.oauth.exchange.failed",
+      event: 'auth.oauth.exchange.failed',
       status: exchangeError.status,
       code: (exchangeError as { code?: string }).code,
-      message: "exchange code for session failed"
+      message: 'exchange code for session failed',
     });
-    const errUrl = new URL("/auth/auth-code-error", request.url);
-    errUrl.searchParams.set("reason", "oauth_exchange_failed");
-    errUrl.searchParams.set("next", next);
+    const errUrl = new URL('/auth/auth-code-error', request.url);
+    errUrl.searchParams.set('reason', 'oauth_exchange_failed');
+    errUrl.searchParams.set('next', next);
     return NextResponse.redirect(errUrl);
   }
 
   log.info(
-    { event: "auth.oauth.exchange.ok", cookie_names: cookieNamesPosted },
-    "session exchanged"
+    { event: 'auth.oauth.exchange.ok', cookie_names: cookieNamesPosted },
+    'session exchanged',
   );
 
   // Lire le user pour router vers /onboarding si username manque. Important :
   // on utilise la MÊME response — si on doit rediriger ailleurs que vers `next`,
   // on CLONE les cookies sur la nouvelle response.
   const {
-    data: { user }
+    data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
     log.warn(
-      { event: "auth.oauth.callback.no_user_after_exchange" },
-      "getUser returned no user after successful exchange"
+      { event: 'auth.oauth.callback.no_user_after_exchange' },
+      'getUser returned no user after successful exchange',
     );
     return response;
   }
 
   const { data: profile, error: profileError } = await supabase
-    .from("app_profile")
-    .select("username")
-    .eq("user_id", user.id)
+    .from('app_profile')
+    .select('username')
+    .eq('user_id', user.id)
     .maybeSingle();
 
   if (profileError) {
     log.warn(
       {
-        event: "auth.profile.fetch_failed_nonblocking",
+        event: 'auth.profile.fetch_failed_nonblocking',
         user_id: user.id,
         code: profileError.code,
-        db_message: profileError.message
+        db_message: profileError.message,
       },
-      "profile fetch failed (non-blocking)"
+      'profile fetch failed (non-blocking)',
     );
   }
 
   if (!profile?.username) {
-    const onboardingUrl = new URL("/onboarding", request.url);
-    if (next !== "/") onboardingUrl.searchParams.set("next", next);
+    const onboardingUrl = new URL('/onboarding', request.url);
+    if (next !== '/') onboardingUrl.searchParams.set('next', next);
     log.info(
-      { event: "auth.onboarding.redirect", user_id: user.id, next },
-      "no username — redirecting to onboarding"
+      { event: 'auth.onboarding.redirect', user_id: user.id, next },
+      'no username — redirecting to onboarding',
     );
     // Clone la response vers /onboarding en copiant les cookies de session.
     // Explicite name/value/options — passer l'objet ResponseCookie entier à
@@ -141,15 +151,20 @@ export async function GET(request: NextRequest) {
         maxAge: c.maxAge,
         priority: c.priority,
         sameSite: c.sameSite,
-        secure: c.secure
+        secure: c.secure,
       });
     }
     return onboardingResponse;
   }
 
   log.info(
-    { event: "auth.callback.redirect_next", user_id: user.id, next, username: profile.username },
-    "redirecting to next"
+    {
+      event: 'auth.callback.redirect_next',
+      user_id: user.id,
+      next,
+      username: profile.username,
+    },
+    'redirecting to next',
   );
   return response;
 }

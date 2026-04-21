@@ -9,35 +9,35 @@ export type PoliticalBloc = {
 
 export const politicalBlocs: PoliticalBloc[] = [
   {
-    slug: "gauche-radicale",
-    label: "Gauche radicale a gauche",
-    description: "LFI, PCF et assimiles.",
-    aliases: ["lfi", "lfi-nfp", "pcf", "gdr", "ges", "rev", "peps"]
+    slug: 'gauche-radicale',
+    label: 'Gauche radicale a gauche',
+    description: 'LFI, PCF et assimiles.',
+    aliases: ['lfi', 'lfi-nfp', 'pcf', 'gdr', 'ges', 'rev', 'peps'],
   },
   {
-    slug: "gauche-centre-gauche",
-    label: "Gauche a centre gauche",
-    description: "PS, EELV, PRG, DVG et assimilés.",
-    aliases: ["ps", "eelv", "prg", "dvg", "soc", "ecoS", "ecos"]
+    slug: 'gauche-centre-gauche',
+    label: 'Gauche a centre gauche',
+    description: 'PS, EELV, PRG, DVG et assimilés.',
+    aliases: ['ps', 'eelv', 'prg', 'dvg', 'soc', 'ecoS', 'ecos'],
   },
   {
-    slug: "centre-gauche-centre-droit",
-    label: "Centre gauche a centre droit",
-    description: "RE, MoDem, PRV, DVC, Horizons.",
-    aliases: ["re", "modem", "prv", "dvc", "hor", "epr", "dem"]
+    slug: 'centre-gauche-centre-droit',
+    label: 'Centre gauche a centre droit',
+    description: 'RE, MoDem, PRV, DVC, Horizons.',
+    aliases: ['re', 'modem', 'prv', 'dvc', 'hor', 'epr', 'dem'],
   },
   {
-    slug: "centre-droit-droite",
-    label: "Centre droit a droite",
-    description: "LR, UDI, DVD.",
-    aliases: ["lr", "udi", "dvd", "dr", "udr"]
+    slug: 'centre-droit-droite',
+    label: 'Centre droit a droite',
+    description: 'LR, UDI, DVD.',
+    aliases: ['lr', 'udi', 'dvd', 'dr', 'udr'],
   },
   {
-    slug: "droite-extreme-droite",
-    label: "Droite a extreme droite",
-    description: "RN, REC, DLF, UDR et assimiles.",
-    aliases: ["rn", "rec", "dlf", "udr", "laf", "idl"]
-  }
+    slug: 'droite-extreme-droite',
+    label: 'Droite a extreme droite',
+    description: 'RN, REC, DLF, UDR et assimiles.',
+    aliases: ['rn', 'rec', 'dlf', 'udr', 'laf', 'idl'],
+  },
 ];
 
 function normalize(value: string) {
@@ -52,9 +52,9 @@ function rowTokens(row: RowLike) {
     row.primary_taxonomy_slug,
     row.primary_taxonomy_label,
     row.space_slug,
-    row.feed_reason_code
+    row.feed_reason_code,
   ]
-    .flatMap((value) => (typeof value === "string" ? [normalize(value)] : []))
+    .flatMap((value) => (typeof value === 'string' ? [normalize(value)] : []))
     .filter(Boolean);
 }
 
@@ -67,7 +67,9 @@ export function getPoliticalBloc(slug: string | null) {
 
   return (
     politicalBlocs.find((bloc) => normalize(bloc.slug) === normalized) ??
-    politicalBlocs.find((bloc) => bloc.aliases.some((alias) => normalize(alias) === normalized)) ??
+    politicalBlocs.find((bloc) =>
+      bloc.aliases.some((alias) => normalize(alias) === normalized),
+    ) ??
     null
   );
 }

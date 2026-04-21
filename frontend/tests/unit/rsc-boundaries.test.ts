@@ -1,13 +1,13 @@
-﻿import fs from "node:fs";
-import path from "node:path";
+﻿import fs from 'node:fs';
+import path from 'node:path';
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-const root = path.resolve(__dirname, "../..");
+const root = path.resolve(__dirname, '../..');
 
-describe("RSC boundaries", () => {
-  it("keeps the home page on server-safe imports", () => {
-    const source = fs.readFileSync(path.join(root, "app/page.tsx"), "utf8");
+describe('RSC boundaries', () => {
+  it('keeps the home page on server-safe imports', () => {
+    const source = fs.readFileSync(path.join(root, 'app/page.tsx'), 'utf8');
 
     expect(source).toContain('createServerSupabaseClient');
     expect(source).toContain('HomePageShell');
@@ -15,5 +15,3 @@ describe("RSC boundaries", () => {
     expect(source).not.toContain('createBrowserSupabaseClient');
   });
 });
-
-

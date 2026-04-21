@@ -1,5 +1,5 @@
-import type { UserSummary, VoteSide } from "@/lib/types/domain";
-import type { PostPollSummaryView } from "@/lib/types/views";
+import type { UserSummary, VoteSide } from '@/lib/types/domain';
+import type { PostPollSummaryView } from '@/lib/types/views';
 
 export type { UserSummary, VoteSide };
 
@@ -33,7 +33,7 @@ export type CommentTreeNode = {
 };
 
 export type ReplyDraft = {
-  targetType: "post" | "comment";
+  targetType: 'post' | 'comment';
   targetId: string;
   parentCommentId?: string;
   body: string;

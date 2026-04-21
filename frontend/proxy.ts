@@ -1,37 +1,39 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
 
-import { createLogger, runWithRequest, withRequest } from "@/lib/logger";
-import { updateSession } from "@/lib/supabase/middleware";
+import { createLogger, runWithRequest, withRequest } from '@/lib/logger';
+import { updateSession } from '@/lib/supabase/middleware';
 
-const log = createLogger("http");
+const log = createLogger('http');
 
 export async function proxy(request: NextRequest) {
-  const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
-  const requestLogger = withRequest(log, request).child({ request_id: requestId });
+  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
+  const requestLogger = withRequest(log, request).child({
+    request_id: requestId,
+  });
   const start = performance.now();
 
   return runWithRequest({ requestId, logger: requestLogger }, async () => {
-    requestLogger.info({ event: "request.start" }, "request received");
+    requestLogger.info({ event: 'request.start' }, 'request received');
     try {
       const response = await updateSession(request);
-      response.headers.set("x-request-id", requestId);
+      response.headers.set('x-request-id', requestId);
       requestLogger.info(
         {
-          event: "request.end",
+          event: 'request.end',
           status: response.status,
-          duration_ms: Math.round(performance.now() - start)
+          duration_ms: Math.round(performance.now() - start),
         },
-        "request completed"
+        'request completed',
       );
       return response;
     } catch (err) {
       requestLogger.error(
         {
-          event: "request.error",
+          event: 'request.error',
           duration_ms: Math.round(performance.now() - start),
-          err
+          err,
         },
-        "request failed"
+        'request failed',
       );
       throw err;
     }
@@ -39,5 +41,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

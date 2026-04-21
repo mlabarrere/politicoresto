@@ -34,24 +34,33 @@ type AuthCapableClient = {
 
 type AuthUser = { id: string; email: string | null };
 
-async function resolveAuth(client: AuthCapableClient): Promise<AuthUser | null> {
-  if (typeof client.auth?.getClaims !== "function") return null;
+async function resolveAuth(
+  client: AuthCapableClient,
+): Promise<AuthUser | null> {
+  if (typeof client.auth?.getClaims !== 'function') return null;
   try {
     // Call as a method so `this` binds — auth-js's getClaims() internally
     // calls `this.getSession()` / `this.getUser()` and crashes otherwise.
     const { data, error } = await client.auth.getClaims();
     const claims = data?.claims;
     if (error || !claims?.sub) return null;
-    return { id: claims.sub, email: (claims.email as string | null | undefined) ?? null };
+    return {
+      id: claims.sub,
+      email: (claims.email as string | null | undefined) ?? null,
+    };
   } catch {
     return null;
   }
 }
 
-export async function getAuthUserId(client: AuthCapableClient): Promise<string | null> {
+export async function getAuthUserId(
+  client: AuthCapableClient,
+): Promise<string | null> {
   return (await resolveAuth(client))?.id ?? null;
 }
 
-export async function getAuthUser(client: AuthCapableClient): Promise<AuthUser | null> {
+export async function getAuthUser(
+  client: AuthCapableClient,
+): Promise<AuthUser | null> {
   return resolveAuth(client);
 }

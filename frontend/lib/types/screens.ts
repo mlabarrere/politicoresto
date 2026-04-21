@@ -2,8 +2,8 @@ import type {
   CommentView,
   PostFeedItemView,
   PostView,
-  PostRowView
-} from "@/lib/types/views";
+  PostRowView,
+} from '@/lib/types/views';
 
 export type LoadState<T> = {
   data: T;
@@ -28,5 +28,3 @@ export type PostDetailScreenData = {
   posts: PostView[];
   comments: CommentView[];
 };
-
-

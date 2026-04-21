@@ -82,7 +82,7 @@ export type HomeFeedTopicView = {
   feed_gauche_count?: number | null;
   feed_droite_count?: number | null;
   feed_comment_count?: number | null;
-  feed_user_reaction_side?: "gauche" | "droite" | null;
+  feed_user_reaction_side?: 'gauche' | 'droite' | null;
   feed_poll_summary?: PostPollSummaryView | null;
   feed_subjects?: { slug: string; name: string; emoji: string | null }[] | null;
   feed_party_tags?: string[] | null;
@@ -132,7 +132,7 @@ export type PostPollSummaryView = {
   post_title: string;
   question: string;
   deadline_at: string;
-  poll_status: "open" | "closed";
+  poll_status: 'open' | 'closed';
   sample_size: number;
   effective_sample_size: number;
   representativity_score: number;
@@ -226,7 +226,7 @@ export type PostView = {
   status: string;
   gauche_count: number | null;
   droite_count: number | null;
-  user_reaction_side?: "gauche" | "droite" | null;
+  user_reaction_side?: 'gauche' | 'droite' | null;
   weighted_votes: number | null;
   comment_count: number | null;
   poll_summary?: PostPollSummaryView | null;
@@ -250,7 +250,7 @@ export type CommentView = {
   post_status: string;
   gauche_count: number | null;
   droite_count: number | null;
-  user_reaction_side?: "gauche" | "droite" | null;
+  user_reaction_side?: 'gauche' | 'droite' | null;
   comment_score: number | null;
 };
 

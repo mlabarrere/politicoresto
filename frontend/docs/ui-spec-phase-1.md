@@ -127,13 +127,13 @@ Interdits:
 
 ### 1.7 Statuts UI
 
-| Code UI | Libellé | Description |
-|---|---|---|
-| `open` | Ouvert | le sujet accepte encore des prises de position |
-| `locked` | Verrouillé | lecture ouverte, action fermée ou suspendue |
+| Code UI              | Libellé                        | Description                                             |
+| -------------------- | ------------------------------ | ------------------------------------------------------- |
+| `open`               | Ouvert                         | le sujet accepte encore des prises de position          |
+| `locked`             | Verrouillé                     | lecture ouverte, action fermée ou suspendue             |
 | `pending_resolution` | Clôturé, résolution en attente | clôturé, en attente d’issue officielle ou de validation |
-| `resolved` | Résolu | issue publiée et traçable |
-| `archived` | Archivé | historique, faible priorité dans les flux |
+| `resolved`           | Résolu                         | issue publiée et traçable                               |
+| `archived`           | Archivé                        | historique, faible priorité dans les flux               |
 
 Règle métier d’affichage:
 

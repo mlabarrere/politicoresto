@@ -1,11 +1,11 @@
-import { HomePageShell } from "@/components/home/homepage-shell";
-import { PageContainer } from "@/components/layout/page-container";
-import { getHomeScreenData } from "@/lib/data/public/home";
-import { createLogger, logError } from "@/lib/logger";
-import { getAuthUserId } from "@/lib/supabase/auth-user";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { HomePageShell } from '@/components/home/homepage-shell';
+import { PageContainer } from '@/components/layout/page-container';
+import { getHomeScreenData } from '@/lib/data/public/home';
+import { createLogger, logError } from '@/lib/logger';
+import { getAuthUserId } from '@/lib/supabase/auth-user';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-const log = createLogger("home");
+const log = createLogger('home');
 
 export default async function HomePage() {
   const start = performance.now();
@@ -16,13 +16,13 @@ export default async function HomePage() {
     const { data } = await getHomeScreenData(currentUserId);
     log.info(
       {
-        event: "home.rendered",
+        event: 'home.rendered',
         feed_count: data.feed.length,
         subjects_count: data.subjects.length,
         authenticated: Boolean(currentUserId),
-        duration_ms: Math.round(performance.now() - start)
+        duration_ms: Math.round(performance.now() - start),
       },
-      "home data fetched"
+      'home data fetched',
     );
 
     return (
@@ -37,7 +37,10 @@ export default async function HomePage() {
       </PageContainer>
     );
   } catch (err) {
-    logError(log, err, { event: "home.error", message: "home data fetch failed" });
+    logError(log, err, {
+      event: 'home.error',
+      message: 'home data fetch failed',
+    });
     throw err;
   }
 }

@@ -1,5 +1,5 @@
-import { PageContainer } from "@/components/layout/page-container";
-import { ScreenState } from "@/components/layout/screen-state";
+import { PageContainer } from '@/components/layout/page-container';
+import { ScreenState } from '@/components/layout/screen-state';
 
 export default function NotFound() {
   return (

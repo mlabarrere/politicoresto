@@ -2,20 +2,17 @@
   "name": "politicoresto-frontend",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=20.19.0"
-  },
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "typecheck": "tsc --noEmit",
-    "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "vitest run",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
+    "dev": "next dev",
     "dev:full": "bash ../scripts/dev.sh",
     "dev:reset": "bash ../scripts/dev.sh --reset",
+    "start": "next start",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:unit": "vitest run",
+    "typecheck": "tsc --noEmit",
     "verify": "bash ../scripts/verify.sh"
   },
   "dependencies": {
@@ -59,5 +56,8 @@
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2",
     "vitest": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

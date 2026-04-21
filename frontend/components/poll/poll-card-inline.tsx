@@ -1,31 +1,36 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 
-import { AppButton } from "@/components/app/app-button";
-import { AppCard } from "@/components/app/app-card";
-import { PollResults } from "@/components/poll/poll-results";
-import { PollStatusBadge } from "@/components/poll/poll-status-badge";
-import type { PollCardInlineProps } from "@/lib/types/polls";
-import type { PostPollSummaryView } from "@/lib/types/views";
+import { AppButton } from '@/components/app/app-button';
+import { AppCard } from '@/components/app/app-card';
+import { PollResults } from '@/components/poll/poll-results';
+import { PollStatusBadge } from '@/components/poll/poll-status-badge';
+import type { PollCardInlineProps } from '@/lib/types/polls';
+import type { PostPollSummaryView } from '@/lib/types/views';
 
 type VoteResponse = {
   poll: PostPollSummaryView;
 };
 
-export function PollCardInline({ poll, isAuthenticated, onVoted }: PollCardInlineProps) {
+export function PollCardInline({
+  poll,
+  isAuthenticated,
+  onVoted,
+}: PollCardInlineProps) {
   const [model, setModel] = useState<PostPollSummaryView>(poll);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const isClosed = model.poll_status === "closed";
+  const isClosed = model.poll_status === 'closed';
   const hasAnswered = Boolean(model.selected_option_id);
 
   const helperText = useMemo(() => {
-    if (isClosed) return "Sondage clos.";
-    if (hasAnswered) return "Sondage en cours. Les resultats peuvent encore bouger.";
-    return "Panel volontaire, non probabiliste.";
+    if (isClosed) return 'Sondage clos.';
+    if (hasAnswered)
+      return 'Sondage en cours. Les resultats peuvent encore bouger.';
+    return 'Panel volontaire, non probabiliste.';
   }, [hasAnswered, isClosed]);
 
   async function submitVote(optionId: string) {
@@ -33,27 +38,31 @@ export function PollCardInline({ poll, isAuthenticated, onVoted }: PollCardInlin
     setPending(optionId);
     setError(null);
     try {
-      const response = await fetch("/api/polls/vote", {
-        method: "POST",
+      const response = await fetch('/api/polls/vote', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json"
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           postItemId: model.post_item_id,
-          optionId
-        })
+          optionId,
+        }),
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(payload?.error ?? "Vote impossible");
+        const payload = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(payload?.error ?? 'Vote impossible');
       }
 
       const payload = (await response.json()) as VoteResponse;
       setModel(payload.poll);
       onVoted?.(payload.poll);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Vote impossible");
+      setError(
+        nextError instanceof Error ? nextError.message : 'Vote impossible',
+      );
     } finally {
       setPending(null);
     }
@@ -79,7 +88,7 @@ export function PollCardInline({ poll, isAuthenticated, onVoted }: PollCardInlin
               disabled={!isAuthenticated || Boolean(pending)}
               onClick={() => submitVote(option.option_id)}
             >
-              {pending === option.option_id ? "Vote..." : option.label}
+              {pending === option.option_id ? 'Vote...' : option.label}
             </AppButton>
           ))}
         </div>
@@ -90,7 +99,7 @@ export function PollCardInline({ poll, isAuthenticated, onVoted }: PollCardInlin
           </p>
           <PollResults poll={model} />
           <p className="text-xs text-muted-foreground">
-            {model.sample_size} vote{model.sample_size > 1 ? "s" : ""}
+            {model.sample_size} vote{model.sample_size > 1 ? 's' : ''}
           </p>
         </div>
       )}
@@ -99,9 +108,12 @@ export function PollCardInline({ poll, isAuthenticated, onVoted }: PollCardInlin
 
       {!isAuthenticated ? (
         <p className="text-xs text-muted-foreground">
-          <Link href="/auth/login" className="font-medium text-foreground hover:underline">
+          <Link
+            href="/auth/login"
+            className="font-medium text-foreground hover:underline"
+          >
             Connectez-vous
-          </Link>{" "}
+          </Link>{' '}
           pour voter.
         </p>
       ) : null}

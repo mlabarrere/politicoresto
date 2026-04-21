@@ -1,9 +1,9 @@
 import type {
   PostPollOptionSummary,
   PostPollResultPoint,
-  PostPollSummaryView
-} from "@/lib/types/views";
-import { isRecord, asNumber, asString } from "@/lib/utils/type-coerce";
+  PostPollSummaryView,
+} from '@/lib/types/views';
+import { isRecord, asNumber, asString } from '@/lib/utils/type-coerce';
 
 function normalizeOption(value: unknown): PostPollOptionSummary | null {
   if (!isRecord(value)) return null;
@@ -27,8 +27,14 @@ function normalizePoint(value: unknown): PostPollResultPoint | null {
 
   if (!option_id || !option_label) return null;
 
-  const response_count = value.response_count !== undefined ? asNumber(value.response_count, 0) : undefined;
-  const weighted_count = value.weighted_count !== undefined ? asNumber(value.weighted_count, 0) : undefined;
+  const response_count =
+    value.response_count !== undefined
+      ? asNumber(value.response_count, 0)
+      : undefined;
+  const weighted_count =
+    value.weighted_count !== undefined
+      ? asNumber(value.weighted_count, 0)
+      : undefined;
 
   return {
     option_id,
@@ -36,32 +42,38 @@ function normalizePoint(value: unknown): PostPollResultPoint | null {
     sort_order,
     response_count,
     weighted_count,
-    share
+    share,
   };
 }
 
 export function normalizePostPollSummary(
-  row: Record<string, unknown> | null
+  row: Record<string, unknown> | null,
 ): PostPollSummaryView | null {
   if (!row) return null;
 
   const post_item_id = asString(row.post_item_id);
-  const post_id = asString(row.post_id, "")!;
-  const post_slug = asString(row.post_slug, "")!;
-  const post_title = asString(row.post_title, "")!;
-  const question = asString(row.question, "")!;
-  const deadline_at = asString(row.deadline_at, "")!;
+  const post_id = asString(row.post_id, '')!;
+  const post_slug = asString(row.post_slug, '')!;
+  const post_title = asString(row.post_title, '')!;
+  const question = asString(row.question, '')!;
+  const deadline_at = asString(row.deadline_at, '')!;
 
   if (!post_item_id || !question) return null;
 
   const options = Array.isArray(row.options)
-    ? row.options.map(normalizeOption).filter((value): value is PostPollOptionSummary => value !== null)
+    ? row.options
+        .map(normalizeOption)
+        .filter((value): value is PostPollOptionSummary => value !== null)
     : [];
   const raw_results = Array.isArray(row.raw_results)
-    ? row.raw_results.map(normalizePoint).filter((value): value is PostPollResultPoint => value !== null)
+    ? row.raw_results
+        .map(normalizePoint)
+        .filter((value): value is PostPollResultPoint => value !== null)
     : [];
   const corrected_results = Array.isArray(row.corrected_results)
-    ? row.corrected_results.map(normalizePoint).filter((value): value is PostPollResultPoint => value !== null)
+    ? row.corrected_results
+        .map(normalizePoint)
+        .filter((value): value is PostPollResultPoint => value !== null)
     : [];
 
   return {
@@ -71,7 +83,7 @@ export function normalizePostPollSummary(
     post_title,
     question,
     deadline_at,
-    poll_status: row.poll_status === "closed" ? "closed" : "open",
+    poll_status: row.poll_status === 'closed' ? 'closed' : 'open',
     sample_size: asNumber(row.sample_size, 0),
     effective_sample_size: asNumber(row.effective_sample_size, 0),
     representativity_score: asNumber(row.representativity_score, 0),
@@ -82,6 +94,9 @@ export function normalizePostPollSummary(
     raw_results,
     corrected_results,
     options,
-    selected_option_id: typeof row.selected_option_id === "string" ? row.selected_option_id : null
+    selected_option_id:
+      typeof row.selected_option_id === 'string'
+        ? row.selected_option_id
+        : null,
   };
 }

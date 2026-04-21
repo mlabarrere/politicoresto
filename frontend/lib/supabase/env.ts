@@ -1,5 +1,5 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
 
 /**
  * Typed, validated env access. Built with @t3-oss/env-nextjs + zod.
@@ -13,18 +13,19 @@ import { z } from "zod";
 const env = createEnv({
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1)
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   },
   runtimeEnv: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   },
   // In tests the env is absent; skip validation so unit tests don't need to
   // stub every var. In dev / build / production the real env is validated.
-  skipValidation: process.env.NODE_ENV === "test"
+  skipValidation: process.env.NODE_ENV === 'test',
 });
 
 export const supabaseEnv = {
   url: () => env.NEXT_PUBLIC_SUPABASE_URL,
-  publishableKey: () => env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  publishableKey: () => env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
 };
