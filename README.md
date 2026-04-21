@@ -158,7 +158,7 @@ npm run build
 
 ## Liens utiles
 
-- Guide frontend detaille: `frontend/README.md`
-- Guide backend Supabase: `supabase/docs/README.md`
-- Regles agent frontend: `frontend/AGENT.md`
-- Regles agent backend: `supabase/AGENT.md`
+- Frontend: `frontend/README.md`
+- Règles projet (humains + agents): `CLAUDE.md`
+- Skills Claude Code: `.claude/skills/` (local-dev, logging, authentication, supabase-migration, nextjs-component)
+- Docs canoniques: `docs/metier.md`, `docs/technique.md`, `docs/front-back-contract.md`, `docs/runbook-prod.md`, `docs/testing-strategy.md`
