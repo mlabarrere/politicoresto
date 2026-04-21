@@ -21,11 +21,12 @@
 
 begin;
 
--- 1. Triggers de refresh (dead code : la fn cible est "select;")
-drop trigger if exists refresh_public_read_models_after_post_write on public.post;
-drop trigger if exists refresh_public_read_models_after_topic_write on public.topic;
-drop function if exists private.trigger_refresh_public_read_models();
-drop function if exists public.refresh_public_read_models();
+-- 1. Triggers de refresh (dead code : la fn cible est "select;").
+--    CASCADE car il y a d'autres refresh triggers dans le schéma historique
+--    (topic_resolution, topic_resolution_source, etc.) qu'on veut tous
+--    dégager en même temps.
+drop function if exists private.trigger_refresh_public_read_models() cascade;
+drop function if exists public.refresh_public_read_models() cascade;
 
 -- 2. Trigger de validation cassé (référence public.space qui n'existe pas)
 drop trigger if exists validate_topic_visibility_before_write on public.topic;
