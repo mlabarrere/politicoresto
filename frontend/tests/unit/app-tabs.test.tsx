@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { AppTabs } from '@/components/app/app-tabs';
 
 const items = [
@@ -14,7 +13,7 @@ const items = [
   },
 ];
 
-describe('AppTabs', () => {
+describe('appTabs', () => {
   it('renders all tab labels', () => {
     render(<AppTabs value="profile" onValueChange={vi.fn()} items={items} />);
     expect(screen.getByText('Profil')).toBeTruthy();

@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
-
 import {
   ACCOUNT_SECTIONS,
   resolveAccountSection,
 } from '@/lib/account/sections';
 
-describe('ACCOUNT_SECTIONS', () => {
+describe('aCCOUNT_SECTIONS', () => {
   it('contains profile, votes, drafts, posts, comments, security', () => {
     const keys = ACCOUNT_SECTIONS.map((s) => s.key);
     expect(keys).toContain('profile');

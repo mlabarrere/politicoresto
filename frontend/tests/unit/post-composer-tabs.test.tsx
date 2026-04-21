@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-
 import { PostComposer } from '@/components/home/post-composer';
 
 vi.mock('@/lib/data/political-taxonomy', () => ({
@@ -29,7 +28,7 @@ beforeAll(() => {
   }
 });
 
-describe('Post composer tabs', () => {
+describe('post composer tabs', () => {
   it('renders 3 tabs and poll info block', () => {
     const consoleErrorSpy = vi
       .spyOn(console, 'error')

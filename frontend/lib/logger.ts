@@ -11,7 +11,7 @@
  *   - Secrets are redacted at the logger level — see REDACT_PATHS.
  */
 
-import { AsyncLocalStorage } from 'async_hooks';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import pino, { type Logger } from 'pino';
 
 const IS_EDGE = process.env.NEXT_RUNTIME === 'edge';
@@ -141,7 +141,7 @@ function serializeError(err: unknown): object {
     if (err.cause !== undefined) out.cause = serializeError(err.cause);
     return out;
   }
-  if (typeof err === 'object' && err !== null) return err as object;
+  if (typeof err === 'object' && err !== null) return err;
   return { value: String(err) };
 }
 
@@ -150,7 +150,7 @@ function serializeError(err: unknown): object {
 // runtimes (Next.js ships an ALS polyfill for Edge).
 // ─────────────────────────────────────────────────────────────────────────────
 
-type RequestStoreEntry = { requestId: string; logger: Logger };
+interface RequestStoreEntry { requestId: string; logger: Logger }
 const requestStore = new AsyncLocalStorage<RequestStoreEntry>();
 
 export function runWithRequest<T>(
@@ -211,8 +211,8 @@ if (
     };
 
     process.on('unhandledRejection', (reason) =>
-      crash(reason, 'unhandledRejection'),
+      { crash(reason, 'unhandledRejection'); },
     );
-    process.on('uncaughtException', (err) => crash(err, 'uncaughtException'));
+    process.on('uncaughtException', (err) => { crash(err, 'uncaughtException'); });
   }
 }

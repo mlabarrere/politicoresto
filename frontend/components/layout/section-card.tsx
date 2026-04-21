@@ -1,5 +1,4 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-
 import { AppCard } from '@/components/app/app-card';
 import { cn } from '@/lib/utils';
 

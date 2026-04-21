@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
 const root = path.resolve(__dirname, '../..');
@@ -35,7 +34,7 @@ const sourceFiles = [
   'components/navigation/main-nav.tsx',
 ];
 
-describe('UI standards', () => {
+describe('uI standards', () => {
   it('does not use deprecated visual aliases in app-facing components', () => {
     for (const file of sourceFiles) {
       const source = fs.readFileSync(path.join(root, file), 'utf8');

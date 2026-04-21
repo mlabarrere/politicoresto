@@ -1,12 +1,12 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export type PrivateProfileRow = {
+export interface PrivateProfileRow {
   user_id: string;
   political_interest_level: number | null;
   notes_private: string | null;
   profile_payload: Record<string, unknown> | null;
   updated_at: string;
-};
+}
 
 export async function getVaultSettingsData() {
   const supabase = await createServerSupabaseClient();

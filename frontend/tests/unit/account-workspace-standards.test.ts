@@ -1,11 +1,10 @@
 ﻿import fs from 'node:fs';
 import path from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
 const root = path.resolve(__dirname, '../..');
 
-describe('Account workspace standards', () => {
+describe('account workspace standards', () => {
   it('renders account workspace through AppAccountShell with required sections', () => {
     const source = fs.readFileSync(
       path.join(root, 'app/(authenticated)/me/page.tsx'),

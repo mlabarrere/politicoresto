@@ -3,7 +3,7 @@ import { AppEmptyState } from '@/components/app/app-empty-state';
 import { AppBadge } from '@/components/app/app-badge';
 import { formatDate } from '@/lib/utils/format';
 
-type PostHistoryItem = {
+interface PostHistoryItem {
   id: string;
   post_id: string;
   type: string;
@@ -11,7 +11,7 @@ type PostHistoryItem = {
   status: string;
   entity_name: string | null;
   created_at: string;
-};
+}
 
 function toTypeLabel(type: string) {
   if (type === 'poll') return 'Sondage';

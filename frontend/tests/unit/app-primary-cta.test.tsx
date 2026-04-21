@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { AppPrimaryCTA } from '@/components/app/app-primary-cta';
 
 const pushMock = vi.fn();
@@ -10,7 +9,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
 }));
 
-describe('AppPrimaryCTA', () => {
+describe('appPrimaryCTA', () => {
   beforeEach(() => {
     pushMock.mockReset();
   });

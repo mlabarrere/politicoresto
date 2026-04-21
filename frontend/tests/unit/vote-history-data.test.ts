@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getVoteHistoryEditorData } from '@/lib/data/authenticated/vote-history';
 
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
@@ -8,9 +9,7 @@ vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
 
-import { getVoteHistoryEditorData } from '@/lib/data/authenticated/vote-history';
-
-type QueryResult = { data: unknown; error: unknown };
+interface QueryResult { data: unknown; error: unknown }
 
 function makeClient(opts: {
   elections: QueryResult;

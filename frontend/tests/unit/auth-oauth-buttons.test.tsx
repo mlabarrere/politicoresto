@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { OAuthButtons } from '@/components/auth/oauth-buttons';
 
 const mocks = vi.hoisted(() => ({
@@ -17,7 +16,7 @@ vi.mock('@/lib/supabase/client', async () => ({
   createBrowserSupabaseClient: mocks.createBrowserSupabaseClient,
 }));
 
-describe('OAuthButtons', () => {
+describe('oAuthButtons', () => {
   beforeEach(() => {
     mocks.signInWithOAuth.mockReset();
     mocks.createBrowserSupabaseClient.mockReset();

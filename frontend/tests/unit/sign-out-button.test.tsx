@@ -1,13 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { SignOutButton } from '@/components/auth/sign-out-button';
 
 vi.mock('@/lib/data/rpc/auth', () => ({
   signOutAction: vi.fn(),
 }));
 
-import { SignOutButton } from '@/components/auth/sign-out-button';
-
-describe('SignOutButton', () => {
+describe('signOutButton', () => {
   it('renders a submit button', () => {
     render(<SignOutButton />);
     const button = screen.getByRole('button');

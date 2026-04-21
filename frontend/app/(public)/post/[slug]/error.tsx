@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import type { Route } from 'next';
-
 import { PageContainer } from '@/components/layout/page-container';
 import { ScreenState } from '@/components/layout/screen-state';
 

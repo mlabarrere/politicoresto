@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-
 import { AppCard } from '@/components/app/app-card';
 
 export function AppPageHeader({

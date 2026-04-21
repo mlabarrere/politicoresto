@@ -2,7 +2,6 @@
 
 import { Flag, MessageSquare, Share2 } from 'lucide-react';
 import { useState } from 'react';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
 import { ReactionBar } from '@/components/social/reaction-bar';
@@ -33,7 +32,7 @@ export function PostActionsBar({
         setFeedback('Partage lancé');
       } else if (
         typeof navigator !== 'undefined' &&
-        navigator.clipboard?.writeText
+        navigator.clipboard.writeText
       ) {
         await navigator.clipboard.writeText(url);
         setFeedback('Lien copié');
@@ -44,12 +43,12 @@ export function PostActionsBar({
       setFeedback('Partage annulé');
     }
 
-    window.setTimeout(() => setFeedback(null), 1800);
+    window.setTimeout(() => { setFeedback(null); }, 1800);
   }
 
   function onReport() {
     setFeedback('Signalement enregistré');
-    window.setTimeout(() => setFeedback(null), 1800);
+    window.setTimeout(() => { setFeedback(null); }, 1800);
   }
 
   return (

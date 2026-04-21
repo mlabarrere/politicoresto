@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-
 import { normalizePostPollSummary } from '@/lib/polls/summary';
 import { getAuthUserId } from '@/lib/supabase/auth-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 const POLL_VOTE_ERROR = 'Poll vote failed';
 
-type VotePayload = {
+interface VotePayload {
   postItemId: string;
   optionId: string;
-};
+}
 
 function isVotePayload(value: unknown): value is VotePayload {
   if (!value || typeof value !== 'object') return false;

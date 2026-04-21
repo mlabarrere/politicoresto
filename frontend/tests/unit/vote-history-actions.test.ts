@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  deleteVoteHistoryAction,
+  upsertVoteHistoryAction,
+} from '@/lib/actions/vote-history';
 
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
@@ -11,11 +15,6 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('next/cache', () => ({
   revalidatePath: mocks.revalidatePath,
 }));
-
-import {
-  deleteVoteHistoryAction,
-  upsertVoteHistoryAction,
-} from '@/lib/actions/vote-history';
 
 function authedClient(rpcResult: { data?: unknown; error?: unknown }) {
   return {

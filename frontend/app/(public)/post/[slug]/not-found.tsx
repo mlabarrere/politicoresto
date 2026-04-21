@@ -1,6 +1,6 @@
+import type { Route } from 'next';
 import { PageContainer } from '@/components/layout/page-container';
 import { ScreenState } from '@/components/layout/screen-state';
-import type { Route } from 'next';
 
 export default function PostNotFound() {
   return (

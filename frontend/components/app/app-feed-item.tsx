@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { MessageSquare } from 'lucide-react';
-
 import { AppCard } from '@/components/app/app-card';
 import { ReactionBar } from '@/components/social/reaction-bar';
 import { HOME_STRINGS } from '@/lib/ui/strings';

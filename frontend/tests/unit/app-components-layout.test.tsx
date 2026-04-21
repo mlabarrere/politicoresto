@@ -1,10 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-
 import { AppEmptyState } from '@/components/app/app-empty-state';
 import { AppPageHeader } from '@/components/app/app-page-header';
 
-describe('AppEmptyState', () => {
+describe('appEmptyState', () => {
   it('renders title and body', () => {
     render(
       <AppEmptyState
@@ -34,7 +33,7 @@ describe('AppEmptyState', () => {
   });
 });
 
-describe('AppPageHeader', () => {
+describe('appPageHeader', () => {
   it('renders required title', () => {
     render(<AppPageHeader title="Mon Profil" />);
     expect(screen.getByRole('heading', { level: 1 })).toBeTruthy();

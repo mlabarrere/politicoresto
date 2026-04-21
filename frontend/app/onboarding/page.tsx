@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-
 import { AppCard } from '@/components/app/app-card';
 import { AppButton } from '@/components/app/app-button';
 import { AppInput } from '@/components/app/app-input';

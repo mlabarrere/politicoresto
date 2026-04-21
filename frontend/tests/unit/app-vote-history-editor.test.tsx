@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
 import { AppVoteHistoryEditor } from '@/components/app/app-vote-history-editor';
 import type {
   ElectionRow,
@@ -50,7 +49,7 @@ afterEach(() => {
   deleteMock.mockClear();
 });
 
-describe('AppVoteHistoryEditor', () => {
+describe('appVoteHistoryEditor', () => {
   it('shows the unavailable state when status is unavailable', () => {
     render(
       <AppVoteHistoryEditor

@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { Check, Slash, Trash2, X } from 'lucide-react';
-
 import { AppBanner } from '@/components/app/app-banner';
 import { AppCard } from '@/components/app/app-card';
 import { AppEmptyState } from '@/components/app/app-empty-state';
@@ -20,13 +19,13 @@ import { cn } from '@/lib/utils';
 
 type ChoiceKind = UserVoteRow['choice_kind'];
 
-type AbstentionOption = {
+interface AbstentionOption {
   kind: Exclude<ChoiceKind, 'vote'>;
   label: string;
   short: string;
   bg: string;
   fg: string;
-};
+}
 
 const ABSTENTION_OPTIONS: AbstentionOption[] = [
   {
@@ -68,12 +67,12 @@ const ABSTENTION_OPTIONS: AbstentionOption[] = [
 
 type EditorStatus = 'ready' | 'unavailable' | 'error';
 
-type ElectionGroup = {
+interface ElectionGroup {
   key: string;
   type: ElectionRow['type'];
   year: number;
   elections: ElectionRow[];
-};
+}
 
 function groupElections(elections: ElectionRow[]): ElectionGroup[] {
   const groups = new Map<string, ElectionRow[]>();
@@ -210,7 +209,7 @@ export function AppVoteHistoryEditor({
               currentVote={votesByElectionId[election.id]}
               onResultClick={onResultClick}
               onAbstentionClick={onAbstentionClick}
-              onClear={(e) => run(() => deleteVoteHistoryAction(e.slug))}
+              onClear={(e) => { run(() => deleteVoteHistoryAction(e.slug)); }}
             />
           ))}
         </AppCard>
@@ -245,7 +244,7 @@ function ElectionRowBlock({
         {currentVote ? (
           <button
             type="button"
-            onClick={() => onClear(election)}
+            onClick={() => { onClear(election); }}
             className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <Trash2 className="h-3 w-3" aria-hidden />
@@ -263,7 +262,7 @@ function ElectionRowBlock({
               currentVote?.choice_kind === 'vote' &&
               currentVote.election_result_id === result.id
             }
-            onClick={() => onResultClick(election, result.id)}
+            onClick={() => { onResultClick(election, result.id); }}
           />
         ))}
 
@@ -272,7 +271,7 @@ function ElectionRowBlock({
             key={opt.kind}
             option={opt}
             isSelected={currentVote?.choice_kind === opt.kind}
-            onClick={() => onAbstentionClick(election, opt.kind)}
+            onClick={() => { onAbstentionClick(election, opt.kind); }}
           />
         ))}
       </div>

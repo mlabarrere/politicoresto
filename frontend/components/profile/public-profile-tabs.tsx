@@ -2,26 +2,25 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-
 import { AppCard } from '@/components/app/app-card';
 import { AppTabs } from '@/components/app/app-tabs';
 import { formatDate } from '@/lib/utils/format';
 import { normalizeMultilineText } from '@/lib/utils/multiline';
 
-type PostItem = {
+interface PostItem {
   id: string;
   thread_slug: string;
   title: string | null;
   content: string | null;
   created_at: string;
-};
+}
 
-type CommentItem = {
+interface CommentItem {
   id: string;
   thread_slug: string;
   body_markdown: string;
   created_at: string;
-};
+}
 
 export function PublicProfileTabs({
   posts,
@@ -36,7 +35,7 @@ export function PublicProfileTabs({
     <AppTabs
       value={tab}
       onValueChange={(value) =>
-        setTab(value === 'comments' ? 'comments' : 'posts')
+        { setTab(value === 'comments' ? 'comments' : 'posts'); }
       }
       items={[
         {

@@ -1,5 +1,4 @@
 ﻿import { Lock } from 'lucide-react';
-
 import { AppBanner } from '@/components/app/app-banner';
 import { cn } from '@/lib/utils';
 

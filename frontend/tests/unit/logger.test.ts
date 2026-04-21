@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import {
   createLogger,
   logError,
@@ -68,7 +67,7 @@ describe('lib/logger', () => {
 
   it('logError calls logger.error by default', () => {
     const log = createLogger('test.err');
-    const calls: Array<{ level: string; args: unknown[] }> = [];
+    const calls: { level: string; args: unknown[] }[] = [];
     const shim = {
       error: (...args: unknown[]) => calls.push({ level: 'error', args }),
       warn: (...args: unknown[]) => calls.push({ level: 'warn', args }),
@@ -92,7 +91,7 @@ describe('lib/logger', () => {
   });
 
   it('logError honours level override', () => {
-    const calls: Array<{ level: string }> = [];
+    const calls: { level: string }[] = [];
     const shim = {
       error: () => calls.push({ level: 'error' }),
       warn: () => calls.push({ level: 'warn' }),
@@ -104,7 +103,7 @@ describe('lib/logger', () => {
   });
 
   it('logError serializes Error cause chain', () => {
-    const calls: Array<unknown[]> = [];
+    const calls: unknown[][] = [];
     const shim = { error: (...a: unknown[]) => calls.push(a) };
     const cause = new Error('root');
     const outer = new Error('outer', { cause });
@@ -117,7 +116,7 @@ describe('lib/logger', () => {
   });
 
   it('logError handles non-Error values', () => {
-    const calls: Array<unknown[]> = [];
+    const calls: unknown[][] = [];
     const shim = { error: (...a: unknown[]) => calls.push(a) };
     logError(shim as never, 'a string');
     logError(shim as never, 42);

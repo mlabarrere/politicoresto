@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { normalizeMultilineText } from '@/lib/utils/multiline';
 
 describe('normalizeMultilineText', () => {

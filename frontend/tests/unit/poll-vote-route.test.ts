@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { POST } from '@/app/api/polls/vote/route';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 

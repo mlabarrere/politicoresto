@@ -1,10 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppTabs } from '@/components/app/app-tabs';
 
-describe('App wrappers', () => {
+describe('app wrappers', () => {
   it('renders AppButton variants', () => {
     render(
       <div>

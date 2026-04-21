@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { getPostDetail } from '@/lib/data/public/posts';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getAuthUserId } from '@/lib/supabase/auth-user';
 
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: vi.fn(),
@@ -19,8 +19,6 @@ vi.mock('@/lib/supabase/auth-user', async (importOriginal) => {
 vi.mock('@/lib/data/public/polls', () => ({
   getPollSummariesByPostItemIds: vi.fn(async () => new Map()),
 }));
-
-import { getAuthUserId } from '@/lib/supabase/auth-user';
 
 const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 const mockedResolveCurrentUserId = vi.mocked(getAuthUserId);

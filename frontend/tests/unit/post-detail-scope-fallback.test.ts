@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { getPostDetail } from '@/lib/data/public/posts';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
@@ -9,10 +8,10 @@ vi.mock('@/lib/supabase/server', () => ({
 
 const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 
-type QueryResult = {
+interface QueryResult {
   data: unknown;
   error: { message?: string; code?: string } | null;
-};
+}
 
 function makeScopedQuery(getResult: (scope: string) => QueryResult) {
   return {

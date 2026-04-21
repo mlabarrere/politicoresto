@@ -1,11 +1,10 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-
 import HomeLoading from '@/app/loading';
 import LoadingPostDetail from '@/app/(public)/post/[slug]/loading';
 import { SectionCard } from '@/components/layout/section-card';
 
-describe('HomeLoading', () => {
+describe('homeLoading', () => {
   it('renders without crashing', () => {
     const { container } = render(<HomeLoading />);
     expect(container.firstChild).toBeTruthy();
@@ -18,7 +17,7 @@ describe('HomeLoading', () => {
   });
 });
 
-describe('LoadingPostDetail', () => {
+describe('loadingPostDetail', () => {
   it('renders without crashing', () => {
     const { container } = render(<LoadingPostDetail />);
     expect(container.firstChild).toBeTruthy();
@@ -31,7 +30,7 @@ describe('LoadingPostDetail', () => {
   });
 });
 
-describe('SectionCard', () => {
+describe('sectionCard', () => {
   it('renders title and children', () => {
     const { getByText } = render(
       <SectionCard title="Mon titre">

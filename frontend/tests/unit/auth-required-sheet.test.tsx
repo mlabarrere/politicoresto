@@ -1,9 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-
 import { AuthRequiredSheet } from '@/components/auth/auth-required-sheet';
 
-describe('AuthRequiredSheet', () => {
+describe('authRequiredSheet', () => {
   it('renders trigger button with correct aria-label', () => {
     render(
       <AuthRequiredSheet

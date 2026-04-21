@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { signOutAction } from '@/lib/data/rpc/auth';
 
 const mocks = vi.hoisted(() => ({
   redirect: vi.fn(),
@@ -10,8 +11,6 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import { signOutAction } from '@/lib/data/rpc/auth';
 
 describe('signOutAction', () => {
   beforeEach(() => {

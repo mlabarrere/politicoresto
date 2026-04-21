@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-
 import { getAuthUserId } from '@/lib/supabase/auth-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { safeNextPath } from '@/lib/utils/safe-path';

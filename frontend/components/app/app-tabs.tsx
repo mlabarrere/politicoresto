@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-
 import {
   CatalystTabs,
   CatalystTabsList,
@@ -10,12 +9,12 @@ import {
   CatalystTabsTrigger,
 } from '@/components/catalyst/tabs';
 
-type TabItem = {
+interface TabItem {
   key: string;
   label: string;
   disabled?: boolean;
   content: ReactNode;
-};
+}
 
 export function AppTabs({
   value,
@@ -35,7 +34,7 @@ export function AppTabs({
     <CatalystTabs
       selectedIndex={selectedIndex}
       onChange={(index) =>
-        onValueChange(items[index]?.key ?? items[0]?.key ?? '')
+        { onValueChange(items[index]?.key ?? items[0]?.key ?? ''); }
       }
     >
       <CatalystTabsList>

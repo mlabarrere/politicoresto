@@ -1,12 +1,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import PostNotFound from '@/app/(public)/post/[slug]/not-found';
 import PostError from '@/app/(public)/post/[slug]/error';
 import NotFound from '@/app/not-found';
 import { ScreenState } from '@/components/layout/screen-state';
 
-describe('PostNotFound', () => {
+describe('postNotFound', () => {
   it('renders without crashing', () => {
     const { container } = render(<PostNotFound />);
     expect(container.firstChild).toBeTruthy();
@@ -18,7 +17,7 @@ describe('PostNotFound', () => {
   });
 });
 
-describe('NotFound', () => {
+describe('notFound', () => {
   it('renders without crashing', () => {
     const { container } = render(<NotFound />);
     expect(container.firstChild).toBeTruthy();
@@ -30,7 +29,7 @@ describe('NotFound', () => {
   });
 });
 
-describe('PostError', () => {
+describe('postError', () => {
   it('renders error screen with retry button', () => {
     const reset = vi.fn();
     render(<PostError error={new Error('test error')} reset={reset} />);
@@ -47,7 +46,7 @@ describe('PostError', () => {
   });
 });
 
-describe('ScreenState', () => {
+describe('screenState', () => {
   it('renders title and body', () => {
     render(<ScreenState title="Erreur" body="Description de l'erreur" />);
     expect(screen.getByText('Erreur')).toBeTruthy();

@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Route } from 'next';
-
 import { siteConfig } from '@/lib/config/site';
 
 export function MainNav() {

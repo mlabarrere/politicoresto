@@ -1,9 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { AppUsernameField } from '@/components/app/app-username-field';
 
-describe('AppUsernameField', () => {
+describe('appUsernameField', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -26,7 +25,7 @@ describe('AppUsernameField', () => {
 
   it('renders with defaultValue pre-filled', () => {
     render(<AppUsernameField defaultValue="citoyen_actif" />);
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    const input = screen.getByRole('textbox');
     expect(input.value).toBe('citoyen_actif');
   });
 

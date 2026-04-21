@@ -12,7 +12,6 @@ import {
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { CornerDownLeft, MessageSquare, Share2 } from 'lucide-react';
-
 import { ReactionBar } from '@/components/social/reaction-bar';
 import { PollCardInline } from '@/components/poll/poll-card-inline';
 import { AppCard } from '@/components/app/app-card';
@@ -103,7 +102,7 @@ export const PostCard = memo(function PostCard({
           setShareFeedback('Partage lance');
         } else if (
           typeof navigator !== 'undefined' &&
-          navigator.clipboard?.writeText
+          navigator.clipboard.writeText
         ) {
           await navigator.clipboard.writeText(shareUrl);
           setShareFeedback('Lien copie');

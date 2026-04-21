@@ -1,27 +1,27 @@
-export type PublicProfileView = {
+export interface PublicProfileView {
   user_id: string;
   display_name: string | null;
   bio: string | null;
   created_at: string;
-};
+}
 
-export type TopicDiscussionPayload = {
+export interface TopicDiscussionPayload {
   excerpt_type: string | null;
   excerpt_title: string | null;
   excerpt_text: string | null;
   excerpt_created_at: string | null;
-};
+}
 
-export type TopicResolutionPayload = {
+export interface TopicResolutionPayload {
   resolution_status: string | null;
   resolved_label: string | null;
   resolved_at: string | null;
   resolution_note: string | null;
   source_label: string | null;
   source_url: string | null;
-};
+}
 
-export type TopicCardPayload = {
+export interface TopicCardPayload {
   topic_id: string;
   topic_slug: string;
   topic_title: string;
@@ -40,9 +40,9 @@ export type TopicCardPayload = {
   feed_reason_code: string;
   feed_reason_label: string;
   editorial_feed_score: number;
-};
+}
 
-export type HomeFeedTopicView = {
+export interface HomeFeedTopicView {
   topic_id: string;
   topic_slug: string;
   topic_title: string;
@@ -86,9 +86,9 @@ export type HomeFeedTopicView = {
   feed_poll_summary?: PostPollSummaryView | null;
   feed_subjects?: { slug: string; name: string; emoji: string | null }[] | null;
   feed_party_tags?: string[] | null;
-};
+}
 
-export type TopicSummaryView = {
+export interface TopicSummaryView {
   id: string;
   space_id: string | null;
   slug: string;
@@ -100,32 +100,32 @@ export type TopicSummaryView = {
   close_at: string;
   created_at: string;
   visible_post_count: number | null;
-};
+}
 
-export type PublicPollResultsView = {
+export interface PublicPollResultsView {
   poll_id: string;
   poll_question_id: string;
   poll_option_id: string | null;
   option_label: string | null;
   response_count: number | null;
-};
+}
 
-export type PostPollOptionSummary = {
+export interface PostPollOptionSummary {
   option_id: string;
   label: string;
   sort_order: number;
-};
+}
 
-export type PostPollResultPoint = {
+export interface PostPollResultPoint {
   option_id: string;
   option_label: string;
   sort_order: number;
   response_count?: number;
   weighted_count?: number;
   share: number;
-};
+}
 
-export type PostPollSummaryView = {
+export interface PostPollSummaryView {
   post_item_id: string;
   post_id: string;
   post_slug: string;
@@ -144,9 +144,9 @@ export type PostPollSummaryView = {
   corrected_results: PostPollResultPoint[];
   options: PostPollOptionSummary[];
   selected_option_id: string | null;
-};
+}
 
-export type SpaceRow = {
+export interface SpaceRow {
   id: string;
   slug: string;
   name: string;
@@ -155,9 +155,9 @@ export type SpaceRow = {
   space_status: string;
   visibility: string;
   created_at: string;
-};
+}
 
-export type TopicRow = {
+export interface TopicRow {
   id: string;
   space_id: string | null;
   slug: string;
@@ -168,9 +168,9 @@ export type TopicRow = {
   open_at: string;
   close_at: string;
   created_at: string;
-};
+}
 
-export type PostRow = {
+export interface PostRow {
   id: string;
   topic_id: string | null;
   space_id: string | null;
@@ -179,9 +179,9 @@ export type PostRow = {
   title: string | null;
   body_markdown: string;
   created_at: string;
-};
+}
 
-export type PollRow = {
+export interface PollRow {
   id: string;
   topic_id: string | null;
   space_id: string | null;
@@ -191,24 +191,24 @@ export type PollRow = {
   visibility: string;
   open_at: string;
   close_at: string;
-};
+}
 
-export type PollQuestionRow = {
+export interface PollQuestionRow {
   id: string;
   poll_id: string;
   prompt: string;
   question_type: string;
   sort_order: number;
-};
+}
 
-export type PollOptionRow = {
+export interface PollOptionRow {
   id: string;
   poll_question_id: string;
   label: string;
   sort_order: number;
-};
+}
 
-export type PostView = {
+export interface PostView {
   id: string;
   post_id: string;
   thread_id?: string;
@@ -230,9 +230,9 @@ export type PostView = {
   weighted_votes: number | null;
   comment_count: number | null;
   poll_summary?: PostPollSummaryView | null;
-};
+}
 
-export type CommentView = {
+export interface CommentView {
   id: string;
   post_id: string;
   post_item_id: string | null;
@@ -252,9 +252,9 @@ export type CommentView = {
   droite_count: number | null;
   user_reaction_side?: 'gauche' | 'droite' | null;
   comment_score: number | null;
-};
+}
 
-export type LeaderboardEntryView = {
+export interface LeaderboardEntryView {
   user_id: string;
   username: string | null;
   display_name: string | null;
@@ -267,15 +267,15 @@ export type LeaderboardEntryView = {
   entity_slug?: string | null;
   entity_name?: string | null;
   updated_at?: string | null;
-};
+}
 
-export type PrivateVoteHistoryView = {
+export interface PrivateVoteHistoryView {
   id: string;
   vote_round: number | null;
   declared_option_label: string;
   declared_candidate_name: string | null;
   declared_at: string;
-};
+}
 
 export type PostFeedItemView = HomeFeedTopicView;
 export type PostSummaryView = TopicSummaryView;

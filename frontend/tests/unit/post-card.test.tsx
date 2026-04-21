@@ -1,6 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { PostCard } from '@/components/domain/post-card';
 import { buildHomeFeedTopic } from '../fixtures/home-feed-topic';
 
@@ -25,13 +24,13 @@ describe('post feed card', () => {
           feed_post_id: 'post-1',
           feed_post_content: longBody,
         })}
-        isAuthenticated={true}
+        isAuthenticated
       />,
     );
 
     const preview = screen.getByText((text) => text.startsWith('A'));
-    expect(preview.textContent?.length).toBe(503);
-    expect(preview.textContent?.endsWith('...')).toBe(true);
+    expect(preview.textContent.length).toBe(503);
+    expect(preview.textContent.endsWith('...')).toBe(true);
   });
 
   it('opens post when card is clicked', () => {
@@ -42,7 +41,7 @@ describe('post feed card', () => {
           feed_post_id: 'post-1',
           feed_post_content: 'Contenu court',
         })}
-        isAuthenticated={true}
+        isAuthenticated
       />,
     );
 
@@ -57,7 +56,7 @@ describe('post feed card', () => {
           feed_post_id: 'post-1',
           feed_post_content: 'Contenu court',
         })}
-        isAuthenticated={true}
+        isAuthenticated
       />,
     );
 
@@ -73,7 +72,7 @@ describe('post feed card', () => {
           feed_post_content: 'Contenu court',
           feed_comment_count: 12,
         })}
-        isAuthenticated={true}
+        isAuthenticated
       />,
     );
 
@@ -101,16 +100,16 @@ describe('post feed card', () => {
           feed_post_id: 'post-1',
           feed_post_content: 'Contenu court',
         })}
-        isAuthenticated={true}
+        isAuthenticated
       />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Partager' }));
 
     await waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith(
+      { expect(writeText).toHaveBeenCalledWith(
         expect.stringContaining('/post/share-thread'),
-      ),
+      ); },
     );
   });
 });

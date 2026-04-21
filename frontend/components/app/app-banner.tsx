@@ -1,12 +1,10 @@
-import type { HTMLAttributes } from 'react';
-
+import type { HTMLAttributes , ReactNode } from 'react';
 import {
   CatalystAlert,
   CatalystAlertBody,
   CatalystAlertTitle,
 } from '@/components/catalyst/alert';
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
 
 export function AppBanner({
   title,

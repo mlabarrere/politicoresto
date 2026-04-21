@@ -2,8 +2,8 @@ import type { HomeFeedTopicView } from '@/lib/types/views';
 
 type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object
-    ? T[K] extends Array<infer U>
-      ? Array<DeepPartial<U>>
+    ? T[K] extends (infer U)[]
+      ? DeepPartial<U>[]
       : DeepPartial<T[K]>
     : T[K];
 };

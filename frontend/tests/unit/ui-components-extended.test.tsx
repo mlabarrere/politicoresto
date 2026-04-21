@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { AppBadge } from '@/components/app/app-badge';
@@ -8,7 +7,7 @@ import { AppBanner } from '@/components/app/app-banner';
 import { AppCard } from '@/components/app/app-card';
 import { AppPrivacyBadge } from '@/components/app/app-privacy-badge';
 
-describe('Skeleton', () => {
+describe('skeleton', () => {
   it('renders a skeleton div', () => {
     const { container } = render(<Skeleton />);
     const el = container.querySelector('[data-slot="skeleton"]');
@@ -17,13 +16,13 @@ describe('Skeleton', () => {
 
   it('applies custom className', () => {
     const { container } = render(<Skeleton className="h-4 w-32" />);
-    const el = container.querySelector('[data-slot="skeleton"]') as HTMLElement;
+    const el = container.querySelector('[data-slot="skeleton"]')!;
     expect(el.className).toContain('h-4');
     expect(el.className).toContain('w-32');
   });
 });
 
-describe('Separator', () => {
+describe('separator', () => {
   it('renders a separator element', () => {
     const { container } = render(<Separator />);
     const el = container.querySelector('[data-slot="separator"]');
@@ -37,7 +36,7 @@ describe('Separator', () => {
   });
 });
 
-describe('AppBadge', () => {
+describe('appBadge', () => {
   it('renders label text', () => {
     render(<AppBadge label="Ouvert" />);
     expect(screen.getByText('Ouvert')).toBeTruthy();
@@ -79,7 +78,7 @@ describe('AppBadge', () => {
   });
 });
 
-describe('AppBanner', () => {
+describe('appBanner', () => {
   it('renders title and body', () => {
     render(<AppBanner title="Attention" body="Voici un avertissement." />);
     expect(screen.getByText('Attention')).toBeTruthy();
@@ -117,7 +116,7 @@ describe('AppBanner', () => {
   });
 });
 
-describe('AppCard', () => {
+describe('appCard', () => {
   it('renders children content', () => {
     render(
       <AppCard>
@@ -139,12 +138,12 @@ describe('AppCard', () => {
 
   it('applies custom className', () => {
     const { container } = render(<AppCard className="my-card">test</AppCard>);
-    const el = container.querySelector('section') as HTMLElement;
+    const el = container.querySelector('section')!;
     expect(el.className).toContain('my-card');
   });
 });
 
-describe('AppPrivacyBadge', () => {
+describe('appPrivacyBadge', () => {
   it("renders default label 'Prive'", () => {
     render(<AppPrivacyBadge />);
     expect(screen.getByText('Prive')).toBeTruthy();

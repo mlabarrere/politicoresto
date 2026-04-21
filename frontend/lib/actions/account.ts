@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-
 import { normalizeUsername, validateUsername } from '@/lib/account/username';
 import { createLogger, logError } from '@/lib/logger';
 import { getAuthUserId } from '@/lib/supabase/auth-user';

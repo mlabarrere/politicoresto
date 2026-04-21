@@ -1,12 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Route } from 'next';
-
 import { EmptyState } from '@/components/layout/empty-state';
 import { ScreenState } from '@/components/layout/screen-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 
-describe('Editorial UI states', () => {
+describe('editorial UI states', () => {
   it('renders an empty state with a clear recovery action', () => {
     render(
       <EmptyState

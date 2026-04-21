@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
 const mocks = vi.hoisted(() => ({
   createServerClient: vi.fn(),
@@ -16,8 +17,6 @@ vi.mock('@/lib/supabase/env', () => ({
     publishableKey: () => 'anon-key',
   },
 }));
-
-import { updateSession } from '@/lib/supabase/middleware';
 
 function makeRequest(
   pathname: string,

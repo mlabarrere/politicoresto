@@ -1,5 +1,4 @@
 ﻿import { UserRound } from 'lucide-react';
-
 import { AppCard } from '@/components/app/app-card';
 import { AppInput } from '@/components/app/app-input';
 

@@ -1,5 +1,4 @@
 ﻿import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { getAccountWorkspaceData } from '@/lib/data/authenticated/account-workspace';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
@@ -9,10 +8,10 @@ vi.mock('@/lib/supabase/server', () => ({
 
 const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 
-type QueryResult = {
+interface QueryResult {
   data: unknown;
   error: { message?: string; code?: string } | null;
-};
+}
 
 function makeQuery(result: QueryResult) {
   const query = {

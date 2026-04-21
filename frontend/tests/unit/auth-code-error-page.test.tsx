@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import AuthCodeErrorPage from '@/app/auth/auth-code-error/page';
 
 vi.mock('next/link', () => ({
@@ -21,7 +20,7 @@ vi.mock('next/link', () => ({
   },
 }));
 
-describe('AuthCodeErrorPage', () => {
+describe('authCodeErrorPage', () => {
   it('renders oauth_missing_code message', async () => {
     render(
       await AuthCodeErrorPage({

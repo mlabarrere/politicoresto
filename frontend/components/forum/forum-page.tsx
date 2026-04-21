@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-
 import { CommentThread } from '@/components/forum/comment-thread';
 import { PostActionsBar } from '@/components/forum/post-actions-bar';
 import { PostCard } from '@/components/forum/post-card';
@@ -13,9 +12,9 @@ import type {
   ForumPageState,
 } from '@/lib/types/forum-components';
 
-type CommentMutationResponse = {
+interface CommentMutationResponse {
   comment?: CommentTreeNode;
-};
+}
 
 function insertReply(
   tree: CommentTreeNode[],
@@ -126,7 +125,7 @@ export function ForumPage({
     });
 
     if (result.comment) {
-      setTree((previous) => [...previous, result.comment as CommentTreeNode]);
+      setTree((previous) => [...previous, result.comment!]);
     }
     setShowRootComposer(false);
   }
@@ -146,7 +145,7 @@ export function ForumPage({
         insertReply(
           previous,
           payload.targetId,
-          result.comment as CommentTreeNode,
+          result.comment!,
         ),
       );
     }
@@ -182,7 +181,7 @@ export function ForumPage({
           rightCount={post.rightCount}
           isAuthenticated={Boolean(currentUserId)}
           redirectPath={redirectPath}
-          onReplyClick={() => setShowRootComposer(true)}
+          onReplyClick={() => { setShowRootComposer(true); }}
         />
 
         {showRootComposer ? (
@@ -190,7 +189,7 @@ export function ForumPage({
             targetType="post"
             targetId={post.id}
             onSubmit={(draft) => handleRootReplySubmit({ body: draft.body })}
-            onCancel={() => setShowRootComposer(false)}
+            onCancel={() => { setShowRootComposer(false); }}
             autoFocus
           />
         ) : null}

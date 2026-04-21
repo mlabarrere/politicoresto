@@ -1,6 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { PollCardInline } from '@/components/poll/poll-card-inline';
 import { buildPollSummary } from '../fixtures/polls';
 
@@ -14,7 +13,7 @@ describe('poll card inline', () => {
   });
 
   it('shows voting options before answer', () => {
-    render(<PollCardInline poll={buildPollSummary()} isAuthenticated={true} />);
+    render(<PollCardInline poll={buildPollSummary()} isAuthenticated />);
     expect(screen.getByText('Sondage')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sante' })).toBeInTheDocument();
     expect(screen.queryByText(/Resultats/i)).not.toBeInTheDocument();
@@ -31,7 +30,7 @@ describe('poll card inline', () => {
       }),
     });
 
-    render(<PollCardInline poll={buildPollSummary()} isAuthenticated={true} />);
+    render(<PollCardInline poll={buildPollSummary()} isAuthenticated />);
     fireEvent.click(screen.getByRole('button', { name: 'Sante' }));
 
     await waitFor(() =>
@@ -57,7 +56,7 @@ describe('poll card inline', () => {
           poll_status: 'closed',
           selected_option_id: 'o1',
         })}
-        isAuthenticated={true}
+        isAuthenticated
       />,
     );
 
@@ -79,7 +78,7 @@ describe('poll card inline', () => {
       }),
     });
 
-    render(<PollCardInline poll={buildPollSummary()} isAuthenticated={true} />);
+    render(<PollCardInline poll={buildPollSummary()} isAuthenticated />);
     fireEvent.click(screen.getByRole('button', { name: 'Sante' }));
 
     await waitFor(() =>

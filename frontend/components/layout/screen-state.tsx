@@ -1,18 +1,17 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { ArrowRight, Compass, RefreshCw } from 'lucide-react';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
 
-type ScreenStateProps = {
+interface ScreenStateProps {
   title: string;
   body: string;
   actionHref?: Route;
   actionLabel?: string;
   retryLabel?: string;
   onRetry?: () => void;
-};
+}
 
 export function ScreenState({
   title,

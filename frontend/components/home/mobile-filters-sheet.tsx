@@ -1,7 +1,6 @@
 'use client';
 
 import { SlidersHorizontal } from 'lucide-react';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppDrawer } from '@/components/app/app-drawer';
 import { AppFilterBar } from '@/components/app/app-filter-bar';

@@ -1,7 +1,6 @@
 'use client';
 
 import { Menu } from 'lucide-react';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppDrawer } from '@/components/app/app-drawer';
 import { politicalBlocs } from '@/lib/data/political-taxonomy';

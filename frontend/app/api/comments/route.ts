@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-
 import { parseNonEmptyString } from '@/lib/domain/comments/validation';
 import { mapCommentViewToForumNode } from '@/lib/forum/mappers';
 import {

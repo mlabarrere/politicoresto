@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { requireSession } from '@/lib/guards/require-session';
 
 const mocks = vi.hoisted(() => ({
   redirect: vi.fn(),
@@ -9,8 +10,6 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import { requireSession } from '@/lib/guards/require-session';
 
 function makeClient(userId: string | null) {
   return {

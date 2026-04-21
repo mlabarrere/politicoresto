@@ -1,6 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { OAuthButtons } from '@/components/auth/oauth-buttons';
 
 const signInMock = vi.fn();
@@ -23,7 +22,7 @@ beforeAll(() => {
   });
 });
 
-describe('OAuthButtons', () => {
+describe('oAuthButtons', () => {
   beforeEach(() => {
     signInMock.mockReset();
     assignMock.mockReset();
@@ -42,7 +41,7 @@ describe('OAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() => expect(signInMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => { expect(signInMock).toHaveBeenCalledTimes(1); });
     const [[payload]] = signInMock.mock.calls;
     expect(payload.provider).toBe('google');
     expect(payload.options.redirectTo).toBe(
@@ -61,7 +60,7 @@ describe('OAuthButtons', () => {
       screen.getByRole('button', { name: /Continuer avec Google/i }),
     );
 
-    await waitFor(() => expect(signInMock).toHaveBeenCalled());
+    await waitFor(() => { expect(signInMock).toHaveBeenCalled(); });
     const [[payload]] = signInMock.mock.calls;
     expect(payload.options.redirectTo).toBe(
       `${ORIGIN}/auth/callback?next=${encodeURIComponent('/')}`,
@@ -80,9 +79,9 @@ describe('OAuthButtons', () => {
     );
 
     await waitFor(() =>
-      expect(assignMock).toHaveBeenCalledWith(
+      { expect(assignMock).toHaveBeenCalledWith(
         'https://accounts.google.com/oauth2/xyz',
-      ),
+      ); },
     );
   });
 
@@ -102,9 +101,9 @@ describe('OAuthButtons', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByRole('alert').textContent?.toLowerCase()).toContain(
+      { expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
         'connexion google impossible',
-      ),
+      ); },
     );
     expect(screen.getByRole('alert').textContent).toMatch(/503/);
     expect(screen.getByRole('alert').textContent).toMatch(
@@ -128,9 +127,9 @@ describe('OAuthButtons', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByRole('alert').textContent?.toLowerCase()).toContain(
+      { expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
         'activez le provider google',
-      ),
+      ); },
     );
   });
 
@@ -143,9 +142,9 @@ describe('OAuthButtons', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByRole('alert').textContent?.toLowerCase()).toContain(
+      { expect(screen.getByRole('alert').textContent.toLowerCase()).toContain(
         "pas d'url",
-      ),
+      ); },
     );
   });
 });

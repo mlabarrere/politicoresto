@@ -1,6 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { PostFeed } from '@/components/home/post-feed';
 import { buildHomeFeedTopic } from '@/tests/fixtures/home-feed-topic';
 
@@ -15,7 +14,7 @@ vi.mock('@/components/app/app-feed-item', () => ({
   ),
 }));
 
-describe('PostFeed', () => {
+describe('postFeed', () => {
   it('shows empty state when no items', () => {
     render(<PostFeed items={[]} isAuthenticated={false} sortMode="popular" />);
     expect(screen.getByText('Aucun post visible')).toBeTruthy();

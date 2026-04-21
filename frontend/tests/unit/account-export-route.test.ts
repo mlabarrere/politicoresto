@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { GET } from '@/app/api/account/export/route';
 
 const mocks = vi.hoisted(() => ({
   getAccountWorkspaceData: vi.fn(),
@@ -8,9 +9,7 @@ vi.mock('@/lib/data/authenticated/account-workspace', () => ({
   getAccountWorkspaceData: mocks.getAccountWorkspaceData,
 }));
 
-import { GET } from '@/app/api/account/export/route';
-
-describe('GET /api/account/export', () => {
+describe('gET /api/account/export', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });

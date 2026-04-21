@@ -4,12 +4,12 @@ import { AppEmptyState } from '@/components/app/app-empty-state';
 import { AppBadge } from '@/components/app/app-badge';
 import { formatDate } from '@/lib/utils/format';
 
-type DraftItem = {
+interface DraftItem {
   id: string;
   type: string;
   title: string | null;
   updated_at: string;
-};
+}
 
 function toDraftLabel(type: string) {
   if (type === 'market') return 'Pari';

@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-
 import { createLogger, logError, withRequest } from '@/lib/logger';
 import { supabaseEnv } from '@/lib/supabase/env';
 import { safeNextPath } from '@/lib/utils/safe-path';
@@ -55,11 +54,11 @@ export async function GET(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(
-          cookiesToSet: Array<{
+          cookiesToSet: {
             name: string;
             value: string;
             options: CookieOptions;
-          }>,
+          }[],
         ) {
           for (const { name, value, options } of cookiesToSet) {
             response.cookies.set(name, value, options);

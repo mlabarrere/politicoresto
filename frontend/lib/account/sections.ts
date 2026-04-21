@@ -31,5 +31,5 @@ export function resolveAccountSection(
   const fallback: AccountSectionKey = 'profile';
   if (!section) return fallback;
   return (ACCOUNT_SECTIONS.find((item) => item.key === section)?.key ??
-    fallback) as AccountSectionKey;
+    fallback);
 }

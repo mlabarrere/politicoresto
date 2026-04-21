@@ -1,5 +1,4 @@
 ﻿import { Lock } from 'lucide-react';
-
 import { AppBadge } from '@/components/app/app-badge';
 
 export function AppPrivacyBadge({ label = 'Prive' }: { label?: string }) {

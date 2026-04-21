@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppTextarea } from '@/components/app/app-textarea';
 
@@ -56,7 +55,7 @@ export function CommentComposerShell({
         autoFocus={autoFocus}
         rows={3}
         value={body}
-        onChange={(event) => setBody(event.target.value)}
+        onChange={(event) => { setBody(event.target.value); }}
         placeholder={placeholder}
         className="resize-y"
       />

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+import { GET } from '@/app/auth/callback/route';
 
 const mocks = vi.hoisted(() => ({
   exchangeCodeForSession: vi.fn(),
@@ -26,8 +27,6 @@ vi.mock('next/headers', () => ({
   cookies: vi.fn(async () => mocks.cookieStore),
 }));
 
-import { GET } from '@/app/auth/callback/route';
-
 function makeRequest(url: string) {
   return new NextRequest(url);
 }
@@ -47,7 +46,7 @@ function makeSupabaseClient(
             | {
                 cookies?: {
                   setAll?: (
-                    c: Array<{ name: string; value: string; options: unknown }>,
+                    c: { name: string; value: string; options: unknown }[],
                   ) => void;
                 };
               }
@@ -82,7 +81,7 @@ function makeSupabaseClient(
   };
 }
 
-describe('GET /auth/callback', () => {
+describe('gET /auth/callback', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.cookieStore.getAll.mockReturnValue([]);

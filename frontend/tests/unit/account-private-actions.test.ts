@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  upsertPrivateProfileAction,
+  clearPrivateProfileAction,
+} from '@/lib/actions/account';
 
 const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
@@ -12,11 +16,6 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import {
-  upsertPrivateProfileAction,
-  clearPrivateProfileAction,
-} from '@/lib/actions/account';
 
 function makeFormData(entries: Record<string, string>) {
   const fd = new FormData();

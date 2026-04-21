@@ -1,5 +1,4 @@
 ﻿import { NextResponse } from 'next/server';
-
 import { getAccountWorkspaceData } from '@/lib/data/authenticated/account-workspace';
 
 export async function GET() {

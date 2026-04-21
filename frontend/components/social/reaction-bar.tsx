@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { AppButton } from '@/components/app/app-button';
 import { AuthRequiredSheet } from '@/components/auth/auth-required-sheet';
 import {
@@ -10,7 +10,6 @@ import {
   type ReactionSide,
 } from '@/lib/reactions';
 import { formatNumber } from '@/lib/utils/format';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const REACTIONS = [
   {

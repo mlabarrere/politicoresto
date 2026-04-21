@@ -1,11 +1,11 @@
-export type UsernameRouteParams = {
+export interface UsernameRouteParams {
   username: string;
-};
+}
 
-export type SlugRouteParams = {
+export interface SlugRouteParams {
   slug: string;
-};
+}
 
-export type PollRouteParams = {
+export interface PollRouteParams {
   id: string;
-};
+}

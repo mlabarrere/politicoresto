@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getVaultSettingsData } from '@/lib/data/authenticated/vault';
 
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
@@ -8,8 +9,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import { getVaultSettingsData } from '@/lib/data/authenticated/vault';
 
 describe('getVaultSettingsData', () => {
   beforeEach(() => {

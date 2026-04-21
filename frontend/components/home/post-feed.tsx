@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
 import { AppButton } from '@/components/app/app-button';
 import { EmptyState } from '@/components/layout/empty-state';
 import { AppFeedItem } from '@/components/app/app-feed-item';
@@ -115,7 +114,7 @@ export function PostFeed({
     const y = Number(raw);
     if (Number.isFinite(y) && y >= 0) {
       window.requestAnimationFrame(() =>
-        window.scrollTo({ top: y, behavior: 'auto' }),
+        { window.scrollTo({ top: y, behavior: 'auto' }); },
       );
     }
   }, []);
@@ -126,7 +125,7 @@ export function PostFeed({
       window.sessionStorage.setItem(HOME_SCROLL_KEY, String(window.scrollY));
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => { window.removeEventListener('scroll', onScroll); };
   }, []);
 
   if (!cappedItems.length) {
@@ -155,9 +154,9 @@ export function PostFeed({
             type="button"
             variant="secondary"
             onClick={() =>
-              setVisibleCount((value) =>
+              { setVisibleCount((value) =>
                 Math.min(value + LOAD_MORE_STEP, MAX_VISIBLE_ITEMS),
-              )
+              ); }
             }
           >
             {HOME_STRINGS.loadMore}

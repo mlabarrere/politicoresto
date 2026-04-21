@@ -1,6 +1,5 @@
 ﻿import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { AppSectionNav } from '@/components/app/app-section-nav';
 
 vi.mock('next/navigation', () => ({
@@ -8,7 +7,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams('section=votes'),
 }));
 
-describe('AppSectionNav', () => {
+describe('appSectionNav', () => {
   it('renders section links and marks active section', () => {
     render(
       <AppSectionNav

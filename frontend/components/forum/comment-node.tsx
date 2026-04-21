@@ -3,13 +3,12 @@
 import { memo, useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-
+import { CornerDownLeft } from 'lucide-react';
 import { CommentActionsMenu } from '@/components/forum/comment-actions-menu';
 import { EditComposer } from '@/components/forum/edit-composer';
 import { ReplyComposer } from '@/components/forum/reply-composer';
 import { ReactionBar } from '@/components/social/reaction-bar';
 import { toBackendVoteSide } from '@/lib/forum/vote';
-import { CornerDownLeft } from 'lucide-react';
 import { AppAvatar, AppAvatarFallback } from '@/components/app/app-avatar';
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
@@ -145,9 +144,9 @@ function CommentNodeBase({
             canDelete={canEdit}
             disabled={isSubmitting}
             onEdit={() =>
-              setMode((previous) =>
+              { setMode((previous) =>
                 transitionCommentNodeMode(previous, { type: 'START_EDIT' }),
-              )
+              ); }
             }
             onDelete={() => void handleDelete()}
             onCopyLink={handleCopyLink}
@@ -166,9 +165,9 @@ function CommentNodeBase({
               size="sm"
               disabled={isSubmitting}
               onClick={() =>
-                setMode((previous) =>
+                { setMode((previous) =>
                   transitionCommentNodeMode(previous, { type: 'START_REPLY' }),
-                )
+                ); }
               }
               aria-label="Répondre au commentaire"
             >
@@ -194,7 +193,7 @@ function CommentNodeBase({
               size="sm"
               variant="ghost"
               onClick={() => {
-                setLocalCollapsed(childrenCollapsed ? false : true);
+                setLocalCollapsed(!childrenCollapsed);
               }}
             >
               {childrenCollapsed
@@ -204,23 +203,21 @@ function CommentNodeBase({
           ) : null}
         </div>
 
-        {canReply && (mode === 'replying' || mode === 'submittingReply') && (
-          <div className="mt-3">
+        {canReply && (mode === 'replying' || mode === 'submittingReply') ? <div className="mt-3">
             <ReplyComposer
               targetType="comment"
               targetId={node.id}
               parentCommentId={node.id}
               onSubmit={(draft) => handleReply({ body: draft.body })}
               onCancel={() =>
-                setMode((previous) =>
+                { setMode((previous) =>
                   transitionCommentNodeMode(previous, { type: 'CANCEL' }),
-                )
+                ); }
               }
               mentionPrefix={`@${node.author.username} `}
               autoFocus
             />
-          </div>
-        )}
+          </div> : null}
 
         {(mode === 'editing' || mode === 'submittingEdit') && (
           <div className="mt-3">
@@ -229,9 +226,9 @@ function CommentNodeBase({
               initialValue={node.body}
               onSubmit={(draft) => handleEdit({ body: draft.body })}
               onCancel={() =>
-                setMode((previous) =>
+                { setMode((previous) =>
                   transitionCommentNodeMode(previous, { type: 'CANCEL' }),
-                )
+                ); }
               }
             />
           </div>

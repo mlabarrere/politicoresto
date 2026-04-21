@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
 import { AppInput } from '@/components/app/app-input';
 import { normalizeUsername, validateUsername } from '@/lib/account/username';
 
@@ -94,7 +93,7 @@ export function AppUsernameField({
         name="username"
         required
         value={value}
-        onChange={(event) => setValue(event.target.value)}
+        onChange={(event) => { setValue(event.target.value); }}
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}

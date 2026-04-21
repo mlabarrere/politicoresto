@@ -2,10 +2,10 @@
 
 import { AppButton } from '@/components/app/app-button';
 
-export type AppFilterOption<T extends string> = {
+export interface AppFilterOption<T extends string> {
   value: T;
   label: string;
-};
+}
 
 export function AppFilterBar<T extends string>({
   options,
@@ -25,7 +25,7 @@ export function AppFilterBar<T extends string>({
           key={option.value}
           type="button"
           variant={value === option.value ? 'primary' : 'secondary'}
-          onClick={() => onChange(option.value)}
+          onClick={() => { onChange(option.value); }}
         >
           {option.label}
         </AppButton>

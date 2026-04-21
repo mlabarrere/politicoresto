@@ -2,11 +2,11 @@ import type { CommentView } from '@/lib/types/views';
 import type { CommentTreeNode } from '@/lib/types/forum';
 import { buildForumCommentTree } from '@/lib/forum/mappers';
 
-export type CommentNode = {
+export interface CommentNode {
   comment: CommentView;
   children: CommentNode[];
   reactionTotal: number;
-};
+}
 
 function reactionTotal(comment: CommentView) {
   return Number(comment.gauche_count ?? 0) + Number(comment.droite_count ?? 0);

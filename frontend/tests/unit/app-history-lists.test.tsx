@@ -1,12 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-
 import { AppDraftList } from '@/components/app/app-draft-list';
 import { AppPostHistoryList } from '@/components/app/app-post-history-list';
 import { AppCommentHistoryList } from '@/components/app/app-comment-history-list';
 
 // ─── AppDraftList ──────────────────────────────────────────────────────
-describe('AppDraftList', () => {
+describe('appDraftList', () => {
   it('shows loading state', () => {
     render(<AppDraftList items={[]} loading />);
     expect(screen.getByText(/brouillons/i)).toBeTruthy();
@@ -59,7 +58,7 @@ describe('AppDraftList', () => {
 });
 
 // ─── AppPostHistoryList ────────────────────────────────────────────────
-describe('AppPostHistoryList', () => {
+describe('appPostHistoryList', () => {
   it('shows loading state', () => {
     render(<AppPostHistoryList items={[]} loading />);
     expect(screen.getByText(/publications/i)).toBeTruthy();
@@ -111,7 +110,7 @@ describe('AppPostHistoryList', () => {
 });
 
 // ─── AppCommentHistoryList ─────────────────────────────────────────────
-describe('AppCommentHistoryList', () => {
+describe('appCommentHistoryList', () => {
   it('shows loading state', () => {
     render(<AppCommentHistoryList items={[]} loading />);
     expect(screen.getByText(/commentaires/i)).toBeTruthy();
@@ -162,7 +161,7 @@ describe('AppCommentHistoryList', () => {
     ];
     render(<AppCommentHistoryList items={items} />);
     const el = screen.getByText(/a+\.\.\./);
-    expect(el.textContent?.length).toBeLessThan(200);
+    expect(el.textContent.length).toBeLessThan(200);
   });
 
   it('handles null parentTitle', () => {

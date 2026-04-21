@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import PostDetailPage from '@/app/(public)/post/[slug]/page';
 import { getPostDetail } from '@/lib/data/public/posts';
 import { createServerSupabaseClient } from '@/lib/supabase/server';

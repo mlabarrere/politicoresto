@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  upsertAccountIdentityAction,
+  deactivateAccountAction,
+  deleteAccountAction,
+} from '@/lib/actions/account';
 
 const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
@@ -15,12 +20,6 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import {
-  upsertAccountIdentityAction,
-  deactivateAccountAction,
-  deleteAccountAction,
-} from '@/lib/actions/account';
 
 function makeFormData(entries: Record<string, string>) {
   const fd = new FormData();

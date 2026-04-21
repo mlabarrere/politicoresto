@@ -1,6 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { AppFilterBar } from '@/components/app/app-filter-bar';
 import { AppFilter } from '@/components/app/app-filter';
 
@@ -10,7 +9,7 @@ const options = [
   { value: 'closed' as const, label: 'Fermés' },
 ];
 
-describe('AppFilterBar', () => {
+describe('appFilterBar', () => {
   it('renders all option labels', () => {
     render(<AppFilterBar options={options} value="all" onChange={vi.fn()} />);
     expect(screen.getByText('Tous')).toBeTruthy();
@@ -56,7 +55,7 @@ describe('AppFilterBar', () => {
   });
 });
 
-describe('AppFilter (re-export)', () => {
+describe('appFilter (re-export)', () => {
   it('is exported and works the same as AppFilterBar', () => {
     render(<AppFilter options={options} value="all" onChange={vi.fn()} />);
     expect(screen.getByText('Tous')).toBeTruthy();

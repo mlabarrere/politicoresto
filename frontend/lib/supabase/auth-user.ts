@@ -17,22 +17,22 @@
  * bugs liée au `this`-binding et à la clé de cache.
  */
 
-type JwtClaims = {
+interface JwtClaims {
   sub?: string;
   email?: string | null;
   [key: string]: unknown;
-};
+}
 
 type GetClaimsFn = () => Promise<{
   data?: { claims?: JwtClaims | null } | null;
   error?: unknown;
 }>;
 
-type AuthCapableClient = {
+interface AuthCapableClient {
   auth?: { getClaims?: GetClaimsFn };
-};
+}
 
-type AuthUser = { id: string; email: string | null };
+interface AuthUser { id: string; email: string | null }
 
 async function resolveAuth(
   client: AuthCapableClient,
@@ -46,7 +46,7 @@ async function resolveAuth(
     if (error || !claims?.sub) return null;
     return {
       id: claims.sub,
-      email: (claims.email as string | null | undefined) ?? null,
+      email: (claims.email) ?? null,
     };
   } catch {
     return null;

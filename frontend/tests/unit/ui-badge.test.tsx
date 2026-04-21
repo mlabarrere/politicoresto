@@ -1,9 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-
 import { Badge } from '@/components/ui/badge';
 
-describe('Badge', () => {
+describe('badge', () => {
   it('renders text content', () => {
     render(<Badge>Label</Badge>);
     expect(screen.getByText('Label')).toBeTruthy();

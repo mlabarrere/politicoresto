@@ -1,10 +1,10 @@
-﻿export type UrlPreview = {
+﻿export interface UrlPreview {
   url: string;
   title?: string;
   description?: string;
   image?: string;
   siteName?: string;
-};
+}
 
 const META_PATTERNS = {
   title: [
@@ -74,7 +74,7 @@ export function extractUrlPreviewFromHtml(
 
 export async function fetchUrlPreview(url: string): Promise<UrlPreview | null> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
+  const timeout = setTimeout(() => { controller.abort(); }, 3000);
 
   try {
     const response = await fetch(url, {

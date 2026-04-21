@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { AppDangerZone } from '@/components/app/app-danger-zone';
 import { AppPrivateNotice } from '@/components/app/app-private-notice';
 
@@ -22,7 +21,7 @@ vi.mock('@/components/catalyst/dialog', () => ({
     ) : null,
 }));
 
-describe('AppDangerZone', () => {
+describe('appDangerZone', () => {
   const onDeactivate = vi.fn();
   const onDelete = vi.fn();
 
@@ -47,7 +46,7 @@ describe('AppDangerZone', () => {
   });
 });
 
-describe('AppPrivateNotice', () => {
+describe('appPrivateNotice', () => {
   it('renders default message', () => {
     render(<AppPrivateNotice />);
     expect(screen.getByText('Visible uniquement par vous')).toBeTruthy();

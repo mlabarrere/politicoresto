@@ -10,13 +10,13 @@ export type CategoryFilter =
   | { type: 'parti'; slug: string }
   | null;
 
-export type HomePageShellProps = {
+export interface HomePageShellProps {
   items: PostFeedItemView[];
   isAuthenticated: boolean;
   subjects: SubjectView[];
-};
+}
 
-export type FeedToolbarProps = {
+export interface FeedToolbarProps {
   sortMode: FeedSortMode;
   onSortChange: (mode: FeedSortMode) => void;
-};
+}

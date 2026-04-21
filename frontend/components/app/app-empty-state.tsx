@@ -1,5 +1,4 @@
 import type { Route } from 'next';
-
 import { AppBanner } from '@/components/app/app-banner';
 import { AppButton } from '@/components/app/app-button';
 

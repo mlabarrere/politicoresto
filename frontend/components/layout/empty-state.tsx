@@ -1,5 +1,4 @@
 ﻿import type { Route } from 'next';
-
 import { AppEmptyState } from '@/components/app/app-empty-state';
 
 export function EmptyState({

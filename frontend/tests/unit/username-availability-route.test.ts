@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
+import { GET } from '@/app/api/account/username-availability/route';
 import { makeAuthMock } from '../fixtures/auth-mock';
 
 const mocks = vi.hoisted(() => ({
@@ -11,8 +11,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import { GET } from '@/app/api/account/username-availability/route';
 
 function makeRequest(value: string) {
   return new Request(
@@ -54,7 +52,7 @@ function makeClient({
   };
 }
 
-describe('GET /api/account/username-availability', () => {
+describe('gET /api/account/username-availability', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });

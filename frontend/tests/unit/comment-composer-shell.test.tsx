@@ -1,9 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { CommentComposerShell } from '@/components/forms/comment-composer-shell';
 
-describe('CommentComposerShell', () => {
+describe('commentComposerShell', () => {
   const defaultProps = {
     initialValue: '',
     placeholder: 'Votre commentaire...',

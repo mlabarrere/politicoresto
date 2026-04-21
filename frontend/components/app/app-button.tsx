@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-
 import { CatalystButton } from '@/components/catalyst/button';
 import { cn } from '@/lib/utils';
 

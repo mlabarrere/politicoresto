@@ -1,11 +1,11 @@
 type RowLike = Record<string, unknown>;
 
-export type PoliticalBloc = {
+export interface PoliticalBloc {
   slug: string;
   label: string;
   description: string;
   aliases: string[];
-};
+}
 
 export const politicalBlocs: PoliticalBloc[] = [
   {

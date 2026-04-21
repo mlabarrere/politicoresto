@@ -1,5 +1,4 @@
 ﻿import { describe, expect, it } from 'vitest';
-
 import { normalizeUsername, validateUsername } from '@/lib/account/username';
 
 describe('username helpers', () => {

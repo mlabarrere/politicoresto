@@ -4,7 +4,7 @@ import {
   RATE_LIMIT_MESSAGES,
 } from '@/lib/security/rate-limit';
 
-function mockSupabase(count: number | null, error: boolean = false) {
+function mockSupabase(count: number | null, error = false) {
   const chain = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -41,7 +41,7 @@ describe('canCreateCommentToday', () => {
   });
 });
 
-describe('RATE_LIMIT_MESSAGES', () => {
+describe('rATE_LIMIT_MESSAGES', () => {
   it('has comment message', () => {
     expect(RATE_LIMIT_MESSAGES.comment).toContain('40');
   });

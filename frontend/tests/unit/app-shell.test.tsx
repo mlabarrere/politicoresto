@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { AppShell } from '@/components/layout/app-shell';
 
 vi.mock('next/headers', () => ({
@@ -30,7 +29,7 @@ vi.mock('@/components/app/app-primary-cta', () => ({
   ),
 }));
 
-describe('AppShell', () => {
+describe('appShell', () => {
   it('renders global mobile FAB create entrypoint', async () => {
     render(
       await AppShell({ children: (<div>Page content</div>) as ReactNode }),

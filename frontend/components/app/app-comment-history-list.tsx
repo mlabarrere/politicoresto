@@ -3,13 +3,13 @@ import { AppEmptyState } from '@/components/app/app-empty-state';
 import { AppBadge } from '@/components/app/app-badge';
 import { formatDate } from '@/lib/utils/format';
 
-type CommentHistoryItem = {
+interface CommentHistoryItem {
   id: string;
   body_markdown: string;
   parentTitle: string | null;
   post_status: string;
   created_at: string;
-};
+}
 
 function excerpt(value: string) {
   const text = value.replace(/\s+/g, ' ').trim();

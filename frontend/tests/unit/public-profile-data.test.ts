@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getPublicProfile } from '@/lib/data/public/profile';
 
 const mocks = vi.hoisted(() => ({
   createServerSupabaseClient: vi.fn(),
@@ -7,8 +8,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import { getPublicProfile } from '@/lib/data/public/profile';
 
 type FromTable = 'app_profile' | 'v_thread_posts' | 'v_post_comments' | 'topic';
 

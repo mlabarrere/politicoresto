@@ -2,16 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-
 import { AppCard } from '@/components/app/app-card';
 import type { AccountSectionKey } from '@/lib/account/sections';
 import { cn } from '@/lib/utils';
 
-type SectionItem = {
+interface SectionItem {
   key: AccountSectionKey;
   label: string;
   description: string;
-};
+}
 
 export function AppSectionNav({
   items,

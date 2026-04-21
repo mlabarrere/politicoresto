@@ -1,5 +1,4 @@
 import type { ElementType, HTMLAttributes } from 'react';
-
 import { cn } from '@/lib/utils';
 
 export function AppCard<T extends ElementType = 'section'>({

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
 import { PollResults } from '@/components/poll/poll-results';
@@ -10,9 +9,9 @@ import { PollStatusBadge } from '@/components/poll/poll-status-badge';
 import type { PollCardInlineProps } from '@/lib/types/polls';
 import type { PostPollSummaryView } from '@/lib/types/views';
 
-type VoteResponse = {
+interface VoteResponse {
   poll: PostPollSummaryView;
-};
+}
 
 export function PollCardInline({
   poll,

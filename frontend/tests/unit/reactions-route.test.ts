@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
+import { POST } from '@/app/api/reactions/route';
 import { makeAuthMock } from '../fixtures/auth-mock';
 
 const mocks = vi.hoisted(() => ({
@@ -12,8 +12,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient,
 }));
-
-import { POST } from '@/app/api/reactions/route';
 
 function makeRequest(body: unknown) {
   return new Request('http://localhost/api/reactions', {
@@ -78,7 +76,7 @@ function makeClient({
   };
 }
 
-describe('POST /api/reactions', () => {
+describe('pOST /api/reactions', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });

@@ -2,11 +2,11 @@
 // Sert a peindre les cases candidat dans l'editeur d'historique de vote (/me?section=votes).
 // bg = fond plein ; fg = texte/contraste ; ring = bordure focus.
 
-export type PartyTheme = {
+export interface PartyTheme {
   bg: string;
   fg: string;
   ring: string;
-};
+}
 
 const PARTY_THEME: Record<string, PartyTheme> = {
   renaissance: { bg: '#ffd400', fg: '#0b0b0b', ring: '#a38a00' },

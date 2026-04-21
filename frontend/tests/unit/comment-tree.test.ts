@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { buildCommentTree } from '@/lib/forum/comments';
 import type { CommentView } from '@/lib/types/views';
 

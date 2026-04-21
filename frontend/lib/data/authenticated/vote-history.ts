@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export type ElectionResultRow = {
+export interface ElectionResultRow {
   id: string;
   rank: number | null;
   candidate_name: string | null;
@@ -8,9 +8,9 @@ export type ElectionResultRow = {
   party_slug: string | null;
   nuance: string | null;
   pct_exprimes: number | null;
-};
+}
 
-export type ElectionRow = {
+export interface ElectionRow {
   id: string;
   slug: string;
   type: 'presidentielle' | 'legislatives' | 'europeennes';
@@ -19,9 +19,9 @@ export type ElectionRow = {
   held_on: string;
   label: string;
   results: ElectionResultRow[];
-};
+}
 
-export type UserVoteRow = {
+export interface UserVoteRow {
   id: string;
   election_id: string;
   election_slug: string;
@@ -38,14 +38,14 @@ export type UserVoteRow = {
   candidate_name: string | null;
   list_label: string | null;
   party_slug: string | null;
-};
+}
 
-export type VoteHistoryEditorData = {
+export interface VoteHistoryEditorData {
   elections: ElectionRow[];
   votesByElectionId: Record<string, UserVoteRow>;
   status: 'ready' | 'unavailable' | 'error';
   message: string | null;
-};
+}
 
 function isCapabilityMissing(
   error: { message?: string; code?: string } | null | undefined,
@@ -128,9 +128,7 @@ export async function getVoteHistoryEditorData(): Promise<VoteHistoryEditorData>
   }
 
   const resultsByElection = new Map<string, ElectionResultRow[]>();
-  for (const r of (resultRows.data ?? []) as Array<
-    ElectionResultRow & { election_id: string }
-  >) {
+  for (const r of (resultRows.data ?? []) as (ElectionResultRow & { election_id: string })[]) {
     const list = resultsByElection.get(r.election_id) ?? [];
     list.push({
       id: r.id,

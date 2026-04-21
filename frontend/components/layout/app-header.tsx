@@ -2,7 +2,6 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import Image from 'next/image';
 import { Menu } from 'lucide-react';
-
 import { AppButton } from '@/components/app/app-button';
 import { AppPrimaryCTA } from '@/components/app/app-primary-cta';
 import { AppDrawer } from '@/components/app/app-drawer';

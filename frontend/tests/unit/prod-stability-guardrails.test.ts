@@ -1,11 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
 const root = path.resolve(__dirname, '../..');
 
-describe('Prod stability guardrails', () => {
+describe('prod stability guardrails', () => {
   it('does not leak technical feed errors on public pages', () => {
     const homeSource = fs.readFileSync(path.join(root, 'app/page.tsx'), 'utf8');
 

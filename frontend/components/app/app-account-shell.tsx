@@ -1,5 +1,4 @@
 ﻿import type { ReactNode } from 'react';
-
 import { AppCard } from '@/components/app/app-card';
 import { AppPrivateNotice } from '@/components/app/app-private-notice';
 import { AppSectionNav } from '@/components/app/app-section-nav';
@@ -13,11 +12,11 @@ export function AppAccountShell({
   children,
 }: {
   section: AccountSectionKey;
-  navItems: Array<{
+  navItems: {
     key: AccountSectionKey;
     label: string;
     description: string;
-  }>;
+  }[];
   heading: string;
   subheading: string;
   children: ReactNode;

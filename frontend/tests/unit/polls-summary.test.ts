@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { normalizePostPollSummary } from '@/lib/polls/summary';
 
 describe('normalizePostPollSummary', () => {

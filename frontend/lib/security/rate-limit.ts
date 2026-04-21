@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { type createServerSupabaseClient } from '@/lib/supabase/server';
 
 // Post rate limit : déplacé dans la RPC rpc_create_post_full (check côté DB,
 // errcode P0001, message "Daily post limit reached"). L'app ne le duplique plus.

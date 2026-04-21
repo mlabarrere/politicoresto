@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
 import { AppBanner } from '@/components/app/app-banner';
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
@@ -27,7 +26,7 @@ const PARTY_OPTIONS = [
   { slug: 'reconquete', label: '⬛ Reconquête' },
 ];
 
-type PostDraft = {
+interface PostDraft {
   title: string;
   body: string;
   source_url: string;
@@ -37,7 +36,7 @@ type PostDraft = {
   poll_question: string;
   poll_deadline_hours: string;
   poll_options: string[];
-};
+}
 
 function buildDefaultDraft(): PostDraft {
   return {
@@ -172,7 +171,7 @@ export function PostComposer({
           rows={9}
           value={draft.body}
           onChange={(event) =>
-            setDraft((prev) => ({ ...prev, body: event.target.value }))
+            { setDraft((prev) => ({ ...prev, body: event.target.value })); }
           }
           placeholder={
             '# Votre position\n\nExpliquez votre point de vue avec du **Markdown**.'
@@ -207,10 +206,10 @@ export function PostComposer({
             required={draft.mode === 'poll'}
             value={draft.poll_question}
             onChange={(event) =>
-              setDraft((prev) => ({
+              { setDraft((prev) => ({
                 ...prev,
                 poll_question: event.target.value,
-              }))
+              })); }
             }
             placeholder="Question unique"
           />
@@ -224,10 +223,10 @@ export function PostComposer({
             name="poll_deadline_hours"
             value={draft.poll_deadline_hours}
             onChange={(event) =>
-              setDraft((prev) => ({
+              { setDraft((prev) => ({
                 ...prev,
                 poll_deadline_hours: event.target.value,
-              }))
+              })); }
             }
           >
             <option value="6">6h</option>
@@ -282,10 +281,10 @@ export function PostComposer({
           type="button"
           variant="secondary"
           onClick={() =>
-            setDraft((prev) => ({
+            { setDraft((prev) => ({
               ...prev,
               poll_options: [...prev.poll_options, ''],
-            }))
+            })); }
           }
         >
           Ajouter option
@@ -334,7 +333,7 @@ export function PostComposer({
               required
               value={draft.title}
               onChange={(event) =>
-                setDraft((prev) => ({ ...prev, title: event.target.value }))
+                { setDraft((prev) => ({ ...prev, title: event.target.value })); }
               }
               placeholder="Titre du post"
             />
@@ -348,10 +347,10 @@ export function PostComposer({
               name="source_url"
               value={draft.source_url}
               onChange={(event) =>
-                setDraft((prev) => ({
+                { setDraft((prev) => ({
                   ...prev,
                   source_url: event.target.value,
-                }))
+                })); }
               }
               placeholder="https://..."
             />
@@ -370,7 +369,7 @@ export function PostComposer({
                   <button
                     key={subject.id}
                     type="button"
-                    onClick={() => toggleSubject(subject.id)}
+                    onClick={() => { toggleSubject(subject.id); }}
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors',
                       active
@@ -400,7 +399,7 @@ export function PostComposer({
                   key={party.slug}
                   type="button"
                   disabled={disabled}
-                  onClick={() => toggleParty(party.slug)}
+                  onClick={() => { toggleParty(party.slug); }}
                   className={cn(
                     'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors',
                     active
@@ -419,10 +418,10 @@ export function PostComposer({
         <AppTabs
           value={draft.mode}
           onValueChange={(mode) =>
-            setDraft((prev) => ({
+            { setDraft((prev) => ({
               ...prev,
               mode: mode === 'poll' ? 'poll' : 'post',
-            }))
+            })); }
           }
           items={[
             { key: 'post', label: 'Post', content: postTab },
@@ -434,7 +433,7 @@ export function PostComposer({
           <AppButton
             type="button"
             variant="ghost"
-            onClick={() => persistDraft(draft, 'manual')}
+            onClick={() => { persistDraft(draft, 'manual'); }}
           >
             Enregistrer le brouillon
           </AppButton>

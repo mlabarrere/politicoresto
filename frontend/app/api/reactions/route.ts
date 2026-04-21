@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-
 import {
   REACTION_SIDE_TO_TYPE,
   REACTION_TYPE_TO_SIDE,
@@ -11,11 +10,11 @@ import { fromBackendVoteSide } from '@/lib/forum/vote';
 
 const REACTION_MUTATION_ERROR = 'Reaction operation failed';
 
-type ReactionPayload = {
+interface ReactionPayload {
   targetType: 'post' | 'comment';
   targetId: string;
   side: ReactionSide | 'left' | 'right';
-};
+}
 
 function isReactionPayload(value: unknown): value is ReactionPayload {
   if (!value || typeof value !== 'object') return false;

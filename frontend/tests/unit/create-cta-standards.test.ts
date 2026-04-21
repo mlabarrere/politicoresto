@@ -1,11 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
 const root = path.resolve(__dirname, '../..');
 
-describe('Create CTA standards', () => {
+describe('create CTA standards', () => {
   it('uses /post/new create route orchestration in shell', () => {
     const source = fs.readFileSync(
       path.join(root, 'components/layout/app-shell.tsx'),

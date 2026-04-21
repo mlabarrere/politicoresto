@@ -1,9 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { LeftSidebar } from '@/components/home/left-sidebar';
 
-describe('LeftSidebar', () => {
+describe('leftSidebar', () => {
   it('renders sondages section', () => {
     render(<LeftSidebar activeFilter={null} onFilterChange={vi.fn()} />);
     expect(screen.getByText('Sondages')).toBeTruthy();

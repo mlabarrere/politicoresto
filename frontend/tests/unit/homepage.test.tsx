@@ -1,11 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import HomePage from '@/app/page';
 import type { HomeScreenData } from '@/lib/types/screens';
 import { getHomeScreenData } from '@/lib/data/public/home';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-
 import { buildHomeFeedTopic } from '../fixtures/home-feed-topic';
 
 vi.mock('@/lib/data/public/home', () => ({
@@ -67,7 +65,7 @@ function makeHomeScreenData(
   };
 }
 
-describe('HomePage', () => {
+describe('homePage', () => {
   beforeEach(() => {
     mockedGetHomeScreenData.mockReset();
     mockedCreateServerSupabaseClient.mockReset();

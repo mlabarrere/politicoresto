@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import LoginPage from '@/app/auth/login/page';
 
 vi.mock('next/image', () => ({
@@ -21,7 +20,7 @@ vi.mock('@/lib/config/site', () => ({
   siteConfig: { name: 'PoliticoResto' },
 }));
 
-describe('LoginPage', () => {
+describe('loginPage', () => {
   it('renders site name and login CTA', async () => {
     render(await LoginPage({ searchParams: Promise.resolve({}) }));
     expect(screen.getByText('PoliticoResto')).toBeInTheDocument();

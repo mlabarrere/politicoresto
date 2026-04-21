@@ -1,24 +1,23 @@
 ﻿import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-
 import { AppHeader } from '@/components/layout/app-header';
 
-type MockLinkProps = {
+interface MockLinkProps {
   children?: ReactNode;
   href?: string;
-};
+}
 
-type MockImageProps = {
+interface MockImageProps {
   alt?: string;
   [key: string]: unknown;
-};
+}
 
-type MockButtonProps = {
+interface MockButtonProps {
   children?: ReactNode;
   href?: string;
   [key: string]: unknown;
-};
+}
 
 vi.mock('next/image', () => ({
   default: ({ alt, ...props }: MockImageProps) => (
@@ -67,7 +66,7 @@ vi.mock('@/components/app/app-button', () => ({
     ),
 }));
 
-describe('AppHeader', () => {
+describe('appHeader', () => {
   it('renders global create CTA in header', () => {
     render(<AppHeader isAuthenticated />);
 

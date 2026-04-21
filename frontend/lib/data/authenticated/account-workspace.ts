@@ -1,7 +1,7 @@
 ﻿import { getAuthUser } from '@/lib/supabase/auth-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-type AppProfileRow = {
+interface AppProfileRow {
   user_id: string;
   username: string | null;
   display_name: string;
@@ -10,30 +10,30 @@ type AppProfileRow = {
   profile_status: string;
   is_public_profile_enabled: boolean;
   created_at: string;
-};
+}
 
-type VisibilityRow = {
+interface VisibilityRow {
   display_name_visibility: string;
   bio_visibility: string;
   vote_history_visibility: string;
-};
+}
 
-type PrivateProfileRow = {
+interface PrivateProfileRow {
   political_interest_level: number | null;
   notes_private: string | null;
   profile_payload: Record<string, unknown> | null;
-};
+}
 
-type DraftRow = {
+interface DraftRow {
   id: string;
   thread_id: string;
   type: string;
   title: string | null;
   status: string;
   updated_at: string;
-};
+}
 
-type PostHistoryRow = {
+interface PostHistoryRow {
   id: string;
   post_id: string;
   type: string;
@@ -42,36 +42,36 @@ type PostHistoryRow = {
   entity_slug: string | null;
   entity_name: string | null;
   created_at: string;
-};
+}
 
-type CommentHistoryRow = {
+interface CommentHistoryRow {
   id: string;
   thread_post_id: string | null;
   body_markdown: string;
   title: string | null;
   post_status: string;
   created_at: string;
-};
+}
 
-type SectionStatus = {
+interface SectionStatus {
   state: 'ready' | 'unavailable' | 'error';
   message: string | null;
-};
+}
 
-type AccountSectionStatuses = {
+interface AccountSectionStatuses {
   profile: SectionStatus;
   drafts: SectionStatus;
   posts: SectionStatus;
   comments: SectionStatus;
   security: SectionStatus;
-};
+}
 
-type BackendError = {
+interface BackendError {
   message?: string;
   code?: string;
-};
+}
 
-export type AccountWorkspaceData = {
+export interface AccountWorkspaceData {
   userId: string;
   email: string;
   profile: AppProfileRow | null;
@@ -79,9 +79,9 @@ export type AccountWorkspaceData = {
   privateProfile: PrivateProfileRow | null;
   drafts: DraftRow[];
   publications: PostHistoryRow[];
-  comments: Array<CommentHistoryRow & { parentTitle: string | null }>;
+  comments: (CommentHistoryRow & { parentTitle: string | null })[];
   sectionStatus: AccountSectionStatuses;
-};
+}
 
 function readyStatus(): SectionStatus {
   return { state: 'ready', message: null };

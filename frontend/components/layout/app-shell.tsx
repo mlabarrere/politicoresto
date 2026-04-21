@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from 'react';
 import { cookies } from 'next/headers';
-
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getAuthUserId } from '@/lib/supabase/auth-user';
 import { AppPrimaryCTA } from '@/components/app/app-primary-cta';

@@ -2,11 +2,10 @@
 
 import { Plus } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-
 import { AppButton } from '@/components/app/app-button';
 
 function toSafeNext(pathname: string | null): string {
-  if (!pathname || !pathname.startsWith('/')) return '/';
+  if (!pathname?.startsWith('/')) return '/';
   if (pathname.startsWith('//')) return '/';
   return pathname;
 }

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
+import { POST, PATCH, DELETE } from '@/app/api/comments/route';
 import { makeAuthMock } from '../fixtures/auth-mock';
 
 const mocks = vi.hoisted(() => ({
@@ -15,8 +15,6 @@ vi.mock('@/lib/security/rate-limit', () => ({
   canCreateCommentToday: mocks.canCreateCommentToday,
   RATE_LIMIT_MESSAGES: { comment: "Trop de commentaires aujourd'hui." },
 }));
-
-import { POST, PATCH, DELETE } from '@/app/api/comments/route';
 
 function makeRequest(body: unknown, method = 'POST') {
   return new Request('http://localhost/api/comments', {
@@ -110,7 +108,7 @@ function makeClient({
   };
 }
 
-describe('POST /api/comments', () => {
+describe('pOST /api/comments', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.canCreateCommentToday.mockResolvedValue({ allowed: true });
@@ -201,7 +199,7 @@ describe('POST /api/comments', () => {
   });
 });
 
-describe('PATCH /api/comments', () => {
+describe('pATCH /api/comments', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -249,7 +247,7 @@ describe('PATCH /api/comments', () => {
   });
 });
 
-describe('DELETE /api/comments', () => {
+describe('dELETE /api/comments', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });

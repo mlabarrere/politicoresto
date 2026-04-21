@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { getHomeScreenData } from '@/lib/data/public/home';
 import { getAuthUserId } from '@/lib/supabase/auth-user';
 import { getPollSummariesByPostItemIds } from '@/lib/data/public/polls';
@@ -26,10 +25,10 @@ const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 const mockedResolveCurrentUserId = vi.mocked(getAuthUserId);
 const mockedGetPollSummaries = vi.mocked(getPollSummariesByPostItemIds);
 
-type QueryResult = {
-  data: Array<Record<string, unknown>> | null;
+interface QueryResult {
+  data: Record<string, unknown>[] | null;
   error: { message?: string; code?: string } | null;
-};
+}
 
 function makeFeedRow(id: string, score: number, createdAt: string) {
   return {
@@ -66,8 +65,8 @@ function makeSupabase({
   reactionRows = [],
 }: {
   feed: QueryResult;
-  postRows?: Array<Record<string, unknown>>;
-  reactionRows?: Array<{ target_id: string; reaction_type: string }>;
+  postRows?: Record<string, unknown>[];
+  reactionRows?: { target_id: string; reaction_type: string }[];
 }) {
   return {
     from: vi.fn((table: string) => {

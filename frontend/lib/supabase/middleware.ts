@@ -1,6 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-
 import { createLogger, getRequestLogger, logError } from '@/lib/logger';
 import { supabaseEnv } from '@/lib/supabase/env';
 
@@ -36,11 +35,11 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(
-          cookiesToSet: Array<{
+          cookiesToSet: {
             name: string;
             value: string;
             options: CookieOptions;
-          }>,
+          }[],
         ) {
           if (cookiesToSet.length > 0) {
             log.debug(

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-
 import { FeedToolbar } from '@/components/home/feed-toolbar';
 import { LeftSidebar } from '@/components/home/left-sidebar';
 import { MobileFiltersSheet } from '@/components/home/mobile-filters-sheet';

@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-
 import { AppCard } from '@/components/app/app-card';
 import { PublicProfileTabs } from '@/components/profile/public-profile-tabs';
 import { PageContainer } from '@/components/layout/page-container';

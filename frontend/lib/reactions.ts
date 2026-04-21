@@ -18,11 +18,11 @@ export const REACTION_TYPE_TO_SIDE: Record<
   downvote: 'droite',
 };
 
-export type ReactionCountsState = {
+export interface ReactionCountsState {
   leftVotes: number;
   rightVotes: number;
   currentVote: ReactionSide | null;
-};
+}
 
 export function applyReactionTransition(
   previous: ReactionCountsState,

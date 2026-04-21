@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-
 import { ForumPage } from '@/components/forum/forum-page';
 import { EmptyState } from '@/components/layout/empty-state';
 import { PageContainer } from '@/components/layout/page-container';

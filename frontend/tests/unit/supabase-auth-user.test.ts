@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { getAuthUser, getAuthUserId } from '@/lib/supabase/auth-user';
 
 describe('getAuthUserId', () => {
