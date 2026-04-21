@@ -46,10 +46,11 @@ type AuthUser = { id: string; email: string | null };
  * a layout, a page, and a data loader all ask.
  */
 const resolveAuth = cache(async (client: AuthCapableClient): Promise<AuthUser | null> => {
-  const fn = client.auth?.getClaims;
-  if (typeof fn !== "function") return null;
+  if (typeof client.auth?.getClaims !== "function") return null;
   try {
-    const { data, error } = await fn();
+    // Call via the object so `this` binds — `auth.getClaims()` internally
+    // calls `this.getSession()` / `this.getUser()` and crashes without it.
+    const { data, error } = await client.auth.getClaims();
     const claims = data?.claims;
     if (error || !claims?.sub) return null;
     log.debug({ event: "auth.user.resolved", user_id: claims.sub }, "user resolved");

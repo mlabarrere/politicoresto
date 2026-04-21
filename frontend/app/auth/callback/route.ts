@@ -127,9 +127,22 @@ export async function GET(request: NextRequest) {
       "no username — redirecting to onboarding"
     );
     // Clone la response vers /onboarding en copiant les cookies de session.
+    // Explicite name/value/options — passer l'objet ResponseCookie entier à
+    // `.set()` ne propage pas fidèlement toutes les options (path, domain,
+    // httpOnly, sameSite, secure), ce qui casse la persistence côté browser
+    // et crée une boucle de redirect onboarding → login.
     const onboardingResponse = NextResponse.redirect(onboardingUrl);
     for (const c of response.cookies.getAll()) {
-      onboardingResponse.cookies.set(c);
+      onboardingResponse.cookies.set(c.name, c.value, {
+        domain: c.domain,
+        path: c.path,
+        expires: c.expires,
+        httpOnly: c.httpOnly,
+        maxAge: c.maxAge,
+        priority: c.priority,
+        sameSite: c.sameSite,
+        secure: c.secure
+      });
     }
     return onboardingResponse;
   }

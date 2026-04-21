@@ -76,10 +76,13 @@ double_confirm_changes = false
 secure_password_change = false
 
 # OAuth providers are configured in the Supabase Dashboard per environment.
-# Uncomment and fill locally if you need to exercise the OAuth flow against
-# a local stub — otherwise leave disabled.
-# [auth.external.google]
-# enabled = false
-# client_id = ""
-# secret   = ""
-# redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+# Locally we enable Google to exercise the full OAuth round-trip against a
+# real Google Cloud OAuth client (staging client ID — localhost:3000 is in
+# its Authorized JavaScript origins, http://127.0.0.1:54321/auth/v1/callback
+# in its Authorized redirect URIs).
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret   = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+skip_nonce_check = false
