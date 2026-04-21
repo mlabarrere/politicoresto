@@ -27,7 +27,7 @@ Verify conventions against these sources rather than extrapolating from existing
 3. **Auth** — canonical `@supabase/ssr` pattern, no custom auth code.
    - Four factories in `frontend/lib/supabase/`: `client.ts` (browser),
      `server.ts` (RSC / actions / route handlers), `middleware.ts` (proxy),
-     `auth-user.ts` (request-memoized user resolution via `react.cache()`).
+     `auth-user.ts` (thin null-safe wrapper around `auth.getClaims()`).
    - **`auth.getClaims()` is the default** in server contexts (middleware,
      `auth-user.ts`). Staging and prod run asymmetric JWT keys (ES256/RS256)
      since 2026-04-21 — legacy HS256 decommissioned. `getClaims()` validates
@@ -36,8 +36,12 @@ Verify conventions against these sources rather than extrapolating from existing
    - **Never** `auth.getSession()` (reads cookie without verification).
      `auth.getUser()` is only used in the OAuth callback immediately after
      `exchangeCodeForSession` (fresh session, tutorial pattern).
-   - Auth state fetched **exactly once per request** via `react.cache()` in
-     `auth-user.ts`. Pass the client down; never re-instantiate inside leaves.
+   - Each server component / action / route handler calls `getAuthUser(
+     supabase)` where it needs the current user. With asymmetric keys the
+     call is a local JWT verification (no network round-trip on happy path),
+     so we follow the official tutorial pattern: no `react.cache()` wrapper,
+     no request-scoped memoization layer. The simpler the code, the less
+     surface for `this`-binding / cache-key bugs.
    - OAuth callback at `app/auth/callback/route.ts`. Failures redirect to
      `/auth/auth-code-error?reason=oauth_missing_code|oauth_exchange_failed`.
    - Middleware `/me` gate is intentional product routing, not a generic wall.
@@ -155,8 +159,9 @@ the only path to production.
 - 2026-04-21 — Pino chosen as the single logging library. See `.claude/skills/logging`.
 - 2026-04-21 — Local seed test user: `test@example.com` / `password123`.
 - 2026-04-21 — Session 2: auth consolidated on `@supabase/ssr`. Four factories,
-  `react.cache()` on the request-scoped user resolve, `/auth/auth-code-error`
-  page for OAuth failures. See `.claude/skills/authentication`.
+  `/auth/auth-code-error` page for OAuth failures. Aligned 1:1 on the Supabase
+  official Next.js tutorial — no custom memoization layer. See
+  `.claude/skills/authentication`.
 - 2026-04-21 — Supabase asymmetric JWT keys enabled on staging + prod; HS256
   legacy decommissioned. `auth.getClaims()` is now the default server-side.
 

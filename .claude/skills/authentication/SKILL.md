@@ -16,7 +16,7 @@ official Supabase Next.js pattern.
 | `frontend/lib/supabase/client.ts` | Browser | Client components | Returns a singleton `createBrowserClient` instance. Used for client-side OAuth redirect in `oauth-buttons.tsx`. |
 | `frontend/lib/supabase/server.ts` | Server (Node / Edge) | Server Components, Server Actions, Route Handlers | `createServerSupabaseClient()` builds a fresh `createServerClient` per invocation, bridged to `next/headers` `cookies()`. |
 | `frontend/lib/supabase/middleware.ts` | Edge (proxy) | `proxy.ts` only | `updateSession()` — runs `auth.getUser()` to trigger JWT refresh, rewrites rotated cookies onto the `NextResponse`. |
-| `frontend/lib/supabase/auth-user.ts` | Server | Anywhere server-side that needs the current user | `getAuthUserId(client)` and `getAuthUser(client)`. Memoized per-request via `react.cache()` — one round-trip per request no matter how many callers. |
+| `frontend/lib/supabase/auth-user.ts` | Server | Anywhere server-side that needs the current user | `getAuthUserId(client)` and `getAuthUser(client)` — thin null-safe wrapper around `auth.getClaims()`. With asymmetric JWT keys, each call is a local verification (no network round-trip); we follow the official tutorial and do not memoize. |
 
 **Do not** call `createClient` / `createBrowserClient` / `createServerClient`
 anywhere else in the codebase. If a new caller needs auth, reuse one of the
@@ -140,7 +140,6 @@ Every auth operation emits a structured Pino event. Full taxonomy in
 | Profile fetch failed (non-blocking) | `auth.profile.fetch_failed_nonblocking` | warn |
 | Onboarding redirect | `auth.onboarding.redirect` | info |
 | Successful redirect to next | `auth.callback.redirect_next` | info |
-| Per-request user resolved (one per request) | `auth.user.resolved` | debug |
 
 Always include `user_id` when known. Never log `email`, `token`, or `session`
 objects — the logger redacts `password`/`token`/`cookie`/`authorization` by

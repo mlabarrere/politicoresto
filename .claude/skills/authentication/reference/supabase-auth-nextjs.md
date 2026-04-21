@@ -12,7 +12,7 @@ https://supabase.com/docs/guides/auth/server-side/nextjs
 | Middleware | Cookie refresh + `getClaims()` only | + `/me` redirect if unauthenticated | Product routing choice (the home page is public; `/me` must force login at the edge for a cleaner UX than a late redirect). |
 | OAuth callback | Redirect to `/` on success | Redirect to `/onboarding` if the user has no `username` in `app_profile` | Onboarding is mandatory before entering the app; the callback is the cheapest place to enforce it. |
 | OAuth button | Server action | Client-side `signInWithOAuth` | Both patterns are documented by Supabase. Client-side keeps the redirect under the user's own origin and is simpler to reason about. |
-| Per-request user fetch | Not discussed | `react.cache()` around `resolveAuth` in `auth-user.ts` | Middleware + layout + page + data loaders can all legitimately ask for the user. `cache()` collapses them to a single `getUser()` call per request. |
+| Per-request user fetch | Each caller calls `getClaims()` | Same — each caller calls `getAuthUser(supabase)`, thin wrapper around `getClaims()` | With asymmetric keys `getClaims()` validates locally (no network) — no value in memoizing, and added cache-key / `this`-binding surface area for bugs. |
 | Error UX | `/auth/auth-code-error` | Same | No deviation — we match official. |
 
 ## Full event taxonomy
@@ -57,7 +57,6 @@ table so the skill stays searchable.
 
 | Event | Level | Required fields | Where |
 |---|---|---|---|
-| `auth.user.resolved` | debug | `user_id` | `lib/supabase/auth-user.ts` — fires once per (client, request) thanks to `react.cache()` |
 
 ### Client-side (`oauth-buttons.tsx`)
 
