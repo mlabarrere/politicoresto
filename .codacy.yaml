@@ -7,6 +7,13 @@ tools:
     enabled: false
   pmd-legacy:
     enabled: false
+  # sonarjs ne comprend pas les TSX React (flag faussement className, htmlFor
+  # comme "attributs spécifiques à React"). On s'appuie sur eslint-plugin-react
+  # pour la vraie vérification React.
+  sonar-typescript:
+    enabled: false
+  sonar-javascript:
+    enabled: false
 
 exclude_paths:
   - "node_modules/**"
