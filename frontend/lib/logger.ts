@@ -170,11 +170,31 @@ if (!IS_EDGE && typeof process !== "undefined" && typeof process.on === "functio
   const g = globalThis as unknown as Record<string, boolean>;
   if (!g[FLAG]) {
     g[FLAG] = true;
-    process.on("unhandledRejection", (reason) => {
-      logError(rootLogger, reason, { level: "fatal", source: "unhandledRejection" });
-    });
-    process.on("uncaughtException", (err) => {
-      logError(rootLogger, err, { level: "fatal", source: "uncaughtException" });
-    });
+    // Registering a handler suppresses Node's default crash-on-fatal behaviour,
+    // so we must log + flush + exit(1) ourselves. Otherwise the process keeps
+    // serving requests from an undefined state.
+    //
+    // Skipped under Vitest: the test runner registers its own handlers and
+    // terminating the process would kill the whole suite.
+    const isTest =
+      process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+
+    const crash = (reason: unknown, source: "unhandledRejection" | "uncaughtException") => {
+      logError(rootLogger, reason, { level: "fatal", source });
+      if (isTest) return;
+      // Give Pino's async destination a chance to flush before exit.
+      const maybeFlush = (rootLogger as unknown as { flush?: () => void }).flush;
+      if (typeof maybeFlush === "function") {
+        try {
+          maybeFlush.call(rootLogger);
+        } catch {
+          // Ignore — we're crashing anyway.
+        }
+      }
+      process.exit(1);
+    };
+
+    process.on("unhandledRejection", (reason) => crash(reason, "unhandledRejection"));
+    process.on("uncaughtException", (err) => crash(err, "uncaughtException"));
   }
 }
