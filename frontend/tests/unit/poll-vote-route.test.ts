@@ -24,7 +24,7 @@ describe("poll vote route", () => {
 
   it("rejects unauthenticated request", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }) }
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: null }, error: null }) }
     } as never);
 
     const response = await POST(makeRequest({ postItemId: "p1", optionId: "o1" }));
@@ -33,7 +33,7 @@ describe("poll vote route", () => {
 
   it("rejects invalid payload", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } }, error: null }) }
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: { sub: "u1" } }, error: null }) }
     } as never);
 
     const response = await POST(makeRequest({ foo: "bar" }));
@@ -42,7 +42,7 @@ describe("poll vote route", () => {
 
   it("returns safe error message when vote rpc fails", async () => {
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } }, error: null }) },
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: { sub: "u1" } }, error: null }) },
       rpc: vi.fn().mockResolvedValue({ error: { message: "Poll is closed" } })
     } as never);
 
@@ -75,7 +75,7 @@ describe("poll vote route", () => {
     };
 
     mockedCreateServerSupabaseClient.mockResolvedValue({
-      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } }, error: null }) },
+      auth: { getClaims: vi.fn().mockResolvedValue({ data: { claims: { sub: "u1" } }, error: null }) },
       rpc: vi.fn().mockResolvedValue({ data: [pollRow], error: null })
     } as never);
 

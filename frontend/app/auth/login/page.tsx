@@ -4,25 +4,13 @@ import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { safeNextPath } from "@/lib/utils/safe-path";
 import { siteConfig } from "@/lib/config/site";
 
-function authErrorMessage(code?: string) {
-  switch (code) {
-    case "oauth_missing_code":
-      return "La connexion a echoue. Veuillez reessayer.";
-    case "oauth_exchange_failed":
-      return "La session n'a pas pu etre creee. Veuillez reessayer.";
-    default:
-      return null;
-  }
-}
-
 export default async function LoginPage({
   searchParams
 }: {
-  searchParams: Promise<{ next?: string; auth_error?: string }>;
+  searchParams: Promise<{ next?: string }>;
 }) {
-  const { next, auth_error } = await searchParams;
+  const { next } = await searchParams;
   const safeNext = safeNextPath(next);
-  const errorMessage = authErrorMessage(auth_error);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -47,7 +35,7 @@ export default async function LoginPage({
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <OAuthButtons next={safeNext} initialError={errorMessage} />
+          <OAuthButtons next={safeNext} />
         </div>
 
         <p className="text-center text-xs text-muted-foreground">

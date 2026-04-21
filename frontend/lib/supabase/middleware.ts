@@ -1,23 +1,28 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { createLogger, getRequestLogger, logError } from "@/lib/logger";
 import { supabaseEnv } from "@/lib/supabase/env";
+
+const moduleLog = createLogger("auth.middleware");
 
 /**
  * Pattern officiel Supabase SSR pour Next.js middleware.
  *
- * L'appel à `supabase.auth.getUser()` est **CRITIQUE** — c'est ce qui
+ * L'appel à `supabase.auth.getClaims()` est **CRITIQUE** — c'est ce qui
  * déclenche le refresh du JWT expiré via le refresh_token cookie. Sans lui,
  * après ~1h d'inactivité l'utilisateur apparaît comme non-authentifié alors
  * que la session est encore valide (refresh_token non expiré).
  *
  * https://supabase.com/docs/guides/auth/server-side/nextjs (section middleware)
  *
- * Le refresh est automatique et idempotent : si le JWT est encore valide,
- * aucun round-trip réseau. Si expiré, un POST à Supabase /auth/v1/token renvoie
- * un nouveau access_token + refresh_token, qui sont réécrits via setAll.
+ * `getClaims()` valide le JWT localement via JWKS (clés asymétriques, actives
+ * sur ce projet depuis 2026-04-21). Si la signature locale échoue (token
+ * expiré ou révoqué), Supabase SSR tombe sur `getUser()` en interne pour
+ * revalider et trigger un refresh, puis réécrit les cookies via setAll.
  */
 export async function updateSession(request: NextRequest) {
+  const log = getRequestLogger() ?? moduleLog;
   let response = NextResponse.next({
     request: { headers: request.headers }
   });
@@ -34,11 +39,14 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }>
         ) {
           if (cookiesToSet.length > 0) {
-            console.info("[proxy] cookie mutations (refresh)", {
-              pathname: request.nextUrl.pathname,
-              host: request.headers.get("host"),
-              names: cookiesToSet.map((c) => c.name)
-            });
+            log.debug(
+              {
+                event: "auth.session.cookie_rotation",
+                path: request.nextUrl.pathname,
+                cookie_names: cookiesToSet.map((c) => c.name)
+              },
+              "cookie mutations (refresh)"
+            );
           }
           for (const { name, value, options } of cookiesToSet) {
             request.cookies.set(name, value);
@@ -57,17 +65,20 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  // Appel CRITIQUE : refresh du JWT si expiré. Se fait partout, pour toute
-  // navigation, sinon on casse la session après expiration de l'access_token.
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser();
+  // Appel CRITIQUE : valide le JWT (JWKS local, fallback getUser) et trigger
+  // le refresh si expiré. Se fait partout, pour toute navigation, sinon on
+  // casse la session après expiration de l'access_token.
+  //
+  // Note defensive destructuring : sur un premier visit sans cookie,
+  // getClaims retourne { data: null, error: ... } — pas { data: { claims: null } }.
+  const { data, error: claimsError } = await supabase.auth.getClaims();
+  const claims = data?.claims ?? null;
 
-  if (userError) {
-    console.warn("[proxy] getUser failed", {
-      message: userError.message,
-      pathname: request.nextUrl.pathname
+  if (claimsError) {
+    logError(log, claimsError, {
+      event: "auth.session.getclaims_failed",
+      path: request.nextUrl.pathname,
+      level: "warn"
     });
   }
 
@@ -75,10 +86,13 @@ export async function updateSession(request: NextRequest) {
   // (le serveur fera sa propre gate si besoin via RLS ou requireSession).
   const pathname = request.nextUrl.pathname;
   const needsAuthGate =
-    request.method === "GET" && pathname.startsWith("/me") && !user;
+    request.method === "GET" && pathname.startsWith("/me") && !claims?.sub;
 
   if (needsAuthGate) {
-    console.info("[proxy] unauthenticated /me → /auth/login", { pathname });
+    log.info(
+      { event: "auth.gate.redirect", path: pathname, reason: "unauthenticated_me" },
+      "redirect to login"
+    );
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set("next", pathname);

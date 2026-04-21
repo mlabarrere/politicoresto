@@ -5,6 +5,7 @@ import { AppButton } from "@/components/app/app-button";
 import { AppInput } from "@/components/app/app-input";
 import { PageContainer } from "@/components/layout/page-container";
 import { setUsernameAction } from "@/lib/actions/account";
+import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/utils/safe-path";
 
@@ -14,8 +15,8 @@ export default async function OnboardingPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const userId = await getAuthUserId(supabase);
+  if (!userId) redirect("/auth/login");
 
   const { next } = await searchParams;
   const nextPath = safeNextPath(next ?? "/");

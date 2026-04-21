@@ -1,36 +1,48 @@
 /**
  * Récupère l'utilisateur courant via Supabase Auth.
  *
- * Utilise `auth.getUser()` — l'unique méthode qui fonctionne sur tous les projets
- * Supabase (legacy HS256 symétrique + nouveau asymétrique ES256/RS256).
+ * Pattern officiel Supabase pour Next.js SSR avec clés asymétriques :
+ * `auth.getClaims()`. Validation JWT locale via JWKS, sans round-trip réseau
+ * sur le happy path (token frais). Quand la signature locale échoue,
+ * `getClaims()` tombe en interne sur `auth.getUser()` pour revalider, ce qui
+ * est le comportement documenté et safe.
  *
- * `auth.getClaims()` est plus rapide (validation JWT locale, 0 round-trip) MAIS
- * nécessite que le projet soit migré aux clés asymétriques. Sur staging/prod
- * actuels (HS256 legacy — pas de JWKS exposée), `getClaims()` retourne `null`
- * silencieusement ce qui casse toute l'auth.
+ * https://supabase.com/docs/guides/auth/server-side/nextjs
  *
- * Le middleware Supabase SSR appelle déjà `getUser()` une fois par requête, donc
- * le second appel ici est souvent no-op (session en cache). Quand il y a un
- * round-trip réel, c'est ~200ms vers Supabase — prix à payer pour la robustesse.
+ * Note : on n'enrobe PAS dans `react.cache()`. La doc officielle appelle
+ * `getClaims()` librement depuis chaque server component / action /
+ * route handler. Avec les clés asymétriques (actives sur ce projet depuis
+ * 2026-04-21), chaque appel valide le JWT localement — pas de coût réseau,
+ * pas besoin de mémorisation artificielle qui introduirait une surface de
+ * bugs liée au `this`-binding et à la clé de cache.
  */
-type GetUserFn = () => Promise<{
-  data?: { user?: { id?: string; email?: string | null } | null };
+
+type JwtClaims = {
+  sub?: string;
+  email?: string | null;
+  [key: string]: unknown;
+};
+
+type GetClaimsFn = () => Promise<{
+  data?: { claims?: JwtClaims | null } | null;
   error?: unknown;
 }>;
 
 type AuthCapableClient = {
-  auth?: { getUser?: GetUserFn };
+  auth?: { getClaims?: GetClaimsFn };
 };
 
 type AuthUser = { id: string; email: string | null };
 
 async function resolveAuth(client: AuthCapableClient): Promise<AuthUser | null> {
-  const fn = client.auth?.getUser;
-  if (typeof fn !== "function") return null;
+  if (typeof client.auth?.getClaims !== "function") return null;
   try {
-    const { data, error } = await fn();
-    if (error || !data?.user?.id) return null;
-    return { id: data.user.id, email: data.user.email ?? null };
+    // Call as a method so `this` binds — auth-js's getClaims() internally
+    // calls `this.getSession()` / `this.getUser()` and crashes otherwise.
+    const { data, error } = await client.auth.getClaims();
+    const claims = data?.claims;
+    if (error || !claims?.sub) return null;
+    return { id: claims.sub, email: (claims.email as string | null | undefined) ?? null };
   } catch {
     return null;
   }

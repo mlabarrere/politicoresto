@@ -24,11 +24,31 @@ Verify conventions against these sources rather than extrapolating from existing
    `frontend/lib`, `frontend/components`. Tests and `scripts/*` excepted.
    Structured objects only: `log.info({ fields }, "msg")`. Secrets are redacted
    at the logger level — never inline secret values in call sites.
-3. **Auth** (detail finalised in Session 2):
-   - One library: `@supabase/ssr`. No custom auth code.
-   - Canonical client factories live in `lib/supabase/`. No ad-hoc createClient.
-   - Use `getUser()` (not `getSession()`) in server contexts.
-   - Auth state is fetched **once per request**. Pass it down; never re-query.
+3. **Auth** — canonical `@supabase/ssr` pattern, no custom auth code.
+   - Four factories in `frontend/lib/supabase/`: `client.ts` (browser),
+     `server.ts` (RSC / actions / route handlers), `middleware.ts` (proxy),
+     `auth-user.ts` (thin null-safe wrapper around `auth.getClaims()`).
+   - **`auth.getClaims()` is the default** in server contexts (middleware,
+     `auth-user.ts`). Staging and prod run asymmetric JWT keys (ES256/RS256)
+     since 2026-04-21 — legacy HS256 decommissioned. `getClaims()` validates
+     the JWT locally via JWKS, falling back to `getUser()` internally when
+     signature verification fails. Single codebase for both environments.
+   - **Never** `auth.getSession()` (reads cookie without verification).
+     `auth.getUser()` is only used in the OAuth callback immediately after
+     `exchangeCodeForSession` (fresh session, tutorial pattern).
+   - Each server component / action / route handler calls `getAuthUser(
+     supabase)` where it needs the current user. With asymmetric keys the
+     call is a local JWT verification (no network round-trip on happy path),
+     so we follow the official tutorial pattern: no `react.cache()` wrapper,
+     no request-scoped memoization layer. The simpler the code, the less
+     surface for `this`-binding / cache-key bugs.
+   - OAuth callback at `app/auth/callback/route.ts`. Failures redirect to
+     `/auth/auth-code-error?reason=oauth_missing_code|oauth_exchange_failed`.
+   - Middleware `/me` gate is intentional product routing, not a generic wall.
+   - Every auth operation emits a structured log per the taxonomy documented
+     in `.claude/skills/authentication/reference/supabase-auth-nextjs.md`.
+   - Forbidden: custom JWT, custom session cookies, session in React state,
+     trivial `auth.*` wrappers, ad-hoc `createClient` outside the four factories.
 4. **Every new table:** RLS enabled **and** at least one policy in the same migration.
 5. **`service_role` keys never reach client or Edge code.** Server-only paths only.
 6. **Libraries over custom code** for all solved problems (validation, forms,
@@ -119,8 +139,15 @@ the only path to production.
   `supabase migration repair --status applied 20260402193700` on those envs so
   the CLI does not try to re-apply it.
 - **No ESLint/Prettier** yet — Session 3 will install them and wire CI.
-- **~55 `console.*` call sites** remain in app code — Session 2 (auth paths)
-  and Session 3 (the rest) convert them.
+- **Remaining `console.*` call sites** — Session 2 migrated all auth-path
+  sites to Pino (middleware, callback route, env, account actions). The 4
+  calls in `components/auth/oauth-buttons.tsx` are kept behind a documented
+  `eslint-disable` pending the `/api/_log` client→server forwarder (Session 3).
+  Non-auth app code still carries `console.*` — Session 3 converts them under
+  ESLint enforcement.
+- **Auth on asymmetric JWT keys since 2026-04-21.** HS256 legacy decommissioned
+  on staging and prod. `auth.getClaims()` is now the default in server
+  contexts (see `auth-user.ts` header). Single codebase for both environments.
 - **`seed/polls_demo.sql` disabled** — references the dropped RPC
   `recompute_post_poll_snapshot`; rewrite needed against the consolidated
   RPCs from migration `20260420240000`.
@@ -131,6 +158,12 @@ the only path to production.
 
 - 2026-04-21 — Pino chosen as the single logging library. See `.claude/skills/logging`.
 - 2026-04-21 — Local seed test user: `test@example.com` / `password123`.
+- 2026-04-21 — Session 2: auth consolidated on `@supabase/ssr`. Four factories,
+  `/auth/auth-code-error` page for OAuth failures. Aligned 1:1 on the Supabase
+  official Next.js tutorial — no custom memoization layer. See
+  `.claude/skills/authentication`.
+- 2026-04-21 — Supabase asymmetric JWT keys enabled on staging + prod; HS256
+  legacy decommissioned. `auth.getClaims()` is now the default server-side.
 
 ## Instructions to future sessions
 
@@ -143,5 +176,5 @@ the only path to production.
 6. **Fetch current docs when uncertain.** Auth, logging, and Supabase/Vercel
    CLIs evolve — do not trust stale memory.
 7. **Skills** live in `.claude/skills/`. Load them when doing work in their
-   domain: `local-dev`, `logging`. Session 2 adds `authentication`; Session 3
-   adds `supabase-migration`, `nextjs-component`, `library-first`.
+   domain: `local-dev`, `logging`, `authentication`. Session 3 adds
+   `supabase-migration`, `nextjs-component`, `library-first`.

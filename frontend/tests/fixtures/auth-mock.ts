@@ -1,13 +1,14 @@
 /**
  * Fabrique un mock `auth` compatible avec `getAuthUserId` / `getAuthUser`.
  *
- * Supabase SSR utilise `auth.getUser()` (seul appel qui marche sur HS256
- * legacy + asymétrique). On mock donc uniquement getUser.
+ * `lib/supabase/auth-user.ts` utilise `auth.getClaims()` (pattern officiel
+ * Supabase depuis la migration aux clés asymétriques 2026-04-21). On mock
+ * donc uniquement getClaims.
  */
 export function makeAuthMock(userId: string | null = "user-1") {
   return {
-    getUser: async () => ({
-      data: { user: userId ? { id: userId } : null },
+    getClaims: async () => ({
+      data: { claims: userId ? { sub: userId } : null },
       error: null
     })
   };
