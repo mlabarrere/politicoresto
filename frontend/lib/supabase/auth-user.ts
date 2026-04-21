@@ -1,5 +1,5 @@
 /**
- * Récupère l'user id courant **sans round-trip réseau** quand c'est possible.
+ * Récupère l'utilisateur courant **sans round-trip réseau** quand c'est possible.
  *
  * - `auth.getClaims()` valide le JWT localement (0 ms) à partir des JWKS mis en
  *   cache par @supabase/supabase-js (≥ 2.45). Chemin rapide.
@@ -25,27 +25,7 @@ type AuthCapableClient = {
   };
 };
 
-export async function getAuthUserId(client: AuthCapableClient): Promise<string | null> {
-  if (typeof client.auth?.getClaims === "function") {
-    try {
-      const result = await client.auth.getClaims();
-      const sub = result?.data?.claims?.sub;
-      if (typeof sub === "string" && sub.length > 0) return sub;
-    } catch {
-      /* fallthrough */
-    }
-  }
-
-  if (typeof client.auth?.getSession === "function") {
-    const result = await client.auth.getSession();
-    const id = result.data?.session?.user?.id;
-    if (typeof id === "string" && id.length > 0) return id;
-  }
-
-  return null;
-}
-
-export async function getAuthUser(
+async function resolveAuth(
   client: AuthCapableClient
 ): Promise<{ id: string; email: string | null } | null> {
   if (typeof client.auth?.getClaims === "function") {
@@ -56,7 +36,7 @@ export async function getAuthUser(
         return { id: sub, email: result?.data?.claims?.email ?? null };
       }
     } catch {
-      /* fallthrough */
+      /* fallthrough to session */
     }
   }
 
@@ -67,4 +47,15 @@ export async function getAuthUser(
   }
 
   return null;
+}
+
+export async function getAuthUserId(client: AuthCapableClient): Promise<string | null> {
+  const user = await resolveAuth(client);
+  return user?.id ?? null;
+}
+
+export async function getAuthUser(
+  client: AuthCapableClient
+): Promise<{ id: string; email: string | null } | null> {
+  return resolveAuth(client);
 }
