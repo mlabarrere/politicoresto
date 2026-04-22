@@ -118,11 +118,29 @@ JSON to stdout is immediately queryable via the Vercel dashboard.
 
 Client components cannot import the server logger. Two options:
 
-1. **Don't log from client** — let the server handle the client calls
-   and log the outcome (preferred).
-2. **Client error boundaries** (`app/error.tsx`, `app/global-error.tsx`)
-   use a targeted `// eslint-disable-next-line no-console` with a reason.
-   Session 3 will add `/api/_log` for client→server log forwarding.
+1. **Prefer server-side logging.** When a client action calls a
+   Server Action or a Route Handler, the server handler logs the
+   outcome — the client doesn't need its own log. This is the default.
+2. **When you genuinely need a client-side log**, use `clientLog()` from
+   `@/lib/client-log`. It POSTs the structured entry to `/api/_log`
+   (fire-and-forget with `keepalive: true` so it survives navigation),
+   which emits it via the same Pino pipeline. Entries appear with
+   `context: "client.<your-context>"` so they're distinguishable from
+   server logs in the same namespace.
+
+   ```ts
+   'use client';
+   import { clientLog } from '@/lib/client-log';
+   const log = clientLog('oauth.google');
+
+   log.info('auth.oauth.google.start', { origin, redirectTo });
+   log.error('auth.oauth.google.signin_failed', {
+     message: err.message,
+     status: err.status,
+   });
+   ```
+
+   Never use `console.*` in app code — ESLint blocks it project-wide.
 
 ## How to verify logs locally
 

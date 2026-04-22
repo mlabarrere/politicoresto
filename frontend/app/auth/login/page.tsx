@@ -1,11 +1,10 @@
-import Image from "next/image";
-
-import { OAuthButtons } from "@/components/auth/oauth-buttons";
-import { safeNextPath } from "@/lib/utils/safe-path";
-import { siteConfig } from "@/lib/config/site";
+import Image from 'next/image';
+import { OAuthButtons } from '@/components/auth/oauth-buttons';
+import { safeNextPath } from '@/lib/utils/safe-path';
+import { siteConfig } from '@/lib/config/site';
 
 export default async function LoginPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {

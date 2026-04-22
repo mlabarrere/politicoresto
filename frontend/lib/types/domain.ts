@@ -1,12 +1,10 @@
-﻿export type VoteSide = "left" | "right" | null;
+﻿export type VoteSide = 'left' | 'right' | null;
 
-export type ReactionSide = "gauche" | "droite";
+export type ReactionSide = 'gauche' | 'droite';
 
-export type UserSummary = {
+export interface UserSummary {
   id: string;
   username: string;
   slug?: string | null;
   avatarUrl?: string;
-};
-
-
+}

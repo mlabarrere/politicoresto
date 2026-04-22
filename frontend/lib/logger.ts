@@ -11,66 +11,66 @@
  *   - Secrets are redacted at the logger level — see REDACT_PATHS.
  */
 
-import { AsyncLocalStorage } from "async_hooks";
-import pino, { type Logger } from "pino";
+import { AsyncLocalStorage } from 'node:async_hooks';
+import pino, { type Logger } from 'pino';
 
-const IS_EDGE = process.env.NEXT_RUNTIME === "edge";
-const IS_DEV = process.env.NODE_ENV !== "production";
-const LOG_LEVEL = (process.env.LOG_LEVEL ?? (IS_DEV ? "debug" : "info")) as
-  | "trace"
-  | "debug"
-  | "info"
-  | "warn"
-  | "error"
-  | "fatal";
-const LOG_PRETTY = process.env.LOG_PRETTY === "true" && IS_DEV && !IS_EDGE;
+const IS_EDGE = process.env.NEXT_RUNTIME === 'edge';
+const IS_DEV = process.env.NODE_ENV !== 'production';
+const LOG_LEVEL = (process.env.LOG_LEVEL ?? (IS_DEV ? 'debug' : 'info')) as
+  | 'trace'
+  | 'debug'
+  | 'info'
+  | 'warn'
+  | 'error'
+  | 'fatal';
+const LOG_PRETTY = process.env.LOG_PRETTY === 'true' && IS_DEV && !IS_EDGE;
 
 /** Redaction paths applied at the logger level (Pino `redact`). */
 const REDACT_PATHS = [
-  "password",
-  "token",
-  "authorization",
-  "cookie",
-  "secret",
-  "api_key",
-  "apiKey",
-  "service_role_key",
-  "serviceRoleKey",
-  "*.password",
-  "*.token",
-  "*.cookie",
-  "*.authorization",
-  "req.headers.cookie",
-  "req.headers.authorization",
-  "request.headers.cookie",
-  "request.headers.authorization",
-  "body.password",
-  "body.token"
+  'password',
+  'token',
+  'authorization',
+  'cookie',
+  'secret',
+  'api_key',
+  'apiKey',
+  'service_role_key',
+  'serviceRoleKey',
+  '*.password',
+  '*.token',
+  '*.cookie',
+  '*.authorization',
+  'req.headers.cookie',
+  'req.headers.authorization',
+  'request.headers.cookie',
+  'request.headers.authorization',
+  'body.password',
+  'body.token',
 ];
 
 function buildLogger(): Logger {
   const base = {
     level: LOG_LEVEL,
-    base: { env: process.env.NODE_ENV ?? "unknown" },
-    redact: { paths: REDACT_PATHS, censor: "[REDACTED]" },
+    base: { env: process.env.NODE_ENV ?? 'unknown' },
+    redact: { paths: REDACT_PATHS, censor: '[REDACTED]' },
     formatters: {
-      level: (label: string) => ({ level: label })
+      level: (label: string) => ({ level: label }),
     },
-    timestamp: pino.stdTimeFunctions.isoTime
+    timestamp: pino.stdTimeFunctions.isoTime,
   } as const;
 
   if (LOG_PRETTY) {
     return pino({
       ...base,
       transport: {
-        target: "pino-pretty",
+        target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: "HH:MM:ss.l",
-          ignore: "pid,hostname,env",
-          messageFormat: "[{context}] {msg}"
-        }
-      }
+          translateTime: 'HH:MM:ss.l',
+          ignore: 'pid,hostname,env',
+          messageFormat: '[{context}] {msg}',
+        },
+      },
     });
   }
 
@@ -87,25 +87,25 @@ export function createLogger(context: string): Logger {
 /** Enrich a logger with per-request fields. Non-mutating. */
 export function withRequest(
   logger: Logger,
-  req: Request | { headers: Headers; method: string; url: string }
+  req: Request | { headers: Headers; method: string; url: string },
 ): Logger {
-  const url = "url" in req ? new URL(req.url) : new URL("http://local/");
+  const url = 'url' in req ? new URL(req.url) : new URL('http://local/');
   return logger.child({
-    request_id: req.headers.get("x-request-id") ?? undefined,
+    request_id: req.headers.get('x-request-id') ?? undefined,
     method: req.method,
     path: url.pathname,
-    user_agent: req.headers.get("user-agent") ?? undefined
+    user_agent: req.headers.get('user-agent') ?? undefined,
   });
 }
 
 /** Enrich a logger with the authenticated user. Email is opt-in per-call. */
 export function withUser(
   logger: Logger,
-  user: { id: string; email?: string | null }
+  user: { id: string; email?: string | null },
 ): Logger {
   return logger.child({
     user_id: user.id,
-    ...(user.email ? { user_email: user.email } : {})
+    ...(user.email ? { user_email: user.email } : {}),
   });
 }
 
@@ -116,9 +116,17 @@ export function withUser(
 export function logError(
   logger: Logger,
   err: unknown,
-  extra?: { message?: string; level?: "warn" | "error" | "fatal"; [k: string]: unknown }
+  extra?: {
+    message?: string;
+    level?: 'warn' | 'error' | 'fatal';
+    [k: string]: unknown;
+  },
 ): void {
-  const { message = "unhandled error", level = "error", ...fields } = extra ?? {};
+  const {
+    message = 'unhandled error',
+    level = 'error',
+    ...fields
+  } = extra ?? {};
   const serialized = serializeError(err);
   logger[level]({ err: serialized, ...fields }, message);
 }
@@ -128,12 +136,12 @@ function serializeError(err: unknown): object {
     const out: Record<string, unknown> = {
       type: err.constructor.name,
       message: err.message,
-      stack: err.stack
+      stack: err.stack,
     };
     if (err.cause !== undefined) out.cause = serializeError(err.cause);
     return out;
   }
-  if (typeof err === "object" && err !== null) return err as object;
+  if (typeof err === 'object' && err !== null) return err;
   return { value: String(err) };
 }
 
@@ -142,12 +150,15 @@ function serializeError(err: unknown): object {
 // runtimes (Next.js ships an ALS polyfill for Edge).
 // ─────────────────────────────────────────────────────────────────────────────
 
-type RequestStoreEntry = { requestId: string; logger: Logger };
+interface RequestStoreEntry {
+  requestId: string;
+  logger: Logger;
+}
 const requestStore = new AsyncLocalStorage<RequestStoreEntry>();
 
 export function runWithRequest<T>(
   entry: RequestStoreEntry,
-  fn: () => T | Promise<T>
+  fn: () => T | Promise<T>,
 ): T | Promise<T> {
   return requestStore.run(entry, fn);
 }
@@ -164,9 +175,13 @@ export function getRequestLogger(): Logger | undefined {
 // Process-level error handlers (Node only — Edge has no process.on).
 // ─────────────────────────────────────────────────────────────────────────────
 
-if (!IS_EDGE && typeof process !== "undefined" && typeof process.on === "function") {
+if (
+  !IS_EDGE &&
+  typeof process !== 'undefined' &&
+  typeof process.on === 'function'
+) {
   // Guard against double-registration under HMR.
-  const FLAG = "__politicoresto_logger_handlers__";
+  const FLAG = '__politicoresto_logger_handlers__';
   const g = globalThis as unknown as Record<string, boolean>;
   if (!g[FLAG]) {
     g[FLAG] = true;
@@ -177,14 +192,18 @@ if (!IS_EDGE && typeof process !== "undefined" && typeof process.on === "functio
     // Skipped under Vitest: the test runner registers its own handlers and
     // terminating the process would kill the whole suite.
     const isTest =
-      process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+      process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
 
-    const crash = (reason: unknown, source: "unhandledRejection" | "uncaughtException") => {
-      logError(rootLogger, reason, { level: "fatal", source });
+    const crash = (
+      reason: unknown,
+      source: 'unhandledRejection' | 'uncaughtException',
+    ) => {
+      logError(rootLogger, reason, { level: 'fatal', source });
       if (isTest) return;
       // Give Pino's async destination a chance to flush before exit.
-      const maybeFlush = (rootLogger as unknown as { flush?: () => void }).flush;
-      if (typeof maybeFlush === "function") {
+      const maybeFlush = (rootLogger as unknown as { flush?: () => void })
+        .flush;
+      if (typeof maybeFlush === 'function') {
         try {
           maybeFlush.call(rootLogger);
         } catch {
@@ -194,7 +213,11 @@ if (!IS_EDGE && typeof process !== "undefined" && typeof process.on === "functio
       process.exit(1);
     };
 
-    process.on("unhandledRejection", (reason) => crash(reason, "unhandledRejection"));
-    process.on("uncaughtException", (err) => crash(err, "uncaughtException"));
+    process.on('unhandledRejection', (reason) => {
+      crash(reason, 'unhandledRejection');
+    });
+    process.on('uncaughtException', (err) => {
+      crash(err, 'uncaughtException');
+    });
   }
 }

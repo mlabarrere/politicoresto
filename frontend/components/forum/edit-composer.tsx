@@ -1,9 +1,14 @@
-﻿"use client";
+﻿'use client';
 
-import { CommentComposerShell } from "@/components/forms/comment-composer-shell";
-import type { EditComposerProps } from "@/lib/types/forum-components";
+import { CommentComposerShell } from '@/components/forms/comment-composer-shell';
+import type { EditComposerProps } from '@/lib/types/forum-components';
 
-export function EditComposer({ commentId, initialValue, onSubmit, onCancel }: EditComposerProps) {
+export function EditComposer({
+  commentId,
+  initialValue,
+  onSubmit,
+  onCancel,
+}: EditComposerProps) {
   return (
     <CommentComposerShell
       initialValue={initialValue}
@@ -18,5 +23,3 @@ export function EditComposer({ commentId, initialValue, onSubmit, onCancel }: Ed
     />
   );
 }
-
-

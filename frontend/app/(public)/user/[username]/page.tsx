@@ -1,12 +1,11 @@
-import { notFound } from "next/navigation";
-
-import { AppCard } from "@/components/app/app-card";
-import { PublicProfileTabs } from "@/components/profile/public-profile-tabs";
-import { PageContainer } from "@/components/layout/page-container";
-import { getPublicProfile } from "@/lib/data/public/profile";
+import { notFound } from 'next/navigation';
+import { AppCard } from '@/components/app/app-card';
+import { PublicProfileTabs } from '@/components/profile/public-profile-tabs';
+import { PageContainer } from '@/components/layout/page-container';
+import { getPublicProfile } from '@/lib/data/public/profile';
 
 export default async function PublicProfilePage({
-  params
+  params,
 }: {
   params: Promise<{ username: string }>;
 }) {
@@ -25,7 +24,9 @@ export default async function PublicProfilePage({
           <h1 className="text-2xl font-semibold text-foreground">
             @{data.profile.username}
           </h1>
-          {data.profile.bio ? <p className="text-sm text-foreground/90">{data.profile.bio}</p> : null}
+          {data.profile.bio ? (
+            <p className="text-sm text-foreground/90">{data.profile.bio}</p>
+          ) : null}
         </AppCard>
 
         <PublicProfileTabs posts={data.posts} comments={data.comments} />

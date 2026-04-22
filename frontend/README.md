@@ -70,14 +70,7 @@ npm run build
 - Toute query/RPC passe par les modules `lib/data/*` ou `lib/actions/*`.
 - Toute evolution front doit etre alignee avec le contrat SQL.
 
-Voir `frontend/AGENT.md` pour les regles detaillees.
-
-## Documentation frontend
-
-- Index: `frontend/docs/README.md`
-- Audit CTA global: `frontend/docs/create-cta-audit.md`
-- Audit UI Catalyst: `frontend/docs/ui-audit-catalyst.md`
-- Spec UI phase 1 (historique de conception): `frontend/docs/ui-spec-phase-1.md`
+Règles canoniques: `../CLAUDE.md` + skills dans `../.claude/skills/`.
 
 ## Deploiement Vercel
 

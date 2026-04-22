@@ -1,10 +1,9 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+import { createLogger, getRequestLogger, logError } from '@/lib/logger';
+import { supabaseEnv } from '@/lib/supabase/env';
 
-import { createLogger, getRequestLogger, logError } from "@/lib/logger";
-import { supabaseEnv } from "@/lib/supabase/env";
-
-const moduleLog = createLogger("auth.middleware");
+const moduleLog = createLogger('auth.middleware');
 
 /**
  * Pattern officiel Supabase SSR pour Next.js middleware.
@@ -24,7 +23,7 @@ const moduleLog = createLogger("auth.middleware");
 export async function updateSession(request: NextRequest) {
   const log = getRequestLogger() ?? moduleLog;
   let response = NextResponse.next({
-    request: { headers: request.headers }
+    request: { headers: request.headers },
   });
 
   const supabase = createServerClient(
@@ -36,31 +35,37 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(
-          cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }>
+          cookiesToSet: {
+            name: string;
+            value: string;
+            options: CookieOptions;
+          }[],
         ) {
           if (cookiesToSet.length > 0) {
             log.debug(
               {
-                event: "auth.session.cookie_rotation",
+                event: 'auth.session.cookie_rotation',
                 path: request.nextUrl.pathname,
-                cookie_names: cookiesToSet.map((c) => c.name)
+                cookie_names: cookiesToSet.map((c) => c.name),
               },
-              "cookie mutations (refresh)"
+              'cookie mutations (refresh)',
             );
           }
           for (const { name, value, options } of cookiesToSet) {
             request.cookies.set(name, value);
-            response = NextResponse.next({ request: { headers: request.headers } });
+            response = NextResponse.next({
+              request: { headers: request.headers },
+            });
             response.cookies.set(name, value, options);
           }
-        }
-      }
-    }
+        },
+      },
+    },
   );
 
   // Skip pour les server actions (POST Next-action) — la session est validée
   // côté RPC/RLS de toute façon, inutile d'ajouter un round-trip.
-  const isServerAction = request.headers.get("next-action") !== null;
+  const isServerAction = request.headers.get('next-action') !== null;
   if (isServerAction) {
     return response;
   }
@@ -76,9 +81,9 @@ export async function updateSession(request: NextRequest) {
 
   if (claimsError) {
     logError(log, claimsError, {
-      event: "auth.session.getclaims_failed",
+      event: 'auth.session.getclaims_failed',
       path: request.nextUrl.pathname,
-      level: "warn"
+      level: 'warn',
     });
   }
 
@@ -86,16 +91,20 @@ export async function updateSession(request: NextRequest) {
   // (le serveur fera sa propre gate si besoin via RLS ou requireSession).
   const pathname = request.nextUrl.pathname;
   const needsAuthGate =
-    request.method === "GET" && pathname.startsWith("/me") && !claims?.sub;
+    request.method === 'GET' && pathname.startsWith('/me') && !claims?.sub;
 
   if (needsAuthGate) {
     log.info(
-      { event: "auth.gate.redirect", path: pathname, reason: "unauthenticated_me" },
-      "redirect to login"
+      {
+        event: 'auth.gate.redirect',
+        path: pathname,
+        reason: 'unauthenticated_me',
+      },
+      'redirect to login',
     );
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/auth/login";
-    loginUrl.searchParams.set("next", pathname);
+    loginUrl.pathname = '/auth/login';
+    loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);
   }
 

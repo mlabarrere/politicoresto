@@ -1,46 +1,81 @@
-"use client";
+'use client';
 
-import { useMemo, useState, useTransition } from "react";
-import { Check, Slash, Trash2, X } from "lucide-react";
-
-import { AppBanner } from "@/components/app/app-banner";
-import { AppCard } from "@/components/app/app-card";
-import { AppEmptyState } from "@/components/app/app-empty-state";
-import { deleteVoteHistoryAction, upsertVoteHistoryAction } from "@/lib/actions/vote-history";
+import { useMemo, useState, useTransition } from 'react';
+import { Check, Slash, Trash2, X } from 'lucide-react';
+import { AppBanner } from '@/components/app/app-banner';
+import { AppCard } from '@/components/app/app-card';
+import { AppEmptyState } from '@/components/app/app-empty-state';
+import {
+  deleteVoteHistoryAction,
+  upsertVoteHistoryAction,
+} from '@/lib/actions/vote-history';
 import type {
   ElectionResultRow,
   ElectionRow,
-  UserVoteRow
-} from "@/lib/data/authenticated/vote-history";
-import { getPartyTheme, initials } from "@/lib/ui/party-colors";
-import { cn } from "@/lib/utils";
+  UserVoteRow,
+} from '@/lib/data/authenticated/vote-history';
+import { clientLog } from '@/lib/client-log';
+import { getPartyTheme, initials } from '@/lib/ui/party-colors';
+import { cn } from '@/lib/utils';
 
-type ChoiceKind = UserVoteRow["choice_kind"];
+const log = clientLog('vote-history.editor');
 
-type AbstentionOption = {
-  kind: Exclude<ChoiceKind, "vote">;
+type ChoiceKind = UserVoteRow['choice_kind'];
+
+interface AbstentionOption {
+  kind: Exclude<ChoiceKind, 'vote'>;
   label: string;
   short: string;
   bg: string;
   fg: string;
-};
+}
 
 const ABSTENTION_OPTIONS: AbstentionOption[] = [
-  { kind: "blanc",              label: "Vote blanc",          short: "Blanc",   bg: "#e5e7eb", fg: "#111827" },
-  { kind: "nul",                label: "Vote nul",            short: "Nul",     bg: "#cbd5e1", fg: "#111827" },
-  { kind: "abstention",         label: "Abstention",          short: "Abst.",   bg: "#94a3b8", fg: "#0b0b0b" },
-  { kind: "non_inscrit",        label: "Non inscrit(e)",      short: "N.insc.", bg: "#64748b", fg: "#ffffff" },
-  { kind: "ne_se_prononce_pas", label: "Ne se prononce pas",  short: "N.S.P.",  bg: "#475569", fg: "#ffffff" }
+  {
+    kind: 'blanc',
+    label: 'Vote blanc',
+    short: 'Blanc',
+    bg: '#e5e7eb',
+    fg: '#111827',
+  },
+  {
+    kind: 'nul',
+    label: 'Vote nul',
+    short: 'Nul',
+    bg: '#cbd5e1',
+    fg: '#111827',
+  },
+  {
+    kind: 'abstention',
+    label: 'Abstention',
+    short: 'Abst.',
+    bg: '#94a3b8',
+    fg: '#0b0b0b',
+  },
+  {
+    kind: 'non_inscrit',
+    label: 'Non inscrit(e)',
+    short: 'N.insc.',
+    bg: '#64748b',
+    fg: '#ffffff',
+  },
+  {
+    kind: 'ne_se_prononce_pas',
+    label: 'Ne se prononce pas',
+    short: 'N.S.P.',
+    bg: '#475569',
+    fg: '#ffffff',
+  },
 ];
 
-type EditorStatus = "ready" | "unavailable" | "error";
+type EditorStatus = 'ready' | 'unavailable' | 'error';
 
-type ElectionGroup = {
+interface ElectionGroup {
   key: string;
-  type: ElectionRow["type"];
+  type: ElectionRow['type'];
   year: number;
   elections: ElectionRow[];
-};
+}
 
 function groupElections(elections: ElectionRow[]): ElectionGroup[] {
   const groups = new Map<string, ElectionRow[]>();
@@ -62,8 +97,8 @@ function groupElections(elections: ElectionRow[]): ElectionGroup[] {
 export function AppVoteHistoryEditor({
   elections,
   votesByElectionId,
-  status = "ready",
-  message = null
+  status = 'ready',
+  message = null,
 }: {
   elections: ElectionRow[];
   votesByElectionId: Record<string, UserVoteRow>;
@@ -75,14 +110,31 @@ export function AppVoteHistoryEditor({
 
   const grouped = useMemo(() => groupElections(elections), [elections]);
 
-  if (status === "unavailable") {
-    return <AppEmptyState title="Historique electoral indisponible" body={message ?? "Cette section sera active bientot sur cet environnement."} />;
+  if (status === 'unavailable') {
+    return (
+      <AppEmptyState
+        title="Historique electoral indisponible"
+        body={
+          message ?? 'Cette section sera active bientot sur cet environnement.'
+        }
+      />
+    );
   }
-  if (status === "error") {
-    return <AppEmptyState title="Historique indisponible" body={message ?? "Reessayez dans quelques instants."} />;
+  if (status === 'error') {
+    return (
+      <AppEmptyState
+        title="Historique indisponible"
+        body={message ?? 'Reessayez dans quelques instants.'}
+      />
+    );
   }
   if (!elections.length) {
-    return <AppEmptyState title="Aucun scrutin seede" body="L'historique des scrutins n'a pas ete charge." />;
+    return (
+      <AppEmptyState
+        title="Aucun scrutin seede"
+        body="L'historique des scrutins n'a pas ete charge."
+      />
+    );
   }
 
   function run(fn: () => Promise<void>) {
@@ -91,8 +143,8 @@ export function AppVoteHistoryEditor({
       try {
         await fn();
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Action impossible.";
-        console.error("[vote-history][editor] action failed", { message: msg });
+        const msg = err instanceof Error ? err.message : 'Action impossible.';
+        log.error('vote_history.editor.action_failed', { message: msg });
         setError(msg);
       }
     });
@@ -101,19 +153,23 @@ export function AppVoteHistoryEditor({
   function onResultClick(election: ElectionRow, resultId: string) {
     const current = votesByElectionId[election.id];
     const alreadySelected =
-      current?.choice_kind === "vote" && current.election_result_id === resultId;
+      current?.choice_kind === 'vote' &&
+      current.election_result_id === resultId;
     run(() =>
       alreadySelected
         ? deleteVoteHistoryAction(election.slug)
         : upsertVoteHistoryAction({
             election_slug: election.slug,
             election_result_id: resultId,
-            choice_kind: "vote"
-          })
+            choice_kind: 'vote',
+          }),
     );
   }
 
-  function onAbstentionClick(election: ElectionRow, kind: Exclude<ChoiceKind, "vote">) {
+  function onAbstentionClick(
+    election: ElectionRow,
+    kind: Exclude<ChoiceKind, 'vote'>,
+  ) {
     const current = votesByElectionId[election.id];
     const alreadySelected = current?.choice_kind === kind;
     run(() =>
@@ -122,14 +178,20 @@ export function AppVoteHistoryEditor({
         : upsertVoteHistoryAction({
             election_slug: election.slug,
             election_result_id: null,
-            choice_kind: kind
-          })
+            choice_kind: kind,
+          }),
     );
   }
 
   return (
-    <div className={cn("space-y-4", isPending && "opacity-80")}>
-      {error ? <AppBanner title="Enregistrement impossible" body={error} tone="warning" /> : null}
+    <div className={cn('space-y-4', isPending && 'opacity-80')}>
+      {error ? (
+        <AppBanner
+          title="Enregistrement impossible"
+          body={error}
+          tone="warning"
+        />
+      ) : null}
 
       {grouped.map((group) => (
         <AppCard key={group.key} className="space-y-3 p-4">
@@ -138,7 +200,8 @@ export function AppVoteHistoryEditor({
               {formatElectionTypeLabel(group.type)} {group.year}
             </h3>
             <p className="text-xs text-muted-foreground">
-              Cliquez une case pour declarer votre vote. Re-cliquez pour l&apos;effacer.
+              Cliquez une case pour declarer votre vote. Re-cliquez pour
+              l&apos;effacer.
             </p>
           </header>
 
@@ -149,7 +212,9 @@ export function AppVoteHistoryEditor({
               currentVote={votesByElectionId[election.id]}
               onResultClick={onResultClick}
               onAbstentionClick={onAbstentionClick}
-              onClear={(e) => run(() => deleteVoteHistoryAction(e.slug))}
+              onClear={(e) => {
+                run(() => deleteVoteHistoryAction(e.slug));
+              }}
             />
           ))}
         </AppCard>
@@ -163,25 +228,30 @@ function ElectionRowBlock({
   currentVote,
   onResultClick,
   onAbstentionClick,
-  onClear
+  onClear,
 }: {
   election: ElectionRow;
   currentVote: UserVoteRow | undefined;
   onResultClick: (election: ElectionRow, resultId: string) => void;
-  onAbstentionClick: (election: ElectionRow, kind: Exclude<ChoiceKind, "vote">) => void;
+  onAbstentionClick: (
+    election: ElectionRow,
+    kind: Exclude<ChoiceKind, 'vote'>,
+  ) => void;
   onClear: (election: ElectionRow) => void;
 }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">
-          {election.round ? `Tour ${election.round} — ` : ""}
+          {election.round ? `Tour ${election.round} — ` : ''}
           {formatHeldOn(election.held_on)}
         </p>
         {currentVote ? (
           <button
             type="button"
-            onClick={() => onClear(election)}
+            onClick={() => {
+              onClear(election);
+            }}
             className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <Trash2 className="h-3 w-3" aria-hidden />
@@ -196,10 +266,12 @@ function ElectionRowBlock({
             key={result.id}
             result={result}
             isSelected={
-              currentVote?.choice_kind === "vote" &&
+              currentVote?.choice_kind === 'vote' &&
               currentVote.election_result_id === result.id
             }
-            onClick={() => onResultClick(election, result.id)}
+            onClick={() => {
+              onResultClick(election, result.id);
+            }}
           />
         ))}
 
@@ -208,7 +280,9 @@ function ElectionRowBlock({
             key={opt.kind}
             option={opt}
             isSelected={currentVote?.choice_kind === opt.kind}
-            onClick={() => onAbstentionClick(election, opt.kind)}
+            onClick={() => {
+              onAbstentionClick(election, opt.kind);
+            }}
           />
         ))}
       </div>
@@ -219,46 +293,50 @@ function ElectionRowBlock({
 function CandidateTile({
   result,
   isSelected,
-  onClick
+  onClick,
 }: {
   result: ElectionResultRow;
   isSelected: boolean;
   onClick: () => void;
 }) {
   const theme = getPartyTheme(result.party_slug);
-  const displayName = result.candidate_name ?? result.list_label ?? "Candidat";
+  const displayName = result.candidate_name ?? result.list_label ?? 'Candidat';
   const tooltipBase = result.candidate_name
-    ? `${result.candidate_name}${result.list_label ? ` — ${result.list_label}` : ""}`
-    : result.list_label ?? "Candidat";
+    ? `${result.candidate_name}${result.list_label ? ` — ${result.list_label}` : ''}`
+    : (result.list_label ?? 'Candidat');
   const pctLabel =
-    result.pct_exprimes != null
-      ? ` (${result.pct_exprimes.toFixed(2).replace(".", ",")}%)`
-      : "";
+    result.pct_exprimes !== null && result.pct_exprimes !== undefined
+      ? ` (${result.pct_exprimes.toFixed(2).replace('.', ',')}%)`
+      : '';
 
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={isSelected}
-      aria-label={`${tooltipBase} — ${isSelected ? "selectionne" : "non selectionne"}`}
+      aria-label={`${tooltipBase} — ${isSelected ? 'selectionne' : 'non selectionne'}`}
       title={`${tooltipBase}${pctLabel}`}
       style={
         isSelected
-          ? { backgroundColor: theme.bg, color: theme.fg, boxShadow: `0 0 0 2px ${theme.ring}` }
+          ? {
+              backgroundColor: theme.bg,
+              color: theme.fg,
+              boxShadow: `0 0 0 2px ${theme.ring}`,
+            }
           : undefined
       }
       className={cn(
-        "relative flex h-20 flex-col items-center justify-center rounded-xl border p-1 text-center text-xs font-medium transition",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        'relative flex h-20 flex-col items-center justify-center rounded-xl border p-1 text-center text-xs font-medium transition',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         isSelected
-          ? "border-transparent"
-          : "border-border bg-card text-foreground hover:border-foreground/30 hover:bg-muted"
+          ? 'border-transparent'
+          : 'border-border bg-card text-foreground hover:border-foreground/30 hover:bg-muted',
       )}
     >
       <span
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold",
-          isSelected ? "bg-black/15" : "bg-muted"
+          'flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold',
+          isSelected ? 'bg-black/15' : 'bg-muted',
         )}
         style={
           !isSelected && result.party_slug
@@ -283,7 +361,7 @@ function CandidateTile({
 function AbstentionTile({
   option,
   isSelected,
-  onClick
+  onClick,
 }: {
   option: AbstentionOption;
   isSelected: boolean;
@@ -294,26 +372,30 @@ function AbstentionTile({
       type="button"
       onClick={onClick}
       aria-pressed={isSelected}
-      aria-label={`${option.label} — ${isSelected ? "selectionne" : "non selectionne"}`}
+      aria-label={`${option.label} — ${isSelected ? 'selectionne' : 'non selectionne'}`}
       title={option.label}
-      style={isSelected ? { backgroundColor: option.bg, color: option.fg } : undefined}
-      className={cn(
-        "relative flex h-20 flex-col items-center justify-center rounded-xl border border-dashed p-1 text-center text-xs font-medium transition",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      style={
         isSelected
-          ? "border-transparent"
-          : "border-border bg-muted/40 text-muted-foreground hover:border-foreground/30 hover:bg-muted"
+          ? { backgroundColor: option.bg, color: option.fg }
+          : undefined
+      }
+      className={cn(
+        'relative flex h-20 flex-col items-center justify-center rounded-xl border border-dashed p-1 text-center text-xs font-medium transition',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        isSelected
+          ? 'border-transparent'
+          : 'border-border bg-muted/40 text-muted-foreground hover:border-foreground/30 hover:bg-muted',
       )}
     >
       <span
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold",
-          isSelected ? "bg-black/10" : "bg-muted"
+          'flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold',
+          isSelected ? 'bg-black/10' : 'bg-muted',
         )}
       >
-        {option.kind === "blanc" ? (
+        {option.kind === 'blanc' ? (
           <X className="h-3.5 w-3.5" aria-hidden />
-        ) : option.kind === "nul" ? (
+        ) : option.kind === 'nul' ? (
           <Slash className="h-3.5 w-3.5" aria-hidden />
         ) : (
           <span>—</span>
@@ -329,20 +411,24 @@ function AbstentionTile({
   );
 }
 
-function formatElectionTypeLabel(type: ElectionRow["type"]): string {
+function formatElectionTypeLabel(type: ElectionRow['type']): string {
   switch (type) {
-    case "presidentielle": return "Presidentielle";
-    case "legislatives":   return "Legislatives";
-    case "europeennes":    return "Europeennes";
-    default:               return type;
+    case 'presidentielle':
+      return 'Presidentielle';
+    case 'legislatives':
+      return 'Legislatives';
+    case 'europeennes':
+      return 'Europeennes';
+    default:
+      return type;
   }
 }
 
 function formatHeldOn(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric"
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
   });
 }
 

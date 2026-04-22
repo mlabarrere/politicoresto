@@ -128,7 +128,7 @@ export async function getPostDetail(
   }
 
   const commentIds = commentsList.map((comment) => comment.id);
-  type ReactionRow = { target_id: string; reaction_type: string };
+  interface ReactionRow { target_id: string; reaction_type: string }
 
   const [postReactions, commentReactions] = await Promise.all([
     postIds.length

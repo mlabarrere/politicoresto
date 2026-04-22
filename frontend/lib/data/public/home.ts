@@ -1,4 +1,5 @@
 import type { HomeScreenData, LoadState, SubjectView } from "@/lib/types/screens";
+import { createLogger, logError } from "@/lib/logger";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getAuthUserId } from "@/lib/supabase/auth-user";
 import { emptyQueryResult } from "@/lib/supabase/query-utils";
@@ -6,9 +7,11 @@ import { REACTION_TYPE_TO_SIDE } from "@/lib/reactions";
 import { toHomeFeedTopic } from "./canonical";
 import { getPollSummariesByPostItemIds } from "./polls";
 
+const log = createLogger("data.home");
+
 export async function getHomeScreenData(currentUserId?: string | null): Promise<LoadState<HomeScreenData>> {
   const t0 = Date.now();
-  console.info("[home] getHomeScreenData start", { currentUserId: currentUserId ?? "anonymous" });
+  log.debug({ event: "home.fetch.start", user_id: currentUserId ?? null }, "getHomeScreenData start");
 
   const supabase = await createServerSupabaseClient();
 
@@ -24,14 +27,14 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     .limit(24);
 
   if (feedResult.error) {
-    console.error("[home] v_feed_global query failed", { message: feedResult.error.message, code: feedResult.error.code });
+    logError(log, feedResult.error, { event: "home.feed.query_failed", code: feedResult.error.code, message: "v_feed_global query failed" });
   } else {
-    console.info("[home] v_feed_global fetched", { rows: feedResult.data?.length ?? 0, ms: Date.now() - t0 });
+    log.debug({ event: "home.feed.fetched", rows: feedResult.data?.length ?? 0, duration_ms: Date.now() - t0 }, "v_feed_global fetched");
   }
 
   const safeError = feedResult.error ? "Feed indisponible pour le moment." : null;
   const feedRows = (feedResult.data ?? []) as Record<string, unknown>[];
-  const feed = feedRows.map((row, index) => toHomeFeedTopic(row as Record<string, unknown>, index + 1));
+  const feed = feedRows.map((row, index) => toHomeFeedTopic(row, index + 1));
 
   const postRootIds = feed.map((item) => item.topic_id).filter(Boolean);
 
@@ -87,7 +90,7 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     .map((item) => postByRootId.get(item.topic_id)?.id)
     .filter((id): id is string => typeof id === "string" && id.length > 0);
 
-  type ReactionRow = { target_id: string; reaction_type: string };
+  interface ReactionRow { target_id: string; reaction_type: string }
 
   // Step 3: reactions + poll summaries in parallel (both depend on post IDs, independent of each other)
   const [ownReactionsResult, pollByPostItemId] = await Promise.all([
@@ -189,9 +192,9 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     .order("sort_order");
 
   if (allSubjectsResult.error) {
-    console.error("[home] subjects fetch failed", { message: allSubjectsResult.error.message });
+    logError(log, allSubjectsResult.error, { event: "home.subjects.fetch_failed", message: "subjects fetch failed" });
   } else {
-    console.info("[home] subjects fetched", { count: allSubjectsResult.data?.length ?? 0 });
+    log.debug({ event: "home.subjects.fetched", count: allSubjectsResult.data?.length ?? 0 }, "subjects fetched");
   }
 
   const allSubjects: SubjectView[] = (allSubjectsResult.data ?? []).map((row) => ({
@@ -202,12 +205,16 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     sort_order: Number((row as { sort_order?: number }).sort_order ?? 0)
   }));
 
-  console.info("[home] getHomeScreenData done", {
-    feedItems: feedWithSubjects.length,
-    subjects: allSubjects.length,
-    ms: Date.now() - t0,
-    error: safeError ?? null,
-  });
+  log.info(
+    {
+      event: "home.fetch.done",
+      feed_items: feedWithSubjects.length,
+      subjects: allSubjects.length,
+      duration_ms: Date.now() - t0,
+      error: safeError ?? null,
+    },
+    "getHomeScreenData done",
+  );
 
   return {
     data: {

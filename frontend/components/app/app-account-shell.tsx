@@ -1,19 +1,22 @@
-﻿import type { ReactNode } from "react";
-
-import { AppCard } from "@/components/app/app-card";
-import { AppPrivateNotice } from "@/components/app/app-private-notice";
-import { AppSectionNav } from "@/components/app/app-section-nav";
-import type { AccountSectionKey } from "@/lib/account/sections";
+﻿import type { ReactNode } from 'react';
+import { AppCard } from '@/components/app/app-card';
+import { AppPrivateNotice } from '@/components/app/app-private-notice';
+import { AppSectionNav } from '@/components/app/app-section-nav';
+import type { AccountSectionKey } from '@/lib/account/sections';
 
 export function AppAccountShell({
   section,
   navItems,
   heading,
   subheading,
-  children
+  children,
 }: {
   section: AccountSectionKey;
-  navItems: Array<{ key: AccountSectionKey; label: string; description: string }>;
+  navItems: {
+    key: AccountSectionKey;
+    label: string;
+    description: string;
+  }[];
   heading: string;
   subheading: string;
   children: ReactNode;
@@ -22,8 +25,12 @@ export function AppAccountShell({
     <div className="mx-auto w-full max-w-7xl space-y-4 px-4 py-4 lg:px-10 lg:py-6">
       <AppCard className="vichy-accent space-y-3 border-border/70">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Espace personnel</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">{heading}</h1>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Espace personnel
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
+            {heading}
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">{subheading}</p>
         </div>
         <AppPrivateNotice message="Visible uniquement par vous" />

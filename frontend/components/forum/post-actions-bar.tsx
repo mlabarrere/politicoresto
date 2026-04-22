@@ -1,13 +1,12 @@
-"use client";
+'use client';
 
-import { Flag, MessageSquare, Share2 } from "lucide-react";
-import { useState } from "react";
-
-import { AppButton } from "@/components/app/app-button";
-import { AppCard } from "@/components/app/app-card";
-import { ReactionBar } from "@/components/social/reaction-bar";
-import { toBackendVoteSide } from "@/lib/forum/vote";
-import type { PostActionsBarProps } from "@/lib/types/forum-components";
+import { Flag, MessageSquare, Share2 } from 'lucide-react';
+import { useState } from 'react';
+import { AppButton } from '@/components/app/app-button';
+import { AppCard } from '@/components/app/app-card';
+import { ReactionBar } from '@/components/social/reaction-bar';
+import { toBackendVoteSide } from '@/lib/forum/vote';
+import type { PostActionsBarProps } from '@/lib/types/forum-components';
 
 export function PostActionsBar({
   postId,
@@ -16,37 +15,52 @@ export function PostActionsBar({
   rightCount,
   isAuthenticated,
   redirectPath,
-  onReplyClick
+  onReplyClick,
 }: PostActionsBarProps) {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   async function onShare() {
-    const url = typeof window !== "undefined" ? window.location.href : redirectPath;
+    const url =
+      typeof window !== 'undefined' ? window.location.href : redirectPath;
 
     try {
-      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        await navigator.share({ title: "Post", url });
-        setFeedback("Partage lancé");
-      } else if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      if (
+        typeof navigator !== 'undefined' &&
+        typeof navigator.share === 'function'
+      ) {
+        await navigator.share({ title: 'Post', url });
+        setFeedback('Partage lancé');
+      } else if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard.writeText
+      ) {
         await navigator.clipboard.writeText(url);
-        setFeedback("Lien copié");
+        setFeedback('Lien copié');
       } else {
-        setFeedback("Partage indisponible");
+        setFeedback('Partage indisponible');
       }
     } catch {
-      setFeedback("Partage annulé");
+      setFeedback('Partage annulé');
     }
 
-    window.setTimeout(() => setFeedback(null), 1800);
+    window.setTimeout(() => {
+      setFeedback(null);
+    }, 1800);
   }
 
   function onReport() {
-    setFeedback("Signalement enregistré");
-    window.setTimeout(() => setFeedback(null), 1800);
+    setFeedback('Signalement enregistré');
+    window.setTimeout(() => {
+      setFeedback(null);
+    }, 1800);
   }
 
   return (
-    <AppCard className="space-y-2 px-3 py-2" aria-label="Actions du post" data-post-id={postId}>
+    <AppCard
+      className="space-y-2 px-3 py-2"
+      aria-label="Actions du post"
+      data-post-id={postId}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <ReactionBar
           targetType="post"
@@ -62,7 +76,11 @@ export function PostActionsBar({
           <AppButton type="button" variant="secondary" onClick={onReplyClick}>
             <MessageSquare className="size-3.5" /> Commenter
           </AppButton>
-          <AppButton type="button" variant="secondary" onClick={() => void onShare()}>
+          <AppButton
+            type="button"
+            variant="secondary"
+            onClick={() => void onShare()}
+          >
             <Share2 className="size-3.5" /> Partager
           </AppButton>
           <AppButton type="button" variant="secondary" onClick={onReport}>
@@ -71,7 +89,9 @@ export function PostActionsBar({
         </div>
       </div>
 
-      {feedback ? <p className="text-xs text-muted-foreground">{feedback}</p> : null}
+      {feedback ? (
+        <p className="text-xs text-muted-foreground">{feedback}</p>
+      ) : null}
     </AppCard>
   );
 }

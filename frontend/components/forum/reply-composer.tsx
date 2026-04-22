@@ -1,19 +1,18 @@
-﻿"use client";
+﻿'use client';
 
-import { CommentComposerShell } from "@/components/forms/comment-composer-shell";
-import type { ReplyComposerProps } from "@/lib/types/forum-components";
+import { CommentComposerShell } from '@/components/forms/comment-composer-shell';
+import type { ReplyComposerProps } from '@/lib/types/forum-components';
 
 export function ReplyComposer({
   targetType,
   targetId,
   parentCommentId,
-  initialValue = "",
+  initialValue = '',
   mentionPrefix,
-  autoFocus,
   onSubmit,
-  onCancel
+  onCancel,
 }: ReplyComposerProps) {
-  const initialBody = `${mentionPrefix ?? ""}${initialValue}`.trimStart();
+  const initialBody = `${mentionPrefix ?? ''}${initialValue}`.trimStart();
 
   return (
     <CommentComposerShell
@@ -23,18 +22,15 @@ export function ReplyComposer({
       submittingLabel="Publication..."
       submitErrorLabel="Echec d'enregistrement."
       onCancel={onCancel}
-      autoFocus={autoFocus}
       testId="reply-composer"
       onSubmit={async (body) => {
         await onSubmit({
           targetType,
           targetId,
           parentCommentId,
-          body
+          body,
         });
       }}
     />
   );
 }
-
-

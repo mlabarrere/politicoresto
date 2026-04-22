@@ -1,11 +1,13 @@
-import Link from "next/link";
-import type { Route } from "next";
-
-import { siteConfig } from "@/lib/config/site";
+import Link from 'next/link';
+import type { Route } from 'next';
+import { siteConfig } from '@/lib/config/site';
 
 export function MainNav() {
   return (
-    <nav className="hidden lg:flex items-center gap-2" aria-label="Navigation principale">
+    <nav
+      className="hidden lg:flex items-center gap-2"
+      aria-label="Navigation principale"
+    >
       {siteConfig.navigation.primary.map((item) => (
         <Link
           key={item.href}

@@ -1,15 +1,14 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, PlusSquare, User } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, PlusSquare, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
-  { href: "/", label: "Fil", Icon: Home },
-  { href: "/post/new", label: "Créer", Icon: PlusSquare },
-  { href: "/me", label: "Profil", Icon: User }
+  { href: '/', label: 'Fil', Icon: Home },
+  { href: '/post/new', label: 'Créer', Icon: PlusSquare },
+  { href: '/me', label: 'Profil', Icon: User },
 ] as const;
 
 export function MobileBottomNav() {
@@ -24,11 +23,13 @@ export function MobileBottomNav() {
             key={href}
             href={href}
             className={cn(
-              "flex flex-col items-center gap-0.5 px-4 py-2 text-xs transition-colors",
-              active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              'flex flex-col items-center gap-0.5 px-4 py-2 text-xs transition-colors',
+              active
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            <Icon className={cn("size-5", active && "stroke-[2.5]")} />
+            <Icon className={cn('size-5', active && 'stroke-[2.5]')} />
             <span>{label}</span>
           </Link>
         );

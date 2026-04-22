@@ -1,28 +1,41 @@
 name: CI
 
 # Runs on every PR targeting main, and on every push to main.
-# On both: quality + coverage run in parallel → build waits for both.
-# Deploy is handled by separate workflows (deploy-preview.yml, deploy-production.yml).
+# Single source of truth: scripts/verify.sh (same script devs run locally).
+#
+# Cost-aware:
+# - Skipped on doc-only changes (see paths-ignore below).
+# - Skipped on draft PRs (see `if:` on jobs).
+# - npm cache keyed on frontend/package-lock.json.
 
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/skills/**'
+      - 'LICENSE'
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/skills/**'
+      - 'LICENSE'
 
 permissions:
   contents: read
 
-# ─────────────────────────────────────────
-# JOB 1 — Code quality (TypeScript)
-# ─────────────────────────────────────────
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  quality:
-    name: Code Quality
+  verify:
+    name: Verify (lint + typecheck + tests)
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -33,16 +46,17 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        working-directory: frontend
         run: npm ci
 
-      - name: TypeScript type check
-        run: npm run typecheck
+      # Parity: the exact same gate developers run locally.
+      - name: scripts/verify.sh (prettier + eslint + auth-guards + typecheck + vitest)
+        run: bash scripts/verify.sh
 
-# ─────────────────────────────────────────
-# JOB 2 — Tests & coverage (Vitest + Codecov)
-# ─────────────────────────────────────────
   coverage:
     name: Tests & Coverage
+    if: github.event.pull_request.draft != true
+    needs: [verify]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -70,12 +84,10 @@ jobs:
           flags: frontend
           fail_ci_if_error: false
 
-# ─────────────────────────────────────────
-# JOB 3 — Build (waits for quality + coverage)
-# ─────────────────────────────────────────
   build:
     name: Build
-    needs: [quality, coverage]
+    if: github.event.pull_request.draft != true
+    needs: [verify]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -93,4 +105,72 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          # Build does not need real Supabase creds — our @t3-oss/env-nextjs
+          # schema fails at import time on `createEnv` if the vars are
+          # unset. Vercel Production/Preview build steps inject real values.
+          SKIP_ENV_VALIDATION: 'true'
         run: npm run build
+
+  e2e:
+    name: E2E (Playwright)
+    if: github.event.pull_request.draft != true
+    needs: [verify]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      # E2E tests run against `next dev` on 127.0.0.1:3001, configured
+      # by playwright.config.ts. We need a local Supabase stack to hit.
+      SKIP_ENV_VALIDATION: 'true'
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      # Local Supabase CLI default anon key — safe to hardcode, it's the
+      # public demo key distributed with every `supabase start`.
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Playwright browsers (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Start Supabase local stack
+        working-directory: ${{ github.workspace }}
+        run: |
+          # Use the Supabase GitHub-hosted action for the CLI rather than
+          # pulling the whole Docker stack — E2E tests only need the
+          # HTTP API and the Postgres endpoint.
+          npx supabase@latest start
+          npx supabase@latest status -o env > /tmp/supa.env
+
+      - name: Run Playwright suite (desktop project only)
+        run: npx playwright test --project=desktop
+
+      - name: Upload Playwright trace artefacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-trace
+          path: frontend/test-results/
+          retention-days: 7
+
+      - name: Stop Supabase local stack
+        if: always()
+        working-directory: ${{ github.workspace }}
+        run: npx supabase@latest stop || true

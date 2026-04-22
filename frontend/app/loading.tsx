@@ -1,6 +1,6 @@
-import { AppCard } from "@/components/app/app-card";
-import { AppSkeleton } from "@/components/app/app-skeleton";
-import { PageContainer } from "@/components/layout/page-container";
+import { AppCard } from '@/components/app/app-card';
+import { AppSkeleton } from '@/components/app/app-skeleton';
+import { PageContainer } from '@/components/layout/page-container';
 
 function LoadingPostCard({ featured = false }: { featured?: boolean }) {
   return (
@@ -11,7 +11,7 @@ function LoadingPostCard({ featured = false }: { featured?: boolean }) {
         <AppSkeleton className="h-7 w-20 rounded-full" />
       </div>
       <div className="space-y-2">
-        <AppSkeleton className={featured ? "h-10 w-4/5" : "h-8 w-3/4"} />
+        <AppSkeleton className={featured ? 'h-10 w-4/5' : 'h-8 w-3/4'} />
         <AppSkeleton className="h-4 w-full" />
         <AppSkeleton className="h-4 w-2/3" />
       </div>
@@ -64,4 +64,3 @@ export default function HomeLoading() {
     </PageContainer>
   );
 }
-

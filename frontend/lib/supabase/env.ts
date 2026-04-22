@@ -1,20 +1,34 @@
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
 
-const readEnv = (value: string | undefined, key: string) => {
-  if (!value) {
-    throw new Error(`Missing environment variable: ${key}`);
-  }
-  return value;
-};
+/**
+ * Typed, validated env access. Built with @t3-oss/env-nextjs + zod.
+ *
+ * Browser-safe: this module is imported transitively by the browser client
+ * factory. It must NOT pull server-only Node APIs (e.g. `@/lib/logger` which
+ * uses `async_hooks`). @t3-oss/env-nextjs handles the client/server split
+ * automatically — `client` keys are validated on both sides; `server` keys
+ * would never appear in the browser bundle.
+ */
+const env = createEnv({
+  client: {
+    NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  },
+  runtimeEnv: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  },
+  // In tests the env is absent; skip validation so unit tests don't need to
+  // stub every var. SKIP_ENV_VALIDATION is the t3-env convention CI honours
+  // during build — the production runtime on Vercel sets real values via
+  // project env vars. In local dev / production runtime, validation is on.
+  skipValidation:
+    process.env.NODE_ENV === 'test' || Boolean(process.env.SKIP_ENV_VALIDATION),
+});
 
-// Browser-safe module. Cannot import `@/lib/logger` here — env.ts is imported
-// transitively by the browser client factory, and `lib/logger.ts` pulls Node
-// APIs (`async_hooks`, Pino's Node entry) that are not available in the
-// browser bundle. Diagnostic logging of the active project, if needed, can
-// be added from a server-only caller (middleware / server factory).
 export const supabaseEnv = {
-  url: () => readEnv(supabaseUrl, "NEXT_PUBLIC_SUPABASE_URL"),
-  publishableKey: () =>
-    readEnv(supabasePublishableKey, "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
+  url: () => env.NEXT_PUBLIC_SUPABASE_URL,
+  publishableKey: () => env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
 };

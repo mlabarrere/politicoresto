@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-
-import { AppButton } from "@/components/app/app-button";
-import { AppTextarea } from "@/components/app/app-textarea";
+import { useState } from 'react';
+import { AppButton } from '@/components/app/app-button';
+import { AppTextarea } from '@/components/app/app-textarea';
 
 export function CommentComposerShell({
   initialValue,
@@ -13,8 +12,7 @@ export function CommentComposerShell({
   submitErrorLabel,
   onSubmit,
   onCancel,
-  autoFocus,
-  testId
+  testId,
 }: {
   initialValue: string;
   placeholder?: string;
@@ -23,7 +21,6 @@ export function CommentComposerShell({
   submitErrorLabel: string;
   onSubmit: (body: string) => Promise<void>;
   onCancel: () => void;
-  autoFocus?: boolean;
   testId: string;
 }) {
   const [body, setBody] = useState(initialValue);
@@ -32,7 +29,7 @@ export function CommentComposerShell({
 
   async function handleSubmit() {
     if (!body.trim()) {
-      setError("Contenu requis.");
+      setError('Contenu requis.');
       return;
     }
 
@@ -48,21 +45,36 @@ export function CommentComposerShell({
   }
 
   return (
-    <div className="space-y-2 rounded-xl border border-border/70 bg-background/80 p-3" data-testid={testId}>
+    <div
+      className="space-y-2 rounded-xl border border-border/70 bg-background/80 p-3"
+      data-testid={testId}
+    >
       <AppTextarea
-        autoFocus={autoFocus}
         rows={3}
         value={body}
-        onChange={(event) => setBody(event.target.value)}
+        onChange={(event) => {
+          setBody(event.target.value);
+        }}
         placeholder={placeholder}
         className="resize-y"
       />
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
       <div className="flex items-center justify-end gap-2">
-        <AppButton type="button" variant="secondary" size="sm" disabled={isSubmitting} onClick={onCancel}>
+        <AppButton
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={isSubmitting}
+          onClick={onCancel}
+        >
           Annuler
         </AppButton>
-        <AppButton type="button" size="sm" disabled={isSubmitting} onClick={() => void handleSubmit()}>
+        <AppButton
+          type="button"
+          size="sm"
+          disabled={isSubmitting}
+          onClick={() => void handleSubmit()}
+        >
           {isSubmitting ? submittingLabel : submitLabel}
         </AppButton>
       </div>

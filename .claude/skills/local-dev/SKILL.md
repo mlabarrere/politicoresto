@@ -58,6 +58,68 @@ supabase db diff                                                 # pending chang
 supabase migration list                                          # local vs remote history
 ```
 
+## E2E tests (Playwright)
+
+The nine user-story spec files live under `frontend/tests/e2e/`. Each
+spec covers a happy path and at least one failure path. Scaffolded
+tests marked `test.fixme` are tracked follow-ups — they do not run and
+do not fail CI until someone promotes them.
+
+### Run locally
+
+```bash
+# 1. Boot Supabase (first tab)
+supabase start
+
+# 2. Reset DB so the test@example.com seed user exists
+supabase db reset
+
+# 3. Run Playwright — it launches `next dev` on 127.0.0.1:3001 itself
+cd frontend
+npm run test:e2e                # all specs, desktop + mobile projects
+npm run test:e2e -- sign-in      # single spec
+npm run test:e2e:ui              # interactive UI for debugging
+```
+
+### Authenticate in a test
+
+```ts
+import { signInAsSeedUser } from './helpers/auth';
+
+test('my authed flow', async ({ page }) => {
+  await signInAsSeedUser(page);
+  await page.goto('/me');
+  // ... assertions
+});
+```
+
+The helper uses Supabase's password grant against the seed user
+(`test@example.com` / `password123`) — no OAuth round-trip, no
+provider config needed.
+
+### Debug a failing E2E
+
+Playwright traces are retained on failure:
+
+```bash
+npx playwright show-trace frontend/test-results/<run-id>/trace.zip
+```
+
+In CI, traces are uploaded as the `playwright-trace` artefact on any
+job failure.
+
+### Adding a new feature
+
+**Rule** (see CLAUDE.md hard rule #11): any new user-facing feature
+requires a new or extended E2E spec in the same PR.
+
+1. Pick (or create) the right spec file under `tests/e2e/`.
+2. Cover the happy path: sign in, navigate, act, assert UI.
+3. Cover at least one failure path: unauth access, invalid input, or
+   duplicate action per product rules.
+4. Prefer accessible locators (`getByRole`, `getByLabel`) over CSS
+   selectors.
+
 ## "Works on Vercel but not locally" — triage
 
 1. **Env vars missing locally?** Compare `frontend/.env.local` with `.env.local.example`.

@@ -1,20 +1,22 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
+import { clientLog } from '@/lib/client-log';
+
+const log = clientLog('global-error-boundary');
 
 export default function GlobalError({
   error,
-  reset
+  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- client-side boundary; no logger import available
-    console.error("[global-error-boundary] rendered fallback", {
+    log.error('global_error_boundary.rendered', {
       message: error.message,
       digest: error.digest,
-      stack: error.stack
+      stack: error.stack,
     });
   }, [error]);
 
@@ -24,7 +26,9 @@ export default function GlobalError({
         <div className="mx-auto max-w-xl p-8 text-center">
           <h2 className="text-lg font-semibold">Erreur critique.</h2>
           <p className="mt-2 text-sm">
-            {error.digest ? `Référence: ${error.digest}` : "L'application a rencontré un problème."}
+            {error.digest
+              ? `Référence: ${error.digest}`
+              : "L'application a rencontré un problème."}
           </p>
           <button
             type="button"

@@ -1,38 +1,40 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  createBrowserClient: vi.fn()
+  createBrowserClient: vi.fn(),
 }));
 
-vi.mock("@supabase/ssr", () => ({
-  createBrowserClient: mocks.createBrowserClient
+vi.mock('@supabase/ssr', () => ({
+  createBrowserClient: mocks.createBrowserClient,
 }));
 
-vi.mock("@/lib/supabase/env", () => ({
+vi.mock('@/lib/supabase/env', () => ({
   supabaseEnv: {
-    url: () => "https://example.supabase.co",
-    publishableKey: () => "anon-key"
-  }
+    url: () => 'https://example.supabase.co',
+    publishableKey: () => 'anon-key',
+  },
 }));
 
-describe("createBrowserSupabaseClient", () => {
+describe('createBrowserSupabaseClient', () => {
   beforeEach(() => {
     vi.resetModules();
     mocks.createBrowserClient.mockReset();
     mocks.createBrowserClient.mockReturnValue({ auth: {} });
   });
 
-  it("creates a browser client with env vars", async () => {
-    const { createBrowserSupabaseClient } = await import("@/lib/supabase/client");
+  it('creates a browser client with env vars', async () => {
+    const { createBrowserSupabaseClient } =
+      await import('@/lib/supabase/client');
     createBrowserSupabaseClient();
     expect(mocks.createBrowserClient).toHaveBeenCalledWith(
-      "https://example.supabase.co",
-      "anon-key"
+      'https://example.supabase.co',
+      'anon-key',
     );
   });
 
-  it("returns the same client instance on second call (singleton)", async () => {
-    const { createBrowserSupabaseClient } = await import("@/lib/supabase/client");
+  it('returns the same client instance on second call (singleton)', async () => {
+    const { createBrowserSupabaseClient } =
+      await import('@/lib/supabase/client');
     const c1 = createBrowserSupabaseClient();
     const c2 = createBrowserSupabaseClient();
     expect(c1).toBe(c2);

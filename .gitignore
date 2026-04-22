@@ -44,3 +44,7 @@ politicoresto-audit.patch
 
 # Seed CSVs non utilisés par le MVP (orphelins après drop des tables politician/party/media_outlet)
 Data/
+
+# Python bytecode (scripts/generate_fr_political_seed.py)
+__pycache__/
+*.pyc

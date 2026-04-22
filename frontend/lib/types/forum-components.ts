@@ -3,31 +3,31 @@
   EditDraft,
   ForumPost,
   ReplyDraft,
-  VoteSide
-} from "@/lib/types/forum";
+  VoteSide,
+} from '@/lib/types/forum';
 
-export type ForumPageState = {
-  postStatus: "loading" | "ready" | "error";
-  commentsStatus: "loading" | "ready" | "error";
-  sortMode: "top" | "recent" | "oldest";
+export interface ForumPageState {
+  postStatus: 'loading' | 'ready' | 'error';
+  commentsStatus: 'loading' | 'ready' | 'error';
+  sortMode: 'top' | 'recent' | 'oldest';
   collapsedAll: boolean;
   focusedBranchId?: string;
-};
+}
 
-export type ForumPageProps = {
+export interface ForumPageProps {
   post: ForumPost;
   comments: CommentTreeNode[];
   currentUserId?: string | null;
   postSlug: string;
-};
+}
 
-export type PostCardProps = {
+export interface PostCardProps {
   post: ForumPost;
   initialExpanded?: boolean;
   isAuthenticated?: boolean;
-};
+}
 
-export type PostActionsBarProps = {
+export interface PostActionsBarProps {
   postId: string;
   currentUserVote: VoteSide;
   leftCount: number;
@@ -35,12 +35,11 @@ export type PostActionsBarProps = {
   isAuthenticated: boolean;
   redirectPath: string;
   onReplyClick: () => void;
-};
+}
 
-
-export type CommentThreadProps = {
+export interface CommentThreadProps {
   comments: CommentTreeNode[];
-  sortMode: "top" | "recent" | "oldest";
+  sortMode: 'top' | 'recent' | 'oldest';
   currentUserId?: string | null;
   maxInlineDepth: number;
   collapsedAll: boolean;
@@ -48,9 +47,9 @@ export type CommentThreadProps = {
   onReplySubmit: (payload: ReplyDraft) => Promise<void>;
   onEditSubmit: (payload: EditDraft) => Promise<void>;
   onDeleteSubmit: (commentId: string) => Promise<void>;
-};
+}
 
-export type CommentNodeProps = {
+export interface CommentNodeProps {
   node: CommentTreeNode;
   depth: number;
   maxInlineDepth: number;
@@ -60,36 +59,35 @@ export type CommentNodeProps = {
   onReplySubmit: (payload: ReplyDraft) => Promise<void>;
   onEditSubmit: (payload: EditDraft) => Promise<void>;
   onDeleteSubmit: (commentId: string) => Promise<void>;
-};
+}
 
-export type ReplyComposerProps = {
-  targetType: "post" | "comment";
+export interface ReplyComposerProps {
+  targetType: 'post' | 'comment';
   targetId: string;
   parentCommentId?: string;
   initialValue?: string;
   mentionPrefix?: string;
-  autoFocus?: boolean;
   onSubmit: (draft: ReplyDraft) => Promise<void>;
   onCancel: () => void;
-};
+}
 
-export type EditComposerProps = {
+export interface EditComposerProps {
   commentId: string;
   initialValue: string;
   onSubmit: (draft: EditDraft) => Promise<void>;
   onCancel: () => void;
-};
+}
 
-export type CommentActionsMenuProps = {
+export interface CommentActionsMenuProps {
   canEdit: boolean;
   canDelete: boolean;
   disabled?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onCopyLink: () => void;
-};
+}
 
-export type PostToolbarProps = {
-  sortMode: "top" | "recent" | "oldest";
-  onSortChange: (next: "top" | "recent" | "oldest") => void;
-};
+export interface PostToolbarProps {
+  sortMode: 'top' | 'recent' | 'oldest';
+  onSortChange: (next: 'top' | 'recent' | 'oldest') => void;
+}

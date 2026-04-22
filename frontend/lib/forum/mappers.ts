@@ -1,15 +1,15 @@
-import type { CommentView, PostView } from "@/lib/types/views";
-import type { CommentTreeNode, ForumPost } from "@/lib/types/forum";
-import { fromBackendVoteSide } from "@/lib/forum/vote";
-import { normalizeMultilineText } from "@/lib/utils/multiline";
+import type { CommentView, PostView } from '@/lib/types/views';
+import type { CommentTreeNode, ForumPost } from '@/lib/types/forum';
+import { fromBackendVoteSide } from '@/lib/forum/vote';
+import { normalizeMultilineText } from '@/lib/utils/multiline';
 
 function toUsername(username: string | null, displayName: string | null) {
-  return displayName ?? username ?? "Membre";
+  return displayName ?? username ?? 'Membre';
 }
 
 export function mapPostViewToForumPost(
   post: PostView,
-  fallbackTitle?: string | null
+  fallbackTitle?: string | null,
 ): ForumPost {
   return {
     id: post.id,
@@ -17,7 +17,7 @@ export function mapPostViewToForumPost(
     author: {
       id: post.created_by,
       username: toUsername(post.username, post.display_name),
-      slug: post.username ?? null
+      slug: post.username ?? null,
     },
     createdAt: post.created_at,
     body: normalizeMultilineText(post.content),
@@ -25,17 +25,19 @@ export function mapPostViewToForumPost(
     rightCount: Number(post.droite_count ?? 0),
     commentCount: Number(post.comment_count ?? 0),
     currentUserVote: fromBackendVoteSide(post.user_reaction_side ?? null),
-    pollSummary: post.poll_summary ?? null
+    pollSummary: post.poll_summary ?? null,
   };
 }
 
-export function mapCommentViewToForumNode(comment: CommentView): CommentTreeNode {
+export function mapCommentViewToForumNode(
+  comment: CommentView,
+): CommentTreeNode {
   return {
     id: comment.id,
     author: {
       id: comment.author_user_id,
       username: toUsername(comment.username, comment.display_name),
-      slug: comment.username ?? null
+      slug: comment.username ?? null,
     },
     createdAt: comment.created_at,
     updatedAt: comment.updated_at,
@@ -47,7 +49,7 @@ export function mapCommentViewToForumNode(comment: CommentView): CommentTreeNode
     currentUserVote: fromBackendVoteSide(comment.user_reaction_side ?? null),
     replyCount: 0,
     isEdited: comment.updated_at !== comment.created_at,
-    children: []
+    children: [],
   };
 }
 
@@ -57,15 +59,19 @@ function toReactionTotal(comment: CommentView) {
 
 function sortByMode(
   comments: CommentView[],
-  mode: "top" | "recent" | "oldest" = "top"
+  mode: 'top' | 'recent' | 'oldest' = 'top',
 ): CommentView[] {
   return [...comments].sort((a, b) => {
-    if (mode === "recent") {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    if (mode === 'recent') {
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     }
 
-    if (mode === "oldest") {
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    if (mode === 'oldest') {
+      return (
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
     }
 
     const diff = toReactionTotal(b) - toReactionTotal(a);
@@ -78,17 +84,19 @@ function sortByMode(
 function buildNode(
   comment: CommentView,
   byParent: Map<string | null, CommentView[]>,
-  sortMode: "top" | "recent" | "oldest"
+  sortMode: 'top' | 'recent' | 'oldest',
 ): CommentTreeNode {
   const childrenComments = sortByMode(byParent.get(comment.id) ?? [], sortMode);
-  const children = childrenComments.map((child) => buildNode(child, byParent, sortMode));
+  const children = childrenComments.map((child) =>
+    buildNode(child, byParent, sortMode),
+  );
 
   return {
     id: comment.id,
     author: {
       id: comment.author_user_id,
       username: toUsername(comment.username, comment.display_name),
-      slug: comment.username ?? null
+      slug: comment.username ?? null,
     },
     createdAt: comment.created_at,
     updatedAt: comment.updated_at,
@@ -100,13 +108,13 @@ function buildNode(
     currentUserVote: fromBackendVoteSide(comment.user_reaction_side ?? null),
     replyCount: children.length,
     isEdited: comment.updated_at !== comment.created_at,
-    children
+    children,
   };
 }
 
 export function buildForumCommentTree(
   comments: CommentView[],
-  sortMode: "top" | "recent" | "oldest" = "top"
+  sortMode: 'top' | 'recent' | 'oldest' = 'top',
 ): CommentTreeNode[] {
   const byParent = new Map<string | null, CommentView[]>();
 
@@ -123,5 +131,3 @@ export function buildForumCommentTree(
   const roots = sortByMode(byParent.get(null) ?? [], sortMode);
   return roots.map((root) => buildNode(root, byParent, sortMode));
 }
-
-

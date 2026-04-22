@@ -1,63 +1,78 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { createLogger, logError } from '@/lib/logger';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { fetchUrlPreview, normalizeSourceUrl } from '@/lib/utils/url-preview';
 
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { fetchUrlPreview, normalizeSourceUrl } from "@/lib/utils/url-preview";
+const log = createLogger('posts');
 
 const VALIDATION_ERRORS = new Set([
-  "Title required",
-  "Poll question required",
-  "At least two poll options required",
-  "Poll deadline must be set within 48h",
-  "Daily post limit reached"
+  'Title required',
+  'Poll question required',
+  'At least two poll options required',
+  'Poll deadline must be set within 48h',
+  'Daily post limit reached',
 ]);
 
-const GENERIC_ERROR_CODE = "publish_failed";
+const GENERIC_ERROR_CODE = 'publish_failed';
 
 function safePath(raw: string) {
-  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/';
   return raw;
 }
 
 export async function createPostAction(formData: FormData) {
   try {
-    const title = String(formData.get("title") ?? "").trim();
-    const body = String(formData.get("body") ?? "").trim() || null;
-    const sourceUrl = normalizeSourceUrl(String(formData.get("source_url") ?? "").trim());
-    const mode = String(formData.get("post_mode") ?? "post").trim() === "poll" ? "poll" : "post";
-    const pollQuestion = String(formData.get("poll_question") ?? "").trim() || null;
-    const pollDeadlineHoursRaw = Number(formData.get("poll_deadline_hours") ?? 24);
+    const title = String(formData.get('title') ?? '').trim();
+    const body = String(formData.get('body') ?? '').trim() || null;
+    const sourceUrl = normalizeSourceUrl(
+      String(formData.get('source_url') ?? '').trim(),
+    );
+    const mode =
+      String(formData.get('post_mode') ?? 'post').trim() === 'poll'
+        ? 'poll'
+        : 'post';
+    const pollQuestion =
+      String(formData.get('poll_question') ?? '').trim() || null;
+    const pollDeadlineHoursRaw = Number(
+      formData.get('poll_deadline_hours') ?? 24,
+    );
     const pollDeadlineHours = Number.isFinite(pollDeadlineHoursRaw)
       ? Math.max(1, Math.min(48, Math.floor(pollDeadlineHoursRaw)))
       : 24;
     const pollOptions = formData
-      .getAll("poll_options")
-      .map((value) => String(value ?? "").trim())
+      .getAll('poll_options')
+      .map((value) => String(value ?? '').trim())
       .filter((value) => value.length > 0);
     const subjectIds = formData
-      .getAll("subject_ids")
+      .getAll('subject_ids')
       .map((v) => String(v).trim())
       .filter((v) => v.length > 0);
     const partyTags = formData
-      .getAll("party_tags")
+      .getAll('party_tags')
       .map((v) => String(v).trim())
       .filter((v) => v.length > 0)
       .slice(0, 3);
-    const redirectPath = safePath(String(formData.get("redirect_path") ?? "/").trim() || "/");
+    const redirectPath = safePath(
+      String(formData.get('redirect_path') ?? '/').trim() || '/',
+    );
 
     // Validation côté client minimale — la RPC refait tout et raise un message
     // lisible avec un errcode propre. Le rôle de l'action = parser puis appeler.
-    if (!title) throw new Error("Title required");
-    if (mode === "poll") {
-      if (!pollQuestion) throw new Error("Poll question required");
-      if (pollOptions.length < 2) throw new Error("At least two poll options required");
+    if (!title) throw new Error('Title required');
+    if (mode === 'poll') {
+      if (!pollQuestion) throw new Error('Poll question required');
+      if (pollOptions.length < 2)
+        throw new Error('At least two poll options required');
     }
 
     const pollDeadlineAt =
-      mode === "poll"
-        ? new Date(Date.now() + pollDeadlineHours * 60 * 60 * 1000).toISOString()
+      mode === 'poll'
+        ? new Date(
+            Date.now() + pollDeadlineHours * 60 * 60 * 1000,
+          ).toISOString()
         : null;
     const linkPreview = sourceUrl ? await fetchUrlPreview(sourceUrl) : null;
 
@@ -67,7 +82,7 @@ export async function createPostAction(formData: FormData) {
     // en une transaction côté DB. Rate limit inclus dans la RPC.
     const t0 = performance.now();
     const { data, error } = await supabase
-      .rpc("rpc_create_post_full", {
+      .rpc('rpc_create_post_full', {
         p_title: title,
         p_body: body,
         p_source_url: sourceUrl,
@@ -77,49 +92,61 @@ export async function createPostAction(formData: FormData) {
         p_poll_deadline_at: pollDeadlineAt,
         p_poll_options: pollOptions,
         p_subject_ids: subjectIds,
-        p_party_tags: partyTags
+        p_party_tags: partyTags,
       })
       .single();
     const rpcMs = Math.round(performance.now() - t0);
 
     if (error) {
-      const message = error.message ?? "";
+      const message = error.message ?? '';
       // Les erreurs de validation DB remontent en clair pour l'UI
       if (VALIDATION_ERRORS.has(message)) {
         throw new Error(message);
       }
-      console.error("[createPostAction] rpc failed", {
-        message,
-        code: error.code,
-        rpcMs
-      });
-      throw new Error("Publication impossible.");
+      log.error(
+        {
+          event: 'posts.create.rpc_failed',
+          message,
+          code: error.code,
+          rpc_ms: rpcMs,
+        },
+        'create post rpc failed',
+      );
+      throw new Error('Publication impossible.');
     }
 
     const threadId = (data as { thread_id?: string } | null)?.thread_id ?? null;
-    const postItemId = (data as { post_item_id?: string } | null)?.post_item_id ?? null;
+    const postItemId =
+      (data as { post_item_id?: string } | null)?.post_item_id ?? null;
     if (!threadId || !postItemId) {
-      throw new Error("Publication impossible.");
+      throw new Error('Publication impossible.');
     }
 
-    console.info("[createPostAction] post created", {
-      mode,
-      threadId,
-      postItemId,
-      redirectPath,
-      rpcMs
-    });
+    log.info(
+      {
+        event: 'posts.create.ok',
+        mode,
+        thread_id: threadId,
+        post_item_id: postItemId,
+        redirect_path: redirectPath,
+        rpc_ms: rpcMs,
+      },
+      'post created',
+    );
 
-    revalidatePath("/");
-    if (redirectPath !== "/") revalidatePath(redirectPath);
+    revalidatePath('/');
+    if (redirectPath !== '/') revalidatePath(redirectPath);
     redirect(redirectPath as never);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Publication impossible.";
+    const message =
+      error instanceof Error ? error.message : 'Publication impossible.';
     if (VALIDATION_ERRORS.has(message)) {
       throw error;
     }
 
-    console.error("[createPostAction] failed", { message, error });
-    redirect(`/post/new?error=${encodeURIComponent(GENERIC_ERROR_CODE)}` as never);
+    logError(log, error, { event: 'posts.create.failed', message });
+    redirect(
+      `/post/new?error=${encodeURIComponent(GENERIC_ERROR_CODE)}` as never,
+    );
   }
 }

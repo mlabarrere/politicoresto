@@ -1,21 +1,21 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-type PublicProfilePost = {
+interface PublicProfilePost {
   id: string;
   thread_id: string;
   thread_slug: string;
   title: string | null;
   content: string | null;
   created_at: string;
-};
+}
 
-type PublicProfileComment = {
+interface PublicProfileComment {
   id: string;
   thread_id: string;
   thread_slug: string;
   body_markdown: string;
   created_at: string;
-};
+}
 
 export async function getPublicProfile(username: string) {
   const supabase = await createServerSupabaseClient();

@@ -2,31 +2,29 @@ import type {
   CommentView,
   PostFeedItemView,
   PostView,
-  PostRowView
-} from "@/lib/types/views";
+  PostRowView,
+} from '@/lib/types/views';
 
-export type LoadState<T> = {
+export interface LoadState<T> {
   data: T;
   error: string | null;
-};
+}
 
-export type SubjectView = {
+export interface SubjectView {
   id: string;
   slug: string;
   name: string;
   emoji: string | null;
   sort_order: number;
-};
+}
 
-export type HomeScreenData = {
+export interface HomeScreenData {
   feed: PostFeedItemView[];
   subjects: SubjectView[];
-};
+}
 
-export type PostDetailScreenData = {
+export interface PostDetailScreenData {
   post: PostRowView | null;
   posts: PostView[];
   comments: CommentView[];
-};
-
-
+}
