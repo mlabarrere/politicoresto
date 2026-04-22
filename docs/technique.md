@@ -63,7 +63,7 @@ Regle de release: toute evolution frontend qui ajoute/renomme une vue ou RPC doi
 
 ### Supabase
 
-- Projet cible: `gzdpisxkavpyfmhsktcg` (PoliticoResto)
+- Projet cible: `<SUPABASE_PROD_PROJECT_REF>` (PoliticoResto)
 - Migration appliquee uniquement via migrations versionnees ou pipeline outille.
 
 ## Observabilite et diagnostic

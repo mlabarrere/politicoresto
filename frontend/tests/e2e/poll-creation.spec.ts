@@ -36,5 +36,9 @@ test.describe('User Story 6 — poll creation', () => {
     await expect(page).not.toHaveURL(/error=publish_failed/, {
       timeout: 10_000,
     });
+    // Positive assertion: the server action redirects away from
+    // /post/new on success. Catches any failure that doesn't surface as
+    // ?error=publish_failed (e.g. 5xx + stay-on-page).
+    await expect(page).not.toHaveURL(/\/post\/new/, { timeout: 10_000 });
   });
 });

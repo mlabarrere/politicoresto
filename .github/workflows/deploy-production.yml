@@ -15,7 +15,7 @@ jobs:
     name: supabase db push → production
     runs-on: ubuntu-latest
     env:
-      PROD_PROJECT_REF: gzdpisxkavpyfmhsktcg
+      PROD_PROJECT_REF: ${{ secrets.SUPABASE_PROD_PROJECT_REF }}
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
     steps:

@@ -23,9 +23,9 @@ Client ID : `705641825728-2h2fgn18csoqk9akh3iglt0b3dijnogq.apps.googleuserconten
 - **Authorized JavaScript origins**
   - `https://politicoresto.vercel.app`
 - **Authorized redirect URIs**
-  - `https://gzdpisxkavpyfmhsktcg.supabase.co/auth/v1/callback`
+  - `https://<SUPABASE_PROD_PROJECT_REF>.supabase.co/auth/v1/callback`
 
-À brancher côté Supabase **production** (`gzdpisxkavpyfmhsktcg`) → Auth → Providers → Google → Client ID + Client Secret.
+À brancher côté Supabase **production** (`<SUPABASE_PROD_PROJECT_REF>`) → Auth → Providers → Google → Client ID + Client Secret.
 
 ### 🔹 Client **Staging**
 
@@ -35,9 +35,9 @@ Client ID : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleuserconten
   - `https://politicoresto-staging.vercel.app`
   - `http://localhost:3000`
 - **Authorized redirect URIs**
-  - `https://nvwpvckjsvicsyzpzjfi.supabase.co/auth/v1/callback`
+  - `https://<SUPABASE_STAGING_PROJECT_REF>.supabase.co/auth/v1/callback`
 
-À brancher côté Supabase **staging** (`nvwpvckjsvicsyzpzjfi`) → Auth → Providers → Google → Client ID + Client Secret.
+À brancher côté Supabase **staging** (`<SUPABASE_STAGING_PROJECT_REF>`) → Auth → Providers → Google → Client ID + Client Secret.
 
 💡 Propagation Google : 2-5 minutes à quelques heures.
 
@@ -61,9 +61,9 @@ Client ID : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleuserconten
 
 ---
 
-## 3. 🔐 Supabase — Staging (`nvwpvckjsvicsyzpzjfi`)
+## 3. 🔐 Supabase — Staging (`<SUPABASE_STAGING_PROJECT_REF>`)
 
-🎯 **Où** : https://supabase.com/dashboard/project/nvwpvckjsvicsyzpzjfi/auth/url-configuration
+🎯 **Où** : https://supabase.com/dashboard/project/<SUPABASE_STAGING_PROJECT_REF>/auth/url-configuration
 
 📋 **Action** :
 
@@ -77,7 +77,7 @@ Client ID : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleuserconten
 
 ### Bonus — Provider Google Supabase
 
-🎯 **Où** : https://supabase.com/dashboard/project/nvwpvckjsvicsyzpzjfi/auth/providers → Google
+🎯 **Où** : https://supabase.com/dashboard/project/<SUPABASE_STAGING_PROJECT_REF>/auth/providers → Google
 
 🔹 **Client ID** : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleusercontent.com`
 🔹 **Client Secret** : le secret qui finit par `EUzm` (à récupérer depuis Google Console, « Add secret » si perdu).
@@ -87,9 +87,9 @@ Client ID : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleuserconten
 
 ---
 
-## 4. 🔐 Supabase — Production (`gzdpisxkavpyfmhsktcg`)
+## 4. 🔐 Supabase — Production (`<SUPABASE_PROD_PROJECT_REF>`)
 
-🎯 **Où** : https://supabase.com/dashboard/project/gzdpisxkavpyfmhsktcg/auth/url-configuration
+🎯 **Où** : https://supabase.com/dashboard/project/<SUPABASE_PROD_PROJECT_REF>/auth/url-configuration
 
 📋 **Action** :
 
@@ -103,7 +103,7 @@ Client ID : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleuserconten
 
 ### Bonus — Provider Google Supabase
 
-🎯 **Où** : https://supabase.com/dashboard/project/gzdpisxkavpyfmhsktcg/auth/providers → Google
+🎯 **Où** : https://supabase.com/dashboard/project/<SUPABASE_PROD_PROJECT_REF>/auth/providers → Google
 
 🔹 **Client ID** : `705641825728-2h2fgn18csoqk9akh3iglt0b3dijnogq.apps.googleusercontent.com`
 🔹 **Client Secret** : le secret qui finit par `tuBH`.
@@ -117,7 +117,7 @@ Client ID : `705641825728-hvp8gluvukjokhi3v493t0uj2jg062h8.apps.googleuserconten
 
 1. Ouvrir https://politicoresto-staging.vercel.app/auth/login en navigation privée.
 2. Cliquer **Continuer avec Google** → choisir un compte.
-3. Attendu : redirection sur `/me` ou `/onboarding`, logué. Cookie `sb-nvwpvckjsvicsyzpzjfi-auth-token` visible dans DevTools → Application → Cookies.
+3. Attendu : redirection sur `/me` ou `/onboarding`, logué. Cookie `sb-<SUPABASE_STAGING_PROJECT_REF>-auth-token` visible dans DevTools → Application → Cookies.
 4. Si ça échoue :
    - Console browser → chercher `[oauth/google] …`
    - Vercel logs → chercher `[auth/callback] …`
