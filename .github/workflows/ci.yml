@@ -134,9 +134,12 @@ jobs:
 
       - name: Install Supabase CLI on PATH
         # tests/fixtures/supabase-admin.ts calls `supabase status -o env`
-        # as an ordinary subprocess — the binary must be on PATH, so install
-        # it globally rather than relying on npx at call time.
-        run: npm install -g supabase
+        # as a plain subprocess — the binary must be on PATH. Supabase
+        # explicitly rejects `npm install -g supabase`; their official
+        # GitHub Action is the supported path.
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
       - name: Start Supabase local stack
         working-directory: ${{ github.workspace }}
@@ -189,8 +192,12 @@ jobs:
       - name: Install Supabase CLI on PATH
         # playwright.config.ts calls `supabase status -o env` at config-load
         # time to populate NEXT_PUBLIC_SUPABASE_* + service-role for the
-        # magic-link auth helper — the binary must be on PATH.
-        run: npm install -g supabase
+        # magic-link auth helper — the binary must be on PATH. Supabase's
+        # official GitHub Action is the supported install path (global npm
+        # install is explicitly blocked by their postinstall script).
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
       - name: Start Supabase local stack
         working-directory: ${{ github.workspace }}
