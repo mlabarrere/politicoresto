@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
+import { clientLog } from '@/lib/client-log';
+
+const log = clientLog('global-error-boundary');
 
 export default function GlobalError({
   error,
@@ -10,8 +13,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- client-side boundary; no logger import available
-    console.error('[global-error-boundary] rendered fallback', {
+    log.error('global_error_boundary.rendered', {
       message: error.message,
       digest: error.digest,
       stack: error.stack,

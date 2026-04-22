@@ -8,8 +8,11 @@ import { AppInput } from '@/components/app/app-input';
 import { AppSelect } from '@/components/app/app-select';
 import { AppTabs } from '@/components/app/app-tabs';
 import { AppTextarea } from '@/components/app/app-textarea';
+import { clientLog } from '@/lib/client-log';
 import { cn } from '@/lib/utils';
 import type { SubjectView } from '@/lib/types/screens';
+
+const log = clientLog('post-composer');
 
 const DRAFT_KEY = 'politicoresto.post.draft.v5';
 
@@ -116,8 +119,7 @@ export function PostComposer({
 
   useEffect(() => {
     if (!initialError) return;
-    // eslint-disable-next-line no-console -- client boundary; no logger import available
-    console.error('[PostComposer] initialError', { message: initialError });
+    log.error('post_composer.initial_error', { message: initialError });
   }, [initialError]);
 
   const draftState = useMemo(() => {

@@ -151,12 +151,6 @@ module.exports = {
       extends: [require.resolve('@vercel/style-guide/eslint/node')],
       rules: { 'no-console': 'off' },
     },
-    // Client OAuth component — pending /api/_log forwarder (tracked in
-    // CLAUDE.md Known deviations + the authentication skill).
-    {
-      files: ['components/auth/oauth-buttons.tsx'],
-      rules: { 'no-console': 'off' },
-    },
     // Onboarding form legitimately autofocuses the only input.
     {
       files: ['app/onboarding/page.tsx'],

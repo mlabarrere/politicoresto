@@ -32,9 +32,10 @@ beforeAll(() => {
 
 describe('post composer tabs', () => {
   it('renders 3 tabs and poll info block', () => {
-    const consoleErrorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined);
+    // clientLog() forwards via fetch('/api/_log') — stub to assert payload.
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () => new Response(null, { status: 200 }));
 
     render(
       <PostComposer
@@ -58,13 +59,22 @@ describe('post composer tabs', () => {
     expect(
       screen.getByRole('button', { name: 'Enregistrer le brouillon' }),
     ).toBeTruthy();
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[PostComposer] initialError',
-      {
-        message: 'Publication impossible pour le moment. Reessayez.',
-      },
-    );
 
-    consoleErrorSpy.mockRestore();
+    // The initial-error log event was forwarded to /api/_log.
+    const calls = fetchSpy.mock.calls as unknown as [
+      string,
+      { body?: string } | undefined,
+    ][];
+    const last = calls.at(-1);
+    const payload = last?.[1]?.body
+      ? (JSON.parse(last[1].body) as Record<string, unknown>)
+      : null;
+    expect(payload?.context).toBe('post-composer');
+    expect(payload?.event).toBe('post_composer.initial_error');
+    expect(payload?.fields).toMatchObject({
+      message: 'Publication impossible pour le moment. Reessayez.',
+    });
+
+    fetchSpy.mockRestore();
   });
 });

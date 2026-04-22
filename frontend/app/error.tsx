@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
+import { clientLog } from '@/lib/client-log';
+
+const log = clientLog('error-boundary');
 
 export default function ErrorBoundary({
   error,
@@ -10,12 +13,7 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Client components cannot import the server logger directly; we POST
-    // to a reporting endpoint. For now, preserve the error in the console
-    // with a structured payload so it surfaces in Vercel client logs.
-    // Session 3 will add a `/api/_log` endpoint for client→server log forwarding.
-    // eslint-disable-next-line no-console -- client-side boundary; no logger import available
-    console.error('[error-boundary] rendered fallback', {
+    log.error('error_boundary.rendered', {
       message: error.message,
       digest: error.digest,
       stack: error.stack,

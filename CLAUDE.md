@@ -138,14 +138,11 @@ the only path to production.
   `supabase db push` to staging/prod, run
   `supabase migration repair --status applied 20260402193700` on those envs so
   the CLI does not try to re-apply it.
-- **`console.*` exceptions** — All app code uses Pino via `lib/logger.ts`.
-  The 4 calls in `components/auth/oauth-buttons.tsx` and 3 in client error
-  boundaries (`app/error.tsx`, `app/global-error.tsx`, `app/(public)/post/
-  [slug]/error.tsx`, `components/app/app-vote-history-editor.tsx`,
-  `components/home/post-composer.tsx`) are intentional — client components
-  cannot import the server Pino logger. Each site carries an
-  `eslint-disable-next-line no-console -- <reason>` annotation. A future
-  `/api/_log` forwarder will eliminate them.
+- **No `console.*` in app code.** Server paths use Pino via
+  `lib/logger.ts`. Client Components forward structured entries to the
+  server via `lib/client-log.ts` → `POST /api/_log` → Pino. ESLint
+  enforces `no-console: error` project-wide with zero suppressions
+  outside `scripts/` and `*.config.*`.
 - **Auth on asymmetric JWT keys since 2026-04-21.** HS256 legacy decommissioned
   on staging and prod. `auth.getClaims()` is now the default in server
   contexts (see `auth-user.ts` header). Single codebase for both environments.

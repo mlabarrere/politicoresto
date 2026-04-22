@@ -14,8 +14,11 @@ import type {
   ElectionRow,
   UserVoteRow,
 } from '@/lib/data/authenticated/vote-history';
+import { clientLog } from '@/lib/client-log';
 import { getPartyTheme, initials } from '@/lib/ui/party-colors';
 import { cn } from '@/lib/utils';
+
+const log = clientLog('vote-history.editor');
 
 type ChoiceKind = UserVoteRow['choice_kind'];
 
@@ -141,8 +144,7 @@ export function AppVoteHistoryEditor({
         await fn();
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Action impossible.';
-        // eslint-disable-next-line no-console -- client boundary; no logger import available
-        console.error('[vote-history][editor] action failed', { message: msg });
+        log.error('vote_history.editor.action_failed', { message: msg });
         setError(msg);
       }
     });

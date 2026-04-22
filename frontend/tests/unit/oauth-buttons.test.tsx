@@ -26,8 +26,11 @@ describe('oAuthButtons', () => {
   beforeEach(() => {
     signInMock.mockReset();
     assignMock.mockReset();
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    // clientLog() POSTs to /api/_log — stub fetch so unit tests don't hit
+    // the network and the response doesn't matter.
+    vi.spyOn(globalThis, 'fetch').mockImplementation(
+      async () => new Response(null, { status: 200 }),
+    );
   });
 
   it('calls signInWithOAuth with redirectTo = origin + /auth/callback?next=<next>', async () => {

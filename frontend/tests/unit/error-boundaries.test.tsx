@@ -3,15 +3,38 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ErrorBoundary from '@/app/error';
 import GlobalErrorBoundary from '@/app/global-error';
 
+// Client-side logger posts to /api/_log — stub fetch so assertions don't
+// depend on network and assert on the forwarded payload shape.
+function stubFetch(): ReturnType<typeof vi.spyOn> {
+  return vi
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(async () => new Response(null, { status: 200 }));
+}
+
+function lastLogPayload(
+  fetchSpy: ReturnType<typeof vi.spyOn>,
+): Record<string, unknown> | null {
+  const calls = fetchSpy.mock.calls as unknown as [
+    string,
+    { body?: string } | undefined,
+  ][];
+  if (calls.length === 0) return null;
+  const last = calls.at(-1);
+  if (!last) return null;
+  const [, init] = last;
+  if (!init?.body) return null;
+  return JSON.parse(init.body) as Record<string, unknown>;
+}
+
 describe('app/error.tsx', () => {
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let fetchSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    fetchSpy = stubFetch();
   });
 
   afterEach(() => {
-    consoleErrorSpy.mockRestore();
+    fetchSpy.mockRestore();
   });
 
   it('renders the digest when present and logs the error', () => {
@@ -22,13 +45,14 @@ describe('app/error.tsx', () => {
 
     expect(screen.getByText(/Une erreur est survenue/)).toBeInTheDocument();
     expect(screen.getByText(/digest-abc/)).toBeInTheDocument();
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[error-boundary] rendered fallback',
-      expect.objectContaining({
-        message: 'kaboom',
-        digest: 'digest-abc',
-      }),
-    );
+    const payload = lastLogPayload(fetchSpy);
+    expect(payload?.context).toBe('error-boundary');
+    expect(payload?.level).toBe('error');
+    expect(payload?.event).toBe('error_boundary.rendered');
+    expect(payload?.fields).toMatchObject({
+      message: 'kaboom',
+      digest: 'digest-abc',
+    });
   });
 
   it('falls back to generic message when digest is absent', () => {
@@ -53,17 +77,17 @@ describe('app/error.tsx', () => {
 });
 
 describe('app/global-error.tsx', () => {
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let fetchSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    fetchSpy = stubFetch();
   });
 
   afterEach(() => {
-    consoleErrorSpy.mockRestore();
+    fetchSpy.mockRestore();
   });
 
-  it('renders the critical error UI and logs via console.error', () => {
+  it('renders the critical error UI and forwards an error log', () => {
     const reset = vi.fn();
     const error = Object.assign(new Error('critical'), { digest: 'd-1' });
 
@@ -71,10 +95,13 @@ describe('app/global-error.tsx', () => {
 
     expect(screen.getByText(/Erreur critique/)).toBeInTheDocument();
     expect(screen.getByText(/d-1/)).toBeInTheDocument();
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[global-error-boundary] rendered fallback',
-      expect.objectContaining({ message: 'critical', digest: 'd-1' }),
-    );
+    const payload = lastLogPayload(fetchSpy);
+    expect(payload?.context).toBe('global-error-boundary');
+    expect(payload?.event).toBe('global_error_boundary.rendered');
+    expect(payload?.fields).toMatchObject({
+      message: 'critical',
+      digest: 'd-1',
+    });
   });
 
   it('shows the fallback message when digest is missing', () => {

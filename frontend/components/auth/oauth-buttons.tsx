@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { AppButton } from '@/components/app/app-button';
+import { clientLog } from '@/lib/client-log';
 
-function normalizeNextPath(next?: string) {
+const log = clientLog('oauth.google');
+
+function normalizeNextPath(next?: string): string {
   const fallback = '/';
   if (!next) return fallback;
   if (!next.startsWith('/')) return fallback;
@@ -41,11 +44,7 @@ export function OAuthButtons({ next = '/me' }: { next?: string }) {
     const origin = window.location.origin;
     const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(safeNext)}`;
 
-    console.info('[oauth/google] start', {
-      origin,
-      redirectTo,
-      next: safeNext,
-    });
+    log.info('auth.oauth.google.start', { origin, redirectTo, next: safeNext });
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -54,7 +53,7 @@ export function OAuthButtons({ next = '/me' }: { next?: string }) {
 
     if (error) {
       setPending(null);
-      console.error('[oauth/google] signInWithOAuth failed', {
+      log.error('auth.oauth.google.signin_failed', {
         message: error.message,
         status: error.status,
         name: error.name,
@@ -77,13 +76,13 @@ export function OAuthButtons({ next = '/me' }: { next?: string }) {
     }
 
     if (data.url) {
-      console.info('[oauth/google] redirecting to provider');
+      log.info('auth.oauth.google.redirect_to_provider', { origin });
       window.location.assign(data.url);
       return;
     }
 
     setPending(null);
-    console.error('[oauth/google] signInWithOAuth returned no URL', { origin });
+    log.error('auth.oauth.google.no_url', { origin });
     setErrorMessage(
       "Impossible d'ouvrir la connexion Google (pas d'URL renvoyee par Supabase).",
     );

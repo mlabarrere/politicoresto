@@ -4,6 +4,9 @@ import { useEffect } from 'react';
 import type { Route } from 'next';
 import { PageContainer } from '@/components/layout/page-container';
 import { ScreenState } from '@/components/layout/screen-state';
+import { clientLog } from '@/lib/client-log';
+
+const log = clientLog('post-error-boundary');
 
 export default function PostError({
   error,
@@ -13,8 +16,7 @@ export default function PostError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- client boundary; no logger import available
-    console.error('[post-error-boundary] rendered fallback', {
+    log.error('post_error_boundary.rendered', {
       message: error.message,
       digest: error.digest,
       stack: error.stack,
