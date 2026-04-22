@@ -143,6 +143,7 @@ module.exports = {
         '@typescript-eslint/no-unsafe-return': 'off',
         '@typescript-eslint/no-unsafe-argument': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
+        'no-console': 'off',
       },
     },
     // Node / scripts — allow console for CLI UX.

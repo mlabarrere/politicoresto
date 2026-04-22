@@ -111,3 +111,66 @@ jobs:
           # unset. Vercel Production/Preview build steps inject real values.
           SKIP_ENV_VALIDATION: 'true'
         run: npm run build
+
+  e2e:
+    name: E2E (Playwright)
+    if: github.event.pull_request.draft != true
+    needs: [verify]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      # E2E tests run against `next dev` on 127.0.0.1:3001, configured
+      # by playwright.config.ts. We need a local Supabase stack to hit.
+      SKIP_ENV_VALIDATION: 'true'
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      # Local Supabase CLI default anon key — safe to hardcode, it's the
+      # public demo key distributed with every `supabase start`.
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Playwright browsers (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Start Supabase local stack
+        working-directory: ${{ github.workspace }}
+        run: |
+          # Use the Supabase GitHub-hosted action for the CLI rather than
+          # pulling the whole Docker stack — E2E tests only need the
+          # HTTP API and the Postgres endpoint.
+          npx supabase@latest start
+          npx supabase@latest status -o env > /tmp/supa.env
+
+      - name: Run Playwright suite (desktop project only)
+        run: npx playwright test --project=desktop
+
+      - name: Upload Playwright trace artefacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-trace
+          path: frontend/test-results/
+          retention-days: 7
+
+      - name: Stop Supabase local stack
+        if: always()
+        working-directory: ${{ github.workspace }}
+        run: npx supabase@latest stop || true

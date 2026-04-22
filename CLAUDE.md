@@ -62,6 +62,11 @@ Verify conventions against these sources rather than extrapolating from existing
    hiding it behind cache / debounce / optimistic UI.
 10. **No speculative code.** No feature flags mort-nés, no props "au cas où",
     no `try/catch` décoratif. If it's not used today, it doesn't exist.
+11. **Every user-facing feature requires an E2E spec in the same PR.**
+    One spec file per user story under `frontend/tests/e2e/`. Happy path
+    + at least one failure path. Features without an E2E spec do not
+    merge. Use `signInAsSeedUser` from `tests/e2e/helpers/auth.ts` to
+    reach authenticated routes.
 
 ## Local dev quick reference
 
