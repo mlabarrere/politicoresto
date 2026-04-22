@@ -32,7 +32,7 @@ beforeAll(() => {
 
 describe('post composer tabs', () => {
   it('renders 3 tabs and poll info block', () => {
-    // clientLog() forwards via fetch('/api/_log') — stub to assert payload.
+    // clientLog() forwards via fetch('/api/log') — stub to assert payload.
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockImplementation(async () => new Response(null, { status: 200 }));
@@ -60,7 +60,7 @@ describe('post composer tabs', () => {
       screen.getByRole('button', { name: 'Enregistrer le brouillon' }),
     ).toBeTruthy();
 
-    // The initial-error log event was forwarded to /api/_log.
+    // The initial-error log event was forwarded to /api/log.
     const calls = fetchSpy.mock.calls as unknown as [
       string,
       { body?: string } | undefined,

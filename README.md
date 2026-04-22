@@ -119,7 +119,7 @@ Deux projets Supabase permanents. Vercel injecte automatiquement les bonnes env 
 | Environnement      | Supabase                                       | Vercel     | Migrations                                  |
 | ------------------ | ---------------------------------------------- | ---------- | ------------------------------------------- |
 | Production         | projet prod                                    | Production | manuelles / via release                     |
-| Preview / Staging  | `nvwpvckjsvicsyzpzjfi`                         | Preview    | auto (CI `migrate-staging.yml` sur `main`)  |
+| Preview / Staging  | `<SUPABASE_STAGING_PROJECT_REF>`                         | Preview    | auto (CI `migrate-staging.yml` sur `main`)  |
 | Local dev          | `supabase start` (Docker) ou staging           | `vercel dev` | `supabase db reset`                       |
 
 Au boot, `lib/supabase/env.ts` logge le projet actif (`[supabase/env] active project { host, environment }`) — utile pour vérifier dans les logs Vercel qu'un déploiement pointe bien sur la bonne base.
@@ -127,12 +127,12 @@ Au boot, `lib/supabase/env.ts` logge le projet actif (`[supabase/env] active pro
 ### Configuration initiale (à faire une fois)
 
 1. **Vercel Dashboard → Settings → Environment Variables**
-   - `NEXT_PUBLIC_SUPABASE_URL` = `https://nvwpvckjsvicsyzpzjfi.supabase.co` — scope **Preview uniquement**
+   - `NEXT_PUBLIC_SUPABASE_URL` = `https://<SUPABASE_STAGING_PROJECT_REF>.supabase.co` — scope **Preview uniquement**
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` = clé publishable staging — scope **Preview uniquement**
    - Vérifier que les vars prod existantes sont scopées **Production uniquement**
 
 2. **Google Cloud Console → OAuth client** : ajouter le callback staging
-   `https://nvwpvckjsvicsyzpzjfi.supabase.co/auth/v1/callback`
+   `https://<SUPABASE_STAGING_PROJECT_REF>.supabase.co/auth/v1/callback`
 
 3. **Supabase Dashboard (staging) → Auth → Providers** : activer Google avec les mêmes `client_id` / `client_secret` que prod ; dans URL Configuration, ajouter les domaines Vercel Preview autorisés.
 

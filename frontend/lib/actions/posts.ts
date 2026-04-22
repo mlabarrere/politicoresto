@@ -24,6 +24,8 @@ function safePath(raw: string) {
 }
 
 export async function createPostAction(formData: FormData) {
+  let successRedirectPath = '/';
+
   try {
     const title = String(formData.get('title') ?? '').trim();
     const body = String(formData.get('body') ?? '').trim() || null;
@@ -136,7 +138,7 @@ export async function createPostAction(formData: FormData) {
 
     revalidatePath('/');
     if (redirectPath !== '/') revalidatePath(redirectPath);
-    redirect(redirectPath as never);
+    successRedirectPath = redirectPath;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Publication impossible.';
@@ -149,4 +151,10 @@ export async function createPostAction(formData: FormData) {
       `/post/new?error=${encodeURIComponent(GENERIC_ERROR_CODE)}` as never,
     );
   }
+
+  // Redirect lives outside the try/catch so its internal NEXT_REDIRECT
+  // throw isn't swallowed and mis-routed to the error page — that bug
+  // used to mask successful posts as failures. Default '/' keeps this
+  // call-site type-safe without a null assertion.
+  redirect(successRedirectPath as never);
 }

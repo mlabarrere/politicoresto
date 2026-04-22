@@ -7,7 +7,7 @@ Ce runbook couvre l'exploitation de PoliticoResto sur Vercel + Supabase.
 ## Environnements
 
 - Frontend prod: Vercel project `politicoresto` (root `frontend/`).
-- Backend prod: Supabase project `gzdpisxkavpyfmhsktcg`.
+- Backend prod: Supabase project `<SUPABASE_PROD_PROJECT_REF>`.
 
 ## Release checklist
 

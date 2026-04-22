@@ -171,7 +171,7 @@ export function PostComposer({
         <AppTextarea
           id="post-composer-body"
           name="body"
-          required
+          required={draft.mode === 'post'}
           rows={9}
           value={draft.body}
           onChange={(event) => {

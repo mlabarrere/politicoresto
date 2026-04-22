@@ -1,5 +1,5 @@
 /**
- * Client-side logger that forwards structured entries to `/api/_log`.
+ * Client-side logger that forwards structured entries to `/api/log`.
  *
  * Client components cannot import the Pino server logger. Use this tiny
  * helper to produce structured JSON that surfaces in the same log stream
@@ -31,7 +31,7 @@ function post(payload: ForwardPayload): void {
   // break the UX (and in unit tests jsdom's fetch rejects on a relative URL).
   if (typeof window === 'undefined') return;
   try {
-    void fetch('/api/_log', {
+    void fetch('/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
