@@ -24,6 +24,8 @@ function safePath(raw: string) {
 }
 
 export async function createPostAction(formData: FormData) {
+  let successRedirectPath: string | null = null;
+
   try {
     const title = String(formData.get('title') ?? '').trim();
     const body = String(formData.get('body') ?? '').trim() || null;
@@ -136,7 +138,7 @@ export async function createPostAction(formData: FormData) {
 
     revalidatePath('/');
     if (redirectPath !== '/') revalidatePath(redirectPath);
-    redirect(redirectPath as never);
+    successRedirectPath = redirectPath;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Publication impossible.';
@@ -149,4 +151,10 @@ export async function createPostAction(formData: FormData) {
       `/post/new?error=${encodeURIComponent(GENERIC_ERROR_CODE)}` as never,
     );
   }
+
+  // Happy path: redirect lives OUTSIDE the try/catch so its internal
+  // NEXT_REDIRECT throw is not swallowed and mistakenly routed to the
+  // error page. This bug masked successful posts as failures — the row
+  // landed in the DB but the UI showed "Publication impossible".
+  redirect(successRedirectPath as never);
 }

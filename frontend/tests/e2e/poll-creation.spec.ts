@@ -11,17 +11,30 @@ test.describe('User Story 6 — poll creation', () => {
     await expect(page.getByText(/Mode sondage/i)).toBeVisible();
   });
 
-  // Full submission requires driving the poll-option inputs, date
-  // pickers (deadline_at), and asserting the structure landed in
-  // public.post_poll + public.post_poll_option. Fixme until the
-  // composer selectors stabilise (they rely on runtime tab state).
-  test.fixme('submits and persists a poll with 4 options', async () => {
-    // TODO:
-    //   - fill title + question
-    //   - add 4 options
-    //   - set deadline
-    //   - submit
-    //   - assert post_poll row + 4 post_poll_option rows with
-    //     correct sort_order.
+  test('submits a poll without triggering the post body required guard (regression: invalid focus)', async ({
+    page,
+  }) => {
+    await signInAsSeedUser(page);
+    await page.goto('/post/new');
+
+    const title = `E2E poll ${Date.now()}`;
+    await page.locator('input[name="title"]').fill(title);
+    await page.getByRole('tab', { name: /Sondage/i }).click();
+
+    await page.locator('input[name="poll_question"]').fill('Oui ou non ?');
+    const options = page.locator('input[name="poll_options"]');
+    await options.nth(0).fill('Oui');
+    await options.nth(1).fill('Non');
+
+    await page
+      .getByRole('button', { name: /^Publier le post$/i })
+      .click({ force: true });
+
+    // The post body textarea (required in 'post' mode, hidden in 'poll')
+    // must not block submission of a Sondage. Before the fix the browser
+    // reported "invalid form control name='body' is not focusable".
+    await expect(page).not.toHaveURL(/error=publish_failed/, {
+      timeout: 10_000,
+    });
   });
 });
