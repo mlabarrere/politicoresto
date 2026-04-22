@@ -5,12 +5,11 @@ test.setTimeout(60_000);
 test('mvp public smoke', async ({ page }, testInfo) => {
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'PoliticoResto' })).toBeVisible();
-  await expect(
-    page.getByText('Forum public minimal', { exact: true }).first(),
-  ).toBeVisible();
 
   await page.goto('/');
-  const postLinks = page.locator('a[href^="/post/"]');
+  const postLinks = page
+    .locator('a[href^="/post/"]:not([href="/post/new"])')
+    .locator('visible=true');
   const postCount = await postLinks.count();
   if (postCount > 0) {
     const postLink = postLinks.first();

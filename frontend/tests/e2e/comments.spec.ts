@@ -6,16 +6,14 @@ test.describe('User Story 3 — comments', () => {
     page,
   }) => {
     await signInAsSeedUser(page);
-    // Navigate to any public post — list first, then pick one.
     await page.goto('/');
-    const firstPost = page.getByRole('link', { name: /./ }).first();
-    // If no posts yet (empty feed), skip — seed determines this.
-    const feedText = await page.locator('body').innerText();
-    test.skip(
-      !/post/i.exec(feedText) && !/commentaire/i.exec(feedText),
-      'No posts in feed — seed has not populated, composer not reachable',
-    );
-    await firstPost.click();
+    const postLinks = page
+      .locator('a[href^="/post/"]:not([href="/post/new"])')
+      .locator('visible=true');
+    const count = await postLinks.count();
+    test.skip(count === 0, 'No posts in seeded feed');
+    await postLinks.first().click();
+    await expect(page).toHaveURL(/\/post\//);
     await expect(
       page.getByRole('button', { name: /Commenter|Publier/i }).first(),
     ).toBeVisible({ timeout: 5_000 });
