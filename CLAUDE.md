@@ -73,7 +73,7 @@ Verify conventions against these sources rather than extrapolating from existing
 ```bash
 cp frontend/.env.local.example frontend/.env.local   # first time only
 supabase start                                       # Postgres + Auth + Storage + Inbucket
-supabase db reset                                    # apply migrations + seed (test@example.com / password123)
+supabase db reset                                    # apply migrations + seed (seed user: test@example.com — E2E auth uses admin magic-link, no password)
 ./scripts/dev.sh                                     # boots stack if needed + vercel dev
 npm run --prefix frontend verify                     # pre-push gate (typecheck + tests)
 ```
@@ -135,6 +135,111 @@ the only path to production.
 - Do **not** combine `vi.useFakeTimers()` with `waitFor()` — use real timers
   for debounce tests.
 - Server components: render with `await Page({ searchParams: ... })`.
+
+## Testing discipline (non-negotiable)
+
+Previous sessions declared features complete when only the database write worked
+and the UI errored. **Partial is broken.** These rules make that failure mode
+structurally impossible.
+
+### The pyramid
+
+| Layer | Tool | Location | What it proves |
+|---|---|---|---|
+| Unit | Vitest (jsdom) | `tests/**/*.test.ts(x)` | Pure logic, utilities, state machines. No I/O. Milliseconds. |
+| Component | Vitest + RTL | same | A component renders and behaves correctly in isolation. Mock only at the network boundary. |
+| Integration | Vitest (node) | `tests/integration/**/*.int.test.ts` | Server Action / Route Handler / RLS against **real local Supabase**. No mocks of the system under test. |
+| E2E | Playwright | `tests/e2e/**/*.spec.ts` | Full user flow in a real browser against `next dev` + local Supabase. |
+
+Each layer is non-optional. E2E alone is not a substitute for integration; unit
+tests diagnose *where*, E2E tests confirm *it works*.
+
+### Definition of "done" for a user-facing feature
+
+A feature is **not done** until **all** of the following are true:
+
+1. Unit tests cover the core logic.
+2. Component tests cover any non-trivial React component introduced or modified.
+3. Integration tests cover the server-side flow, including the DB side-effects.
+4. E2E tests cover the happy path **and** at least one failure path.
+5. All of the above pass locally (`npm run test`).
+6. `npm run verify` passes (typecheck + lint + unit + integration).
+7. The UI flow was opened in a browser; log output was inspected.
+8. Evidence produced: a passing test (the authoritative artefact), plus — for
+   UI changes — a Playwright trace or screenshot of the final state.
+
+A feature that writes to the DB but returns a UI error is **broken, not partial**.
+Report it as broken.
+
+### Reporting rules (apply to every future session)
+
+These are instructions to you, not documentation of current practice.
+
+1. **Never claim a feature works without evidence.** Three honest answers exist:
+   - *"Yes — here is the passing test, the log extract, the screenshot."*
+   - *"I don't know — I have not tested the full flow. Here is what I verified; here is what remains."*
+   - *"No — here is the failure."*
+
+   *"It should work"*, *"I implemented it"*, and *"the code looks correct"* are
+   not answers.
+
+2. **Report partial states as failures.** If the write persists but the UI
+   errors, say: *"The DB write succeeds. The UI then errors with [exact text].
+   The feature is broken."* Not: *"Post creation is working, just a small UI
+   issue."*
+
+3. **Run every test you write, at least once, and show it passing, before the
+   commit that adds it.** A test that has not been run is not a test.
+
+4. **Do not mock the system under test.** An integration test that mocks
+   Supabase is theatrical. Mocks are for third-party services (payments, email,
+   etc.), not for the code path you are verifying.
+
+5. **Unusual setup is a red flag.** Tests that only pass with specific env
+   vars, specific DB state, or specific timing are almost always wrong.
+   Investigate before committing.
+
+6. **Flaky tests are bugs.** Fix or delete — never `.skip`, never quarantine.
+
+### Directory structure and scripts
+
+```
+frontend/tests/
+├── unit/                 # Pure logic + component tests (jsdom)
+├── integration/          # *.int.test.ts — real local Supabase (node)
+├── e2e/                  # Playwright specs + helpers + global-setup
+├── fixtures/             # Shared factories (supabase-admin.ts, …)
+└── examples/             # Reference patterns for each layer
+```
+
+- `npm run test:unit` · fast, no external deps.
+- `npm run test:integration` · requires `supabase start` (verified in verify.sh).
+- `npm run test:e2e` · Playwright; auto-boots `next dev` + reads `supabase status -o env`.
+- `npm run test` · all three in sequence.
+- `npm run verify` · pre-push gate: prettier + eslint + auth guards + typecheck + unit. Integration + E2E are NOT in verify (they need a running Supabase stack) — CI enforces them on every PR. Locally, run them directly before merging a feature: `npm run test:integration && npm run test:e2e`.
+
+### E2E auth (Google-SSO-only app)
+
+The app UI exposes only Google OAuth. E2E tests must **not** use a password
+back door. The canonical flow (see `tests/e2e/global-setup.ts`):
+
+1. Service-role client calls `auth.admin.generateLink({type: 'magiclink', email: 'test@example.com'})`.
+2. A Node `@supabase/ssr` client redeems the token with `verifyOtp()`, producing
+   an `sb-*` cookie jar bit-for-bit identical to a real Google callback.
+3. Cookies are persisted to `tests/e2e/.auth/seed-user.json` (gitignored).
+4. Every test loads that state via `signInAsSeedUser(page)` — no per-test
+   minting, so we do not trip Supabase's single-use-token rate limit.
+
+No password, no OAuth mock. If the seed user should no longer exist, the flow
+fails loudly — which is the correct behaviour.
+
+### CI enforcement
+
+- `ci.yml` runs `test:unit` + `test:integration` + `test:e2e` on every PR and
+  push to main. Any failure blocks merge.
+- Playwright uploads traces/screenshots on failure.
+- ESLint forbids `.only` / `.skip` / `fixme` in committed tests, and bans `any`
+  in integration-test mocks.
 
 ## Known deviations
 

@@ -11,6 +11,11 @@
 #   3. auth grep guards     — forbidden patterns our ESLint can't catch
 #   4. typecheck            — tsc --noEmit
 #   5. unit tests           — vitest run
+#
+# Integration (requires `supabase start`) and E2E (Playwright) run separately
+# via `npm run test:integration` / `npm run test:e2e`. Both are enforced on
+# every PR in CI (see .github/workflows/ci.yml). They are kept out of this
+# pre-push gate so that `git push` does not require a running local stack.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -69,3 +74,4 @@ step "5/5 unit tests"
 npm run -s test:unit || fail "unit tests failed"
 
 printf '\n\033[1;32m[verify]\033[0m all checks passed\n'
+printf '\033[1;34m[verify]\033[0m reminder: integration + E2E run in CI. For local gate, run \`npm run test:integration\` + \`npm run test:e2e\` with the local Supabase stack up.\n'

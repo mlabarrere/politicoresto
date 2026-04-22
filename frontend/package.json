@@ -9,10 +9,12 @@
     "dev:full": "bash ../scripts/dev.sh",
     "dev:reset": "bash ../scripts/dev.sh --reset",
     "start": "next start",
-    "test": "npm run test:unit && npm run test:e2e",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
     "test:unit": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "verify": "bash ../scripts/verify.sh"
   },
