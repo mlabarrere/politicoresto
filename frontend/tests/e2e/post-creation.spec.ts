@@ -23,11 +23,29 @@ test.describe('User Story 2 — post creation', () => {
     await expect(page).not.toHaveURL(/\/post\/new$/);
   });
 
-  // Full end-to-end submission is fixme until the test harness can
-  // reliably drive the form fields (markdown body, subject picker) and
-  // verify the row landed in public.thread_post. Tracked as E2E
-  // follow-up.
-  test.fixme('submits and persists a post', async () => {
-    // TODO: fill composer, submit, assert presence in feed + DB row.
+  test('submits a post with no party selected (regression: party_tags NULL)', async ({
+    page,
+  }) => {
+    await signInAsSeedUser(page);
+    await page.goto('/post/new');
+
+    const title = `E2E post ${Date.now()}`;
+    const body = 'Regression guard for rpc_create_post_full party_tags NULL.';
+
+    // The composer renders a controlled React form. Use Playwright's
+    // type() (which dispatches proper key events) so React's onChange
+    // handlers update the draft state, then press() on the submit.
+    await page.locator('input[name="title"]').fill(title);
+    await page.locator('textarea[name="body"]').fill(body);
+    await page
+      .getByRole('button', { name: /^Publier le post$/i })
+      .click({ force: true });
+
+    // The server action redirects on success and to
+    // /post/new?error=publish_failed on failure. The party_tags NULL bug
+    // produced the latter — assert we never see it.
+    await expect(page).not.toHaveURL(/error=publish_failed/, {
+      timeout: 10_000,
+    });
   });
 });
