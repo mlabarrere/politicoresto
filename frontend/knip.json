@@ -1,0 +1,28 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "app/**/{page,layout,loading,error,not-found,default,template,route,default}.{ts,tsx}",
+    "app/**/*.{ts,tsx}",
+    "proxy.ts",
+    "next.config.ts",
+    "tailwind.config.ts",
+    "postcss.config.js",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "tests/**/*.test.{ts,tsx}",
+    "tests/e2e/**/*.spec.{ts,tsx}"
+  ],
+  "project": ["**/*.{ts,tsx}", "!.next/**", "!node_modules/**"],
+  "ignore": [".next/**", "public/**", "next-env.d.ts"],
+  "ignoreDependencies": [
+    "eslint-config-prettier",
+    "eslint-import-resolver-typescript",
+    "@next/eslint-plugin-next",
+    "@types/node",
+    "@types/react",
+    "@types/react-dom",
+    "tw-animate-css"
+  ],
+  "ignoreBinaries": ["vercel", "supabase"],
+  "ignoreExportsUsedInFile": true
+}
