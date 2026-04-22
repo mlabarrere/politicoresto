@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signInAsSeedUser } from './helpers/auth';
 
 test.describe('User Story 1 — sign-in', () => {
-  test('happy path: seed user signs in via password grant, reaches /me', async ({
+  test('happy path: seed user signs in via admin magic-link, reaches /me', async ({
     page,
   }) => {
     await signInAsSeedUser(page);

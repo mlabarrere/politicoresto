@@ -5,6 +5,7 @@ coverage
 dist
 playwright-report
 test-results
+tests/e2e/.auth
 .env.local
 .env
 

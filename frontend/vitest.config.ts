@@ -14,6 +14,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+    exclude: ['tests/integration/**', 'node_modules/**', 'dist/**', '.next/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

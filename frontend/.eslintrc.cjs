@@ -144,6 +144,56 @@ module.exports = {
         '@typescript-eslint/no-unsafe-argument': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         'no-console': 'off',
+        // ── Testing discipline (see CLAUDE.md "Testing discipline") ─────────
+        // No .only (focused tests skip the rest of the suite in CI).
+        // No .skip / .fixme (quarantined tests rot — fix or delete).
+        // Covers vitest (it/test/describe) and Playwright (test).
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              "CallExpression[callee.object.name=/^(it|test|describe)$/][callee.property.name='only']",
+            message:
+              'Focused tests (.only) skip the rest of the suite in CI. Remove before committing.',
+          },
+          {
+            selector:
+              'CallExpression[callee.object.name=/^(it|test|describe)$/][callee.property.name=/^(skip|fixme|todo)$/]',
+            message:
+              'Skipped/quarantined tests rot. Fix or delete the test — never commit a .skip / .fixme / .todo.',
+          },
+          {
+            selector:
+              "CallExpression[callee.object.name='test'][callee.property.name='only']",
+            message:
+              'Focused tests (.only) skip the rest of the suite in CI. Remove before committing.',
+          },
+        ],
+      },
+    },
+    // Integration tests: extra-strict. No `any`, no vi.mock of Supabase
+    // (would make it a non-integration test). The system-under-test must
+    // not be mocked.
+    {
+      files: ['tests/integration/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'error',
+      },
+    },
+    // ── TEMPORARY: Phase 4 placeholder specs ──────────────────────────────
+    //
+    // These E2E files contain `test.fixme(...)` markers that were committed
+    // before the testing-discipline rule existed. They represent Phase 4
+    // scope — real tests to be written for: sub-comments, left/right voting,
+    // poll response, voting-history RLS, and comment persistence.
+    //
+    // The override is scoped to those exact files. New `.fixme` / `.skip`
+    // anywhere else in the suite is blocked. REMOVE these entries as each
+    // placeholder is replaced with a real test.
+    {
+      files: ['tests/e2e/auth-staging.spec.ts'],
+      rules: {
+        'no-restricted-syntax': 'off',
       },
     },
     // Node / scripts — allow console for CLI UX.
