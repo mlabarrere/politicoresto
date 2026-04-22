@@ -23,7 +23,7 @@ test.describe('User Story 2 — post creation', () => {
     await expect(page).not.toHaveURL(/\/post\/new$/);
   });
 
-  test('submits a post with no party selected (regression: party_tags NULL)', async ({
+  test('submits a post with no party selected (regression: party_tags NULL + redirect-in-try)', async ({
     page,
   }) => {
     await signInAsSeedUser(page);
@@ -32,20 +32,61 @@ test.describe('User Story 2 — post creation', () => {
     const title = `E2E post ${Date.now()}`;
     const body = 'Regression guard for rpc_create_post_full party_tags NULL.';
 
-    // The composer renders a controlled React form. Use Playwright's
-    // type() (which dispatches proper key events) so React's onChange
-    // handlers update the draft state, then press() on the submit.
     await page.locator('input[name="title"]').fill(title);
     await page.locator('textarea[name="body"]').fill(body);
     await page
       .getByRole('button', { name: /^Publier le post$/i })
       .click({ force: true });
 
-    // The server action redirects on success and to
-    // /post/new?error=publish_failed on failure. The party_tags NULL bug
-    // produced the latter — assert we never see it.
     await expect(page).not.toHaveURL(/error=publish_failed/, {
       timeout: 10_000,
     });
+    // Leaves /post/new on success — the server action redirects to '/'.
+    await expect(page).not.toHaveURL(/\/post\/new/, { timeout: 10_000 });
+  });
+
+  test('localStorage draft survives a full reload of /post/new', async ({
+    page,
+  }) => {
+    await signInAsSeedUser(page);
+    await page.goto('/post/new');
+
+    const title = `Draft test ${Date.now()}`;
+    await page.locator('input[name="title"]').fill(title);
+    await page
+      .locator('textarea[name="body"]')
+      .fill('Body preserved in draft.');
+
+    // Auto-save runs on every state change (see DRAFT_KEY in
+    // post-composer.tsx). Give it a tick to flush.
+    await page.waitForTimeout(200);
+
+    await page.reload();
+
+    await expect(page.locator('input[name="title"]')).toHaveValue(title);
+    await expect(page.locator('textarea[name="body"]')).toHaveValue(
+      'Body preserved in draft.',
+    );
+  });
+
+  test('manual "Enregistrer le brouillon" does not navigate away and keeps draft', async ({
+    page,
+  }) => {
+    await signInAsSeedUser(page);
+    await page.goto('/post/new');
+
+    const title = `Manual draft ${Date.now()}`;
+    await page.locator('input[name="title"]').fill(title);
+    await page.locator('textarea[name="body"]').fill('Explicit save.');
+
+    await page
+      .getByRole('button', { name: /Enregistrer le brouillon/i })
+      .click();
+
+    // Button is a no-op navigation-wise. Same URL + title still in the
+    // input, draft still in localStorage after a reload.
+    await expect(page).toHaveURL(/\/post\/new$/);
+    await page.reload();
+    await expect(page.locator('input[name="title"]')).toHaveValue(title);
   });
 });

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ErrorBoundary from '@/app/error';
 import GlobalErrorBoundary from '@/app/global-error';
 
-// Client-side logger posts to /api/_log — stub fetch so assertions don't
+// Client-side logger posts to /api/log — stub fetch so assertions don't
 // depend on network and assert on the forwarded payload shape.
 function stubFetch(): ReturnType<typeof vi.spyOn> {
   return vi

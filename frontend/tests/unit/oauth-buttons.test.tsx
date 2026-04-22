@@ -26,7 +26,7 @@ describe('oAuthButtons', () => {
   beforeEach(() => {
     signInMock.mockReset();
     assignMock.mockReset();
-    // clientLog() POSTs to /api/_log — stub fetch so unit tests don't hit
+    // clientLog() POSTs to /api/log — stub fetch so unit tests don't hit
     // the network and the response doesn't matter.
     vi.spyOn(globalThis, 'fetch').mockImplementation(
       async () => new Response(null, { status: 200 }),
