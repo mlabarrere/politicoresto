@@ -62,6 +62,17 @@ begin
 
     raise notice 'Seeded auth user % (id=%)', v_email, v_user_id;
   end if;
+
+  -- On remote envs an auth trigger backfills these rows after signup.
+  -- Locally we bypass auth.signUp, so mirror the side effects explicitly
+  -- so the seed user can create posts, vote, etc. Idempotent.
+  insert into public.app_profile (user_id, display_name)
+  values (v_user_id, split_part(v_email, '@', 1))
+  on conflict (user_id) do nothing;
+
+  insert into public.user_private_political_profile (user_id)
+  values (v_user_id)
+  on conflict (user_id) do nothing;
 end $$;
 
 -- 2. Topical seeds (forum_minimal_seed.sql, polls_demo.sql) are chained
