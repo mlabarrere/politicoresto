@@ -4,10 +4,7 @@
  * RPC: submit_post_poll_vote(p_post_item_id, p_option_id) → v_post_poll_summary row.
  * Table: post_poll_response (UNIQUE on (post_item_id, user_id), weight defaults 1).
  *
- * These tests document ACTUAL behaviour, not the product spec. Known
- * spec gaps (verified in deep-map and asserted here so they are tracked):
- *   - "vote is single; cannot be modified" — RPC uses `on conflict do
- *     update`, so re-voting succeeds and overwrites. Asserted explicitly.
+ * Spec gap still open:
  *   - "weighted/corrected results" — view returns weighted_count = raw
  *     count; confidence scores hardcoded. Not covered; flagged as
  *     product work, not a test gap.
@@ -126,22 +123,17 @@ describe('poll response (integration)', () => {
     expect(rows?.length).toBe(1);
   });
 
-  // eslint-disable-next-line vitest/prefer-lowercase-title -- title begins with deliberate SPEC-GAP marker so grep finds it fast
-  it('SPEC GAP: RPC currently ALLOWS re-voting (on conflict do update) — documents actual vs spec', async () => {
-    // Product spec: "user can vote ONCE per poll; cannot modify".
-    // RPC reality: `on conflict do update` replaces the vote silently.
-    // This assertion pins the CURRENT behaviour so any future fix that
-    // rejects re-voting will break this test intentionally and force
-    // the author to re-align the test with the spec.
+  it('re-voting is rejected and does not overwrite the original vote', async () => {
     await seedClient.rpc('submit_post_poll_vote', {
       p_post_item_id: poll.postItemId,
       p_option_id: poll.optionIds[0],
     });
     const { error } = await seedClient.rpc('submit_post_poll_vote', {
       p_post_item_id: poll.postItemId,
-      p_option_id: poll.optionIds[1], // different option, same user
+      p_option_id: poll.optionIds[1],
     });
-    expect(error).toBeNull(); // ← spec says this should be an error
+    expect(error).not.toBeNull();
+    expect(error?.message).toMatch(/already voted/i);
 
     const admin = adminClient();
     const { data: rows } = await admin
@@ -150,56 +142,21 @@ describe('poll response (integration)', () => {
       .eq('post_item_id', poll.postItemId)
       .eq('user_id', SEED_USER.userId)
       .single();
-    expect(rows?.option_id).toBe(poll.optionIds[1]); // overwritten
-  });
-
-  it('deadline: voting on a deadline-passed poll is rejected ("Poll is closed")', async () => {
-    const expired = await createTestPoll({
-      title: `expired poll ${Date.now()}`,
-      question: 'Q?',
-      optionLabels: ['A', 'B'],
-      deadlineHoursFromNow: 1,
-    });
-
-    // Force the deadline into the past via admin (simulate expiry).
-    const admin = adminClient();
-    await admin
-      .from('post_poll')
-      .update({
-        deadline_at: new Date(Date.now() - 60_000).toISOString(),
-        poll_status: 'open', // keep status open so the deadline branch is what trips
-      })
-      .eq('post_item_id', expired.postItemId);
-
-    const { error } = await seedClient.rpc('submit_post_poll_vote', {
-      p_post_item_id: expired.postItemId,
-      p_option_id: expired.optionIds[0],
-    });
-    expect(error).not.toBeNull();
-    expect(error?.message).toMatch(/closed/i);
-
-    // Cleanup this expired poll.
-    await admin.from('thread_post').delete().eq('id', expired.postItemId);
-    await admin.from('topic').delete().eq('id', expired.threadId);
+    expect(rows?.option_id).toBe(poll.optionIds[0]);
   });
 
   it('rejects a vote for an option that does not belong to the poll', async () => {
-    const other = await createTestPoll({
-      title: `other poll ${Date.now()}`,
-      question: 'X?',
-      optionLabels: ['X1', 'X2'],
-    });
+    // A random UUID that is guaranteed not to be a valid option for `poll`.
+    // We cannot create a second seed-user poll here because `createTestPoll`
+    // pre-wipes seed-user posts, which would delete the poll under test.
+    const bogusOptionId = '00000000-0000-0000-0000-0000000000ff';
 
     const { error } = await seedClient.rpc('submit_post_poll_vote', {
       p_post_item_id: poll.postItemId,
-      p_option_id: other.optionIds[0], // option from a DIFFERENT poll
+      p_option_id: bogusOptionId,
     });
     expect(error).not.toBeNull();
     expect(error?.message).toMatch(/option/i);
-
-    const admin = adminClient();
-    await admin.from('thread_post').delete().eq('id', other.postItemId);
-    await admin.from('topic').delete().eq('id', other.threadId);
   });
 
   it('anonymous user cannot cast a vote', async () => {
@@ -212,8 +169,120 @@ describe('poll response (integration)', () => {
     expect(error).not.toBeNull();
   });
 
+  // Kept last: this test calls createTestPoll, which pre-wipes every
+  // seed-user post (including the `poll` created in beforeAll). Any test
+  // placed after this one that still references `poll` will fail with
+  // "Poll not found".
+  it('deadline: voting on a deadline-passed poll is rejected ("Poll is closed")', async () => {
+    const expired = await createTestPoll({
+      title: `expired poll ${Date.now()}`,
+      question: 'Q?',
+      optionLabels: ['A', 'B'],
+      deadlineHoursFromNow: 1,
+    });
+
+    const admin = adminClient();
+    await admin
+      .from('post_poll')
+      .update({
+        deadline_at: new Date(Date.now() - 60_000).toISOString(),
+        poll_status: 'open',
+      })
+      .eq('post_item_id', expired.postItemId);
+
+    const { error } = await seedClient.rpc('submit_post_poll_vote', {
+      p_post_item_id: expired.postItemId,
+      p_option_id: expired.optionIds[0],
+    });
+    expect(error).not.toBeNull();
+    expect(error?.message).toMatch(/closed/i);
+
+    await admin.from('thread_post').delete().eq('id', expired.postItemId);
+    await admin.from('topic').delete().eq('id', expired.threadId);
+  });
+
   // ── Documented spec gaps (see report) — NOT tested here ─────────────────
   // - Weighted results (survey calibration): view returns raw = weighted.
   // - Confidence score: hardcoded. UI doesn't render anyway.
   // These need product/engineering work before they can be covered.
+
+  describe('poll edit — rpc_update_post_poll', () => {
+    it('author edits question + option labels before any vote', async () => {
+      const fresh = await createTestPoll({
+        title: `poll-edit-fresh ${Date.now()}`,
+        question: 'Q?',
+        optionLabels: ['A', 'B'],
+      });
+      const seed = await userClient(SEED_USER.email);
+      const { error } = await seed.rpc('rpc_update_post_poll', {
+        p_post_item_id: fresh.postItemId,
+        p_question: 'Nouvelle question ?',
+        p_option_labels: ['Alpha', 'Beta'],
+      });
+      expect(error).toBeNull();
+
+      const admin = adminClient();
+      const { data: pollRow } = await admin
+        .from('post_poll')
+        .select('question')
+        .eq('post_item_id', fresh.postItemId)
+        .single();
+      expect(pollRow?.question).toBe('Nouvelle question ?');
+      const { data: opts } = await admin
+        .from('post_poll_option')
+        .select('label, sort_order')
+        .eq('post_item_id', fresh.postItemId)
+        .order('sort_order');
+      expect(opts?.map((o) => o.label)).toEqual(['Alpha', 'Beta']);
+
+      await admin.from('thread_post').delete().eq('id', fresh.postItemId);
+      await admin.from('topic').delete().eq('id', fresh.threadId);
+    });
+
+    it('soft-lock: once a vote exists, edit is rejected', async () => {
+      const locked = await createTestPoll({
+        title: `poll-edit-locked ${Date.now()}`,
+        question: 'Q?',
+        optionLabels: ['A', 'B'],
+      });
+      const seed = await userClient(SEED_USER.email);
+      await seed.rpc('submit_post_poll_vote', {
+        p_post_item_id: locked.postItemId,
+        p_option_id: locked.optionIds[0],
+      });
+      const { error } = await seed.rpc('rpc_update_post_poll', {
+        p_post_item_id: locked.postItemId,
+        p_question: 'Trop tard',
+        p_option_labels: ['X', 'Y'],
+      });
+      expect(error).not.toBeNull();
+      expect(error?.message).toMatch(/locked/i);
+
+      const admin = adminClient();
+      await admin.from('thread_post').delete().eq('id', locked.postItemId);
+      await admin.from('topic').delete().eq('id', locked.threadId);
+    });
+
+    it('non-author is rejected with "not owned"', async () => {
+      const other = await createTestPoll({
+        title: `poll-edit-other ${Date.now()}`,
+        question: 'Q?',
+        optionLabels: ['A', 'B'],
+      });
+      const eph = await createEphemeralUser('eph-poll-edit-other');
+      const ephClient = await userClient(eph.email);
+      const { error } = await ephClient.rpc('rpc_update_post_poll', {
+        p_post_item_id: other.postItemId,
+        p_question: 'Hijack',
+        p_option_labels: ['X', 'Y'],
+      });
+      expect(error).not.toBeNull();
+      expect(error?.message).toMatch(/not owned/i);
+
+      const admin = adminClient();
+      await admin.auth.admin.deleteUser(eph.userId);
+      await admin.from('thread_post').delete().eq('id', other.postItemId);
+      await admin.from('topic').delete().eq('id', other.threadId);
+    });
+  });
 });

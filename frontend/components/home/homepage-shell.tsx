@@ -18,6 +18,7 @@ export function HomePageShell({
   items,
   isAuthenticated,
   subjects,
+  nextCursor = null,
 }: HomePageShellProps) {
   const [sortMode, setSortMode] = useState<FeedSortMode>('popular');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(null);
@@ -48,6 +49,7 @@ export function HomePageShell({
           isAuthenticated={isAuthenticated}
           sortMode={sortMode}
           categoryFilter={categoryFilter}
+          initialNextCursor={nextCursor}
         />
       </ResponsiveLayoutGrid>
     </div>

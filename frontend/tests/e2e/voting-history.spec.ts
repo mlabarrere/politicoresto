@@ -25,6 +25,28 @@ test.beforeEach(async () => {
     .eq('user_id', SEED_USER.userId);
 });
 
+// Poll the DB until the row count matches the expected predicate, up to
+// ~3 s. Needed because the tile UI flips optimistically (useOptimistic),
+// so the server write may still be in flight when we read the DB.
+async function waitForVoteCount(
+  predicate: (count: number) => boolean,
+): Promise<number> {
+  const admin = adminClient();
+  let count = 0;
+  for (let attempt = 0; attempt < 15; attempt++) {
+    const res = await admin
+      .from('profile_vote_history')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', SEED_USER.userId);
+    count = res.count ?? 0;
+    if (predicate(count)) return count;
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 200);
+    });
+  }
+  return count;
+}
+
 test.describe('User Story 8 — voting history', () => {
   test('anonymous visitor is redirected away from /me', async ({ page }) => {
     await page.goto('/me?section=votes');
@@ -57,7 +79,8 @@ test.describe('User Story 8 — voting history', () => {
 
     await firstTile.click();
 
-    // The clicked tile flips to selectionne; "Effacer mon vote" appears.
+    // The clicked tile flips to selectionne optimistically (useOptimistic);
+    // "Effacer mon vote" appears.
     await expect(
       page.getByRole('button', { name: /.*— selectionne$/i }).first(),
     ).toBeVisible({ timeout: 5_000 });
@@ -66,11 +89,7 @@ test.describe('User Story 8 — voting history', () => {
     ).toBeVisible();
 
     // Ground truth via admin: a row landed in profile_vote_history.
-    const admin = adminClient();
-    const { count } = await admin
-      .from('profile_vote_history')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', SEED_USER.userId);
+    const count = await waitForVoteCount((c) => c >= 1);
     expect(count).toBeGreaterThanOrEqual(1);
   });
 
@@ -93,12 +112,8 @@ test.describe('User Story 8 — voting history', () => {
     // The eraser button should disappear for that election once cleared.
     await expect(eraser).toBeHidden({ timeout: 5_000 });
 
-    const admin = adminClient();
-    const { count } = await admin
-      .from('profile_vote_history')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', SEED_USER.userId);
-    expect(count ?? 0).toBe(0);
+    const count = await waitForVoteCount((c) => c === 0);
+    expect(count).toBe(0);
   });
 
   test('happy: switching candidate for the same election updates in place', async ({
@@ -121,15 +136,11 @@ test.describe('User Story 8 — voting history', () => {
     await tiles.first().click();
 
     // Still exactly one selected tile for this first election.
-    const admin = adminClient();
-    const { count } = await admin
-      .from('profile_vote_history')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', SEED_USER.userId);
     // One entry maximum per (user, election). Two clicks on the same
     // election section = 1 row, updated in place (UNIQUE constraint +
     // upsert semantics verified in integration).
+    const count = await waitForVoteCount((c) => c >= 1);
     expect(count).toBeGreaterThanOrEqual(1);
-    expect(count).toBeLessThanOrEqual(2); // allows 1-2 depending on which election the 2nd click hit
+    expect(count).toBeLessThanOrEqual(2);
   });
 });

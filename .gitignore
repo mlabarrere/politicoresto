@@ -44,7 +44,9 @@ Ressources
 politicoresto-audit.patch
 
 # Seed CSVs non utilisés par le MVP (orphelins après drop des tables politician/party/media_outlet)
-Data/
+# Anchored to repo root so case-insensitive filesystems (macOS default) don't
+# also ignore frontend/lib/data/.
+/Data/
 
 # Python bytecode (scripts/generate_fr_political_seed.py)
 __pycache__/

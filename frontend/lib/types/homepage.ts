@@ -14,6 +14,8 @@ export interface HomePageShellProps {
   items: PostFeedItemView[];
   isAuthenticated: boolean;
   subjects: SubjectView[];
+  /** Base64url cursor for the next page, or null if this is the last page. */
+  nextCursor?: string | null;
 }
 
 export interface FeedToolbarProps {

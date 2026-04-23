@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useOptimistic, useState, useTransition } from 'react';
 import { Check, Slash, Trash2, X } from 'lucide-react';
 import { AppBanner } from '@/components/app/app-banner';
 import { AppCard } from '@/components/app/app-card';
@@ -106,7 +106,25 @@ export function AppVoteHistoryEditor({
   message?: string | null;
 }) {
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+
+  // Optimistic layer over the server-rendered prop. The server action still
+  // runs, still calls revalidatePath('/me'); the optimistic state is what
+  // the user sees during that round-trip, so the UI reacts to clicks in
+  // the same frame instead of waiting ~2-3s for revalidation.
+  type VotePatch =
+    | { electionId: string; next: UserVoteRow }
+    | { electionId: string; next: null };
+  const [optimisticVotes, applyVotePatch] = useOptimistic(
+    votesByElectionId,
+    (state: Record<string, UserVoteRow>, patch: VotePatch) => {
+      if (patch.next === null) {
+        const { [patch.electionId]: _removed, ...rest } = state;
+        return rest;
+      }
+      return { ...state, [patch.electionId]: patch.next };
+    },
+  );
 
   const grouped = useMemo(() => groupElections(elections), [elections]);
 
@@ -137,9 +155,14 @@ export function AppVoteHistoryEditor({
     );
   }
 
-  function run(fn: () => Promise<void>) {
+  function run(
+    election: ElectionRow,
+    nextOptimistic: UserVoteRow | null,
+    fn: () => Promise<void>,
+  ) {
     setError(null);
     startTransition(async () => {
+      applyVotePatch({ electionId: election.id, next: nextOptimistic });
       try {
         await fn();
       } catch (err) {
@@ -151,18 +174,26 @@ export function AppVoteHistoryEditor({
   }
 
   function onResultClick(election: ElectionRow, resultId: string) {
-    const current = votesByElectionId[election.id];
+    const current = optimisticVotes[election.id];
     const alreadySelected =
       current?.choice_kind === 'vote' &&
       current.election_result_id === resultId;
-    run(() =>
-      alreadySelected
-        ? deleteVoteHistoryAction(election.slug)
-        : upsertVoteHistoryAction({
-            election_slug: election.slug,
-            election_result_id: resultId,
-            choice_kind: 'vote',
-          }),
+    if (alreadySelected) {
+      run(election, null, () => deleteVoteHistoryAction(election.slug));
+      return;
+    }
+    const optimistic: UserVoteRow = {
+      ...(current ?? ({} as UserVoteRow)),
+      election_id: election.id,
+      election_result_id: resultId,
+      choice_kind: 'vote',
+    };
+    run(election, optimistic, () =>
+      upsertVoteHistoryAction({
+        election_slug: election.slug,
+        election_result_id: resultId,
+        choice_kind: 'vote',
+      }),
     );
   }
 
@@ -170,21 +201,29 @@ export function AppVoteHistoryEditor({
     election: ElectionRow,
     kind: Exclude<ChoiceKind, 'vote'>,
   ) {
-    const current = votesByElectionId[election.id];
+    const current = optimisticVotes[election.id];
     const alreadySelected = current?.choice_kind === kind;
-    run(() =>
-      alreadySelected
-        ? deleteVoteHistoryAction(election.slug)
-        : upsertVoteHistoryAction({
-            election_slug: election.slug,
-            election_result_id: null,
-            choice_kind: kind,
-          }),
+    if (alreadySelected) {
+      run(election, null, () => deleteVoteHistoryAction(election.slug));
+      return;
+    }
+    const optimistic: UserVoteRow = {
+      ...(current ?? ({} as UserVoteRow)),
+      election_id: election.id,
+      election_result_id: null,
+      choice_kind: kind,
+    };
+    run(election, optimistic, () =>
+      upsertVoteHistoryAction({
+        election_slug: election.slug,
+        election_result_id: null,
+        choice_kind: kind,
+      }),
     );
   }
 
   return (
-    <div className={cn('space-y-4', isPending && 'opacity-80')}>
+    <div className="space-y-4">
       {error ? (
         <AppBanner
           title="Enregistrement impossible"
@@ -209,11 +248,11 @@ export function AppVoteHistoryEditor({
             <ElectionRowBlock
               key={election.id}
               election={election}
-              currentVote={votesByElectionId[election.id]}
+              currentVote={optimisticVotes[election.id]}
               onResultClick={onResultClick}
               onAbstentionClick={onAbstentionClick}
               onClear={(e) => {
-                run(() => deleteVoteHistoryAction(e.slug));
+                run(e, null, () => deleteVoteHistoryAction(e.slug));
               }}
             />
           ))}
@@ -347,7 +386,7 @@ function CandidateTile({
         {initials(displayName)}
       </span>
       <span className="mt-1 line-clamp-2 w-full px-0.5 text-[10px] leading-tight">
-        {shortName(displayName)}
+        {displayName}
       </span>
       {isSelected ? (
         <span className="absolute right-1 top-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-white">
@@ -430,13 +469,4 @@ function formatHeldOn(iso: string): string {
     month: 'long',
     year: 'numeric',
   });
-}
-
-function shortName(full: string): string {
-  const parts = full.trim().split(/\s+/).filter(Boolean);
-  if (parts.length <= 1) return full;
-  const [first, ...rest] = parts;
-  const last = rest[rest.length - 1];
-  if (!first || !last) return full;
-  return `${first.charAt(0)}. ${last}`;
 }

@@ -27,21 +27,34 @@ test.describe('User Story — account settings', () => {
     const newBio = 'New bio line';
     await page.locator('input[name="display_name"]').fill(newName);
     await page.locator('textarea[name="bio"]').fill(newBio);
-    await page
-      .getByRole('button', { name: /Enregistrer|Valider|Sauvegarder/i })
-      .first()
-      .click();
+    // Wait for the POST response from the server action so the DB read
+    // below doesn't race the redirect.
+    const [, ,] = await Promise.all([
+      page.waitForResponse(
+        (res) => res.request().method() === 'POST' && res.status() < 400,
+        { timeout: 10_000 },
+      ),
+      page.getByRole('button', { name: /Enregistrer le profil/i }).click(),
+      expect(page).toHaveURL(/\/me\?section=profile/, { timeout: 10_000 }),
+    ]);
 
-    // The server action redirects back to /me?section=profile with the
-    // updated data shown via defaultValue.
-    await expect(page).toHaveURL(/\/me\?section=profile/, { timeout: 10_000 });
-
+    // Poll the DB briefly — revalidation can lag behind the response.
     const admin = adminClient();
-    const { data: row } = await admin
-      .from('app_profile')
-      .select('display_name, bio')
-      .eq('user_id', user.userId)
-      .single();
+    let attempt = 0;
+    let row: { display_name: string | null; bio: string | null } | null = null;
+    while (attempt < 10) {
+      const result = await admin
+        .from('app_profile')
+        .select('display_name, bio')
+        .eq('user_id', user.userId)
+        .single();
+      row = result.data;
+      if (row?.display_name === newName && row?.bio === newBio) break;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 200);
+      });
+      attempt += 1;
+    }
     expect(row?.display_name).toBe(newName);
     expect(row?.bio).toBe(newBio);
 

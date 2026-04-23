@@ -14,6 +14,8 @@ import { AppPrivateNotice } from '@/components/app/app-private-notice';
 import { AppTextarea } from '@/components/app/app-textarea';
 import { AppUsernameField } from '@/components/app/app-username-field';
 import { AppVoteHistoryEditor } from '@/components/app/app-vote-history-editor';
+import { CompletionBanner } from '@/components/profile/completion-banner';
+import { DemographicsForm } from '@/components/profile/demographics-form';
 import {
   clearPrivateProfileAction,
   deactivateAccountAction,
@@ -21,12 +23,24 @@ import {
   upsertAccountIdentityAction,
   upsertPrivateProfileAction,
 } from '@/lib/actions/account';
+import { updateDemographicsAction } from '@/lib/actions/profile';
 import {
   ACCOUNT_SECTIONS,
   resolveAccountSection,
 } from '@/lib/account/sections';
 import { getAccountWorkspaceData } from '@/lib/data/authenticated/account-workspace';
+import {
+  getProfileCompletion,
+  getProfileDemographics,
+  isProfileIncomplete,
+} from '@/lib/data/authenticated/profile-completion';
 import { getVoteHistoryEditorData } from '@/lib/data/authenticated/vote-history';
+
+function maxDobIso(): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().slice(0, 10);
+}
 
 type SearchParams = Promise<{ section?: string; error?: string }>;
 
@@ -40,6 +54,10 @@ export default async function MePage({
   const data = await getAccountWorkspaceData();
   const voteEditor =
     section === 'votes' ? await getVoteHistoryEditorData() : null;
+  const demographics =
+    section === 'profile' ? await getProfileDemographics() : null;
+  const completion =
+    section === 'profile' ? await getProfileCompletion() : null;
 
   const heading =
     ACCOUNT_SECTIONS.find((item) => item.key === section)?.label ?? 'Profil';
@@ -66,6 +84,31 @@ export default async function MePage({
 
         {section === 'profile' ? (
           <div className="space-y-4">
+            {completion && isProfileIncomplete(completion) ? (
+              <CompletionBanner />
+            ) : null}
+
+            <AppCard className="space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Démographie (privée)
+                </h2>
+                <AppPrivacyBadge />
+              </div>
+              <AppPrivateNotice message="Visible uniquement par vous. Sert au redressement anonymisé des sondages." />
+              <DemographicsForm
+                action={updateDemographicsAction}
+                current={
+                  demographics ?? {
+                    date_of_birth: null,
+                    postal_code: null,
+                    resolved_city: null,
+                  }
+                }
+                maxDob={maxDobIso()}
+              />
+            </AppCard>
+
             <AppCard className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold text-foreground">

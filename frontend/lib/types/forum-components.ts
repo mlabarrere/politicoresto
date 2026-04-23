@@ -25,6 +25,13 @@ export interface PostCardProps {
   post: ForumPost;
   initialExpanded?: boolean;
   isAuthenticated?: boolean;
+  ownerMenu?: {
+    postItemId: string;
+    postSlug: string;
+    canEdit: boolean;
+    /** If set, the edit item is shown disabled with this tooltip. */
+    editLockReason?: string | null;
+  } | null;
 }
 
 export interface PostActionsBarProps {

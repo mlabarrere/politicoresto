@@ -1,3 +1,4 @@
+import type { PostFeedItemView } from "@/lib/types/views";
 import type { HomeScreenData, LoadState, SubjectView } from "@/lib/types/screens";
 import { createLogger, logError } from "@/lib/logger";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -9,14 +10,58 @@ import { getPollSummariesByPostItemIds } from "./polls";
 
 const log = createLogger("data.home");
 
-export async function getHomeScreenData(currentUserId?: string | null): Promise<LoadState<HomeScreenData>> {
+export const FEED_PAGE_SIZE = 20;
+
+export interface FeedCursor {
+  // Ordering is: thread_score desc, latest_thread_post_at desc, editorial_feed_rank asc.
+  // We page on the latter two (thread_score is a derived view column that
+  // doesn't mutate frequently within a feed window) plus topic_id for tie
+  // breaking.
+  latest_thread_post_at: string | null;
+  editorial_feed_rank: number | null;
+  topic_id: string;
+}
+
+export interface FeedBatch {
+  items: PostFeedItemView[];
+  nextCursor: FeedCursor | null;
+}
+
+export function encodeCursor(c: FeedCursor): string {
+  return Buffer.from(JSON.stringify(c), "utf8").toString("base64url");
+}
+
+export function decodeCursor(raw: string | null | undefined): FeedCursor | null {
+  if (!raw) return null;
+  try {
+    const json = Buffer.from(raw, "base64url").toString("utf8");
+    const parsed = JSON.parse(json) as Partial<FeedCursor>;
+    if (typeof parsed.topic_id !== "string") return null;
+    return {
+      latest_thread_post_at: parsed.latest_thread_post_at ?? null,
+      editorial_feed_rank:
+        typeof parsed.editorial_feed_rank === "number"
+          ? parsed.editorial_feed_rank
+          : null,
+      topic_id: parsed.topic_id,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getHomeScreenData(
+  currentUserId?: string | null,
+  opts: { cursor?: FeedCursor | null; limit?: number } = {},
+): Promise<LoadState<HomeScreenData & { nextCursor: FeedCursor | null }>> {
   const t0 = Date.now();
   log.debug({ event: "home.fetch.start", user_id: currentUserId ?? null }, "getHomeScreenData start");
 
   const supabase = await createServerSupabaseClient();
+  const pageSize = Math.max(1, Math.min(50, opts.limit ?? FEED_PAGE_SIZE));
 
   // Step 1: feed topics (required first — subsequent queries depend on topic IDs)
-  const feedResult = await supabase
+  let feedQuery = supabase
     .from("v_feed_global")
     .select(
       "topic_id, topic_slug, topic_title, topic_description, topic_status, derived_lifecycle_state, visibility, is_sensitive, space_id, space_slug, space_name, primary_taxonomy_slug, primary_taxonomy_label, discussion_payload, resolution_payload, last_activity_at, open_at, close_at, resolve_deadline_at, resolved_at, visible_post_count, activity_score_raw, freshness_score_raw, participation_score_raw, resolution_proximity_score_raw, editorial_priority_score_raw, shift_score_raw, editorial_feed_score, feed_reason_code, feed_reason_label, editorial_feed_rank, topic_card_payload, latest_thread_post_at, thread_score"
@@ -24,7 +69,19 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     .order("thread_score", { ascending: false })
     .order("latest_thread_post_at", { ascending: false, nullsFirst: false })
     .order("editorial_feed_rank", { ascending: true })
-    .limit(24);
+    .limit(pageSize + 1); // +1 so we can detect whether another page exists.
+
+  if (opts.cursor?.latest_thread_post_at) {
+    // Simple cursor: fetch rows strictly older than the cursor's
+    // latest_thread_post_at. Ties at the same timestamp are acceptable
+    // collateral (they'll show in the prior batch too, dedup client-side).
+    feedQuery = feedQuery.lt(
+      "latest_thread_post_at",
+      opts.cursor.latest_thread_post_at,
+    );
+  }
+
+  const feedResult = await feedQuery;
 
   if (feedResult.error) {
     logError(log, feedResult.error, { event: "home.feed.query_failed", code: feedResult.error.code, message: "v_feed_global query failed" });
@@ -33,8 +90,20 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   }
 
   const safeError = feedResult.error ? "Feed indisponible pour le moment." : null;
-  const feedRows = (feedResult.data ?? []) as Record<string, unknown>[];
+  const rawRows = (feedResult.data ?? []) as Record<string, unknown>[];
+  const hasMore = rawRows.length > pageSize;
+  const feedRows = hasMore ? rawRows.slice(0, pageSize) : rawRows;
   const feed = feedRows.map((row, index) => toHomeFeedTopic(row, index + 1));
+  const lastFeedRaw = hasMore ? feedRows[feedRows.length - 1] : null;
+  const nextCursor: FeedCursor | null = lastFeedRaw
+    ? {
+        latest_thread_post_at:
+          (lastFeedRaw.latest_thread_post_at as string | null) ?? null,
+        editorial_feed_rank:
+          (lastFeedRaw.editorial_feed_rank as number | null) ?? null,
+        topic_id: String(lastFeedRaw.topic_id ?? ""),
+      }
+    : null;
 
   const postRootIds = feed.map((item) => item.topic_id).filter(Boolean);
 
@@ -184,26 +253,30 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
     feed_party_tags: typeof item.feed_post_id === "string" ? (partyTagsByPostItemId.get(item.feed_post_id) ?? null) : null
   }));
 
-  // Fetch all active subjects for filter bar
-  const allSubjectsResult = await supabase
-    .from("subject")
-    .select("id, slug, name, emoji, sort_order")
-    .eq("is_active", true)
-    .order("sort_order");
+  // Fetch all active subjects for filter bar — only on initial page
+  // (cursor absent). Pagination loads fresh batches, not fresh taxonomy.
+  let allSubjects: SubjectView[] = [];
+  if (!opts.cursor) {
+    const allSubjectsResult = await supabase
+      .from("subject")
+      .select("id, slug, name, emoji, sort_order")
+      .eq("is_active", true)
+      .order("sort_order");
 
-  if (allSubjectsResult.error) {
-    logError(log, allSubjectsResult.error, { event: "home.subjects.fetch_failed", message: "subjects fetch failed" });
-  } else {
-    log.debug({ event: "home.subjects.fetched", count: allSubjectsResult.data?.length ?? 0 }, "subjects fetched");
+    if (allSubjectsResult.error) {
+      logError(log, allSubjectsResult.error, { event: "home.subjects.fetch_failed", message: "subjects fetch failed" });
+    } else {
+      log.debug({ event: "home.subjects.fetched", count: allSubjectsResult.data?.length ?? 0 }, "subjects fetched");
+    }
+
+    allSubjects = (allSubjectsResult.data ?? []).map((row) => ({
+      id: String((row as { id?: string }).id ?? ""),
+      slug: String((row as { slug?: string }).slug ?? ""),
+      name: String((row as { name?: string }).name ?? ""),
+      emoji: ((row as { emoji?: string | null }).emoji) ?? null,
+      sort_order: Number((row as { sort_order?: number }).sort_order ?? 0)
+    }));
   }
-
-  const allSubjects: SubjectView[] = (allSubjectsResult.data ?? []).map((row) => ({
-    id: String((row as { id?: string }).id ?? ""),
-    slug: String((row as { slug?: string }).slug ?? ""),
-    name: String((row as { name?: string }).name ?? ""),
-    emoji: ((row as { emoji?: string | null }).emoji) ?? null,
-    sort_order: Number((row as { sort_order?: number }).sort_order ?? 0)
-  }));
 
   log.info(
     {
@@ -212,6 +285,7 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
       subjects: allSubjects.length,
       duration_ms: Date.now() - t0,
       error: safeError ?? null,
+      cursor: opts.cursor ? "present" : "initial",
     },
     "getHomeScreenData done",
   );
@@ -219,7 +293,8 @@ export async function getHomeScreenData(currentUserId?: string | null): Promise<
   return {
     data: {
       feed: feedWithSubjects,
-      subjects: allSubjects
+      subjects: allSubjects,
+      nextCursor,
     },
     error: safeError
   };

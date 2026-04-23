@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { signInAsSeedUser } from './helpers/auth';
+import { wipeSeedUserPosts } from './helpers/cleanup';
+
+test.beforeAll(wipeSeedUserPosts);
 
 test.describe('User Story 6 — poll creation', () => {
   test('authed user can switch the composer to "Sondage" mode', async ({

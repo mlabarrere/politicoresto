@@ -49,7 +49,8 @@ describe('post CRUD (integration) — edit/delete RPCs (backend-only)', () => {
 
   beforeEach(async () => {
     // Restore the post to 'published' state + original content between
-    // tests. The edit/delete RPCs mutate this row.
+    // tests. The edit/delete RPCs mutate this row, and the update RPC
+    // now also propagates the title to topic.title.
     const admin = adminClient();
     await admin
       .from('thread_post')
@@ -60,6 +61,10 @@ describe('post CRUD (integration) — edit/delete RPCs (backend-only)', () => {
         metadata: {},
       })
       .eq('id', post.postItemId);
+    await admin
+      .from('topic')
+      .update({ title: post.slug })
+      .eq('id', post.threadId);
   });
 
   it('rpc_update_thread_post: author updates title + content successfully', async () => {
@@ -78,6 +83,16 @@ describe('post CRUD (integration) — edit/delete RPCs (backend-only)', () => {
       .single();
     expect(row?.title).toBe('edited title');
     expect(row?.content).toBe('edited content');
+
+    // Feed heading reads topic.title — the RPC must keep it in sync with
+    // the root article's title so the home feed doesn't show the stale
+    // original after an edit.
+    const { data: topicRow } = await admin
+      .from('topic')
+      .select('title')
+      .eq('id', post.threadId)
+      .single();
+    expect(topicRow?.title).toBe('edited title');
   });
 
   it('rpc_update_thread_post: non-author is rejected with "not owned"', async () => {

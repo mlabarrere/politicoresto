@@ -9,9 +9,6 @@ import type { CategoryFilter, FeedSortMode } from '@/lib/types/homepage';
 import type { PostFeedItemView } from '@/lib/types/views';
 import { politicalBlocs } from '@/lib/data/political-taxonomy';
 
-const INITIAL_VISIBLE_ITEMS = 20;
-const MAX_VISIBLE_ITEMS = 30;
-const LOAD_MORE_STEP = 10;
 const HOME_SCROLL_KEY = 'politicoresto:home-scroll-y';
 
 function applyFilter(
@@ -93,24 +90,62 @@ export function PostFeed({
   isAuthenticated,
   sortMode,
   categoryFilter = null,
+  initialNextCursor = null,
 }: {
   items: PostFeedItemView[];
   isAuthenticated: boolean;
   sortMode: FeedSortMode;
   categoryFilter?: CategoryFilter;
+  initialNextCursor?: string | null;
 }) {
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
+  const [allItems, setAllItems] = useState<PostFeedItemView[]>(items);
+  const [nextCursor, setNextCursor] = useState<string | null>(
+    initialNextCursor,
+  );
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Reset buffer when the server re-renders with fresh props (e.g. after a
+  // revalidatePath). Keyed on the first topic_id as a cheap signature.
+  useEffect(() => {
+    setAllItems(items);
+    setNextCursor(initialNextCursor);
+  }, [items, initialNextCursor]);
+
   const filteredItems = useMemo(
-    () => applyFilter(items, categoryFilter),
-    [items, categoryFilter],
+    () => applyFilter(allItems, categoryFilter),
+    [allItems, categoryFilter],
   );
   const sortedItems = useMemo(
     () => sortItems(filteredItems, sortMode),
     [filteredItems, sortMode],
   );
-  const cappedItems = sortedItems.slice(0, MAX_VISIBLE_ITEMS);
-  const visibleItems = cappedItems.slice(0, visibleCount);
-  const canLoadMore = visibleCount < cappedItems.length;
+  const visibleItems = sortedItems;
+  const canLoadMore = nextCursor !== null;
+
+  async function loadMore() {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/feed?cursor=${encodeURIComponent(nextCursor)}`,
+      );
+      if (!res.ok) throw new Error('feed page fetch failed');
+      const payload = (await res.json()) as {
+        items: PostFeedItemView[];
+        nextCursor: string | null;
+      };
+      setAllItems((prev) => {
+        const seen = new Set(prev.map((p) => p.topic_id));
+        const deduped = payload.items.filter((it) => !seen.has(it.topic_id));
+        return [...prev, ...deduped];
+      });
+      setNextCursor(payload.nextCursor);
+    } catch {
+      // Swallow: the button stays enabled so the user can retry.
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -135,7 +170,7 @@ export function PostFeed({
     };
   }, []);
 
-  if (!cappedItems.length) {
+  if (!sortedItems.length) {
     return (
       <EmptyState
         title={HOME_STRINGS.emptyTitle}
@@ -160,13 +195,12 @@ export function PostFeed({
           <AppButton
             type="button"
             variant="secondary"
+            disabled={loadingMore}
             onClick={() => {
-              setVisibleCount((value) =>
-                Math.min(value + LOAD_MORE_STEP, MAX_VISIBLE_ITEMS),
-              );
+              void loadMore();
             }}
           >
-            {HOME_STRINGS.loadMore}
+            {loadingMore ? 'Chargement...' : HOME_STRINGS.loadMore}
           </AppButton>
         </div>
       ) : null}

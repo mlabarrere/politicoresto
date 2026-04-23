@@ -125,6 +125,72 @@ describe('appVoteHistoryEditor', () => {
     expect(deleteMock).toHaveBeenCalledWith('presidentielle-2022-t1');
   });
 
+  it('renders the full list label with accents and balanced parentheses (no truncation)', () => {
+    const longLabelElection: ElectionRow = {
+      ...baseElection,
+      id: 'el-2',
+      slug: 'legislatives-2022-t1',
+      results: [
+        {
+          id: 'r-ensemble',
+          rank: 1,
+          candidate_name: null,
+          list_label: 'Ensemble pour la République (E. présidentielle)',
+          party_slug: 'renaissance',
+          nuance: 'ENS',
+          pct_exprimes: 24.7,
+        },
+      ],
+    };
+    render(
+      <AppVoteHistoryEditor
+        elections={[longLabelElection]}
+        votesByElectionId={{}}
+      />,
+    );
+    const tile = screen.getByRole('button', {
+      name: /Ensemble pour la République/,
+    });
+    // Full label present verbatim — accents intact, parens balanced.
+    expect(tile.textContent).toContain(
+      'Ensemble pour la République (E. présidentielle)',
+    );
+    // Negative: the historical truncation bug produced dangling `)`.
+    const parensText = tile.textContent ?? '';
+    const opens = (parensText.match(/\(/g) ?? []).length;
+    const closes = (parensText.match(/\)/g) ?? []).length;
+    expect(opens).toBe(closes);
+  });
+
+  it('optimistically flips aria-pressed on click before the action resolves', async () => {
+    const pending: { resolve: (() => void) | null } = { resolve: null };
+    upsertMock.mockImplementationOnce(
+      () =>
+        new Promise<undefined>((resolve) => {
+          pending.resolve = () => {
+            resolve(undefined);
+          };
+        }),
+    );
+    render(
+      <AppVoteHistoryEditor
+        elections={[baseElection]}
+        votesByElectionId={{}}
+      />,
+    );
+    const tile = screen.getByRole('button', { name: /Emmanuel Macron/i });
+    expect(tile.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(tile);
+    // The action has NOT resolved yet — the optimistic update must already
+    // show the tile as pressed.
+    await Promise.resolve();
+    const pressedTile = screen.getByRole('button', {
+      name: /Emmanuel Macron.*selectionne/i,
+    });
+    expect(pressedTile.getAttribute('aria-pressed')).toBe('true');
+    pending.resolve?.();
+  });
+
   it('records abstention via upsert when clicking the Blanc tile', () => {
     render(
       <AppVoteHistoryEditor
