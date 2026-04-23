@@ -16,6 +16,9 @@ on:
       - 'docs/**'
       - '.claude/skills/**'
       - 'LICENSE'
+      # Worker-only PRs run `worker-ci.yml`; don't double up on the
+      # frontend gate.
+      - 'worker/**'
   push:
     branches: [main]
     paths-ignore:
@@ -23,6 +26,7 @@ on:
       - 'docs/**'
       - '.claude/skills/**'
       - 'LICENSE'
+      - 'worker/**'
 
 permissions:
   contents: read

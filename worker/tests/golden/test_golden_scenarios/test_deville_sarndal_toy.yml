@@ -1,0 +1,16 @@
+components:
+  concentration: 0.8333
+  coverage: 0.8944
+  kish: 0.0538
+  variability: 0.8523
+confidence_band: indicatif
+confidence_score: 33
+marginal_slack:
+  __intercept__: 0.0
+  group::a: 0.0
+  group::b: 0.0
+n: 20
+n_clipped: 0
+weight_max: 1.666667
+weight_min: 0.666667
+weight_sum: 20.0

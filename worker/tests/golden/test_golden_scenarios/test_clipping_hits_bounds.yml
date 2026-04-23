@@ -1,0 +1,15 @@
+components:
+  concentration: 0.4167
+  coverage: 0.8944
+  kish: 0.2058
+  variability: 0.7773
+confidence_band: correctable
+confidence_score: 46
+marginal_slack:
+  __intercept__: 0.4
+  sex::F: 0.0
+n: 100
+n_clipped: 5
+weight_max: 2.0
+weight_min: 0.526316
+weight_sum: 60.0

@@ -45,12 +45,18 @@ test.afterAll(async () => {
 
 test.beforeEach(async () => {
   // Clear any prior responses for the seed user so each test starts with
-  // a fresh "has not voted" UI state.
+  // a fresh "has not voted" UI state. Also clear survey_respondent_snapshot
+  // — the atomic-snapshot RPC writes there with UNIQUE(poll_id, user_id),
+  // so a stale row would roll back a re-vote in the next test.
   const admin = adminClient();
   await admin
     .from('post_poll_response')
     .delete()
     .eq('post_item_id', pollIds.postItemId);
+  await admin
+    .from('survey_respondent_snapshot')
+    .delete()
+    .eq('poll_id', pollIds.postItemId);
 });
 
 test.describe('User Story 7 — poll response', () => {
