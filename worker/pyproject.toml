@@ -71,6 +71,7 @@ markers = [
   "golden: Frozen-output regression tests via pytest-regressions.",
   "external_benchmark: Cross-checks against R `survey` or other published outputs.",
   "stress: Random-panel R-vs-Python parity. Requires R installed. Slower (~30s/50 scenarios).",
+  "integration: End-to-end tests against local Supabase (requires `supabase start`).",
 ]
 
 [build-system]
