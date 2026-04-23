@@ -58,6 +58,13 @@ describe('poll response (integration)', () => {
       .from('post_poll_response')
       .delete()
       .eq('post_item_id', poll.postItemId);
+    // The atomic vote path also writes survey_respondent_snapshot with a
+    // UNIQUE(poll_id, user_id). Clear it between tests so re-voting in the
+    // next test doesn't fail on a stale snapshot row.
+    await admin
+      .from('survey_respondent_snapshot')
+      .delete()
+      .eq('poll_id', poll.postItemId);
   });
 
   it('happy path: seed user votes, row persists, summary reflects raw count', async () => {
