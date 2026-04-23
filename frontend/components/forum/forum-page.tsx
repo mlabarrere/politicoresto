@@ -168,7 +168,27 @@ export function ForumPage({
   return (
     <div className="grid gap-4">
       <section className="space-y-4" id="post-main">
-        <PostCard post={postView} isAuthenticated={Boolean(currentUserId)} />
+        <PostCard
+          post={postView}
+          isAuthenticated={Boolean(currentUserId)}
+          ownerMenu={
+            currentUserId && currentUserId === post.author.id
+              ? {
+                  postItemId: post.id,
+                  postSlug,
+                  // Polls: editable as long as no vote has been cast.
+                  // Text posts: always editable by the author.
+                  canEdit: post.pollSummary
+                    ? (post.pollSummary.sample_size ?? 0) === 0
+                    : true,
+                  editLockReason:
+                    post.pollSummary && (post.pollSummary.sample_size ?? 0) > 0
+                      ? 'Verrouillé : un vote a déjà été enregistré.'
+                      : null,
+                }
+              : null
+          }
+        />
 
         <PostActionsBar
           postId={post.id}

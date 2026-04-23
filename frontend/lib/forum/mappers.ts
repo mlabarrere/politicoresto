@@ -26,6 +26,10 @@ export function mapPostViewToForumPost(
     commentCount: Number(post.comment_count ?? 0),
     currentUserVote: fromBackendVoteSide(post.user_reaction_side ?? null),
     pollSummary: post.poll_summary ?? null,
+    isEdited:
+      Boolean(post.updated_at) &&
+      Boolean(post.created_at) &&
+      post.updated_at !== post.created_at,
   };
 }
 

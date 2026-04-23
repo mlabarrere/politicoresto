@@ -14,6 +14,7 @@ export interface ForumPost {
   commentCount: number;
   currentUserVote: VoteSide;
   pollSummary?: PostPollSummaryView | null;
+  isEdited: boolean;
 }
 
 export interface CommentTreeNode {

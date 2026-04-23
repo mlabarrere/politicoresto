@@ -11,6 +11,7 @@ import {
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
 import { PollCardInline } from '@/components/poll/poll-card-inline';
+import { PostOwnerMenu } from '@/components/forum/post-owner-menu';
 import type { PostCardProps } from '@/lib/types/forum-components';
 import { formatDate } from '@/lib/utils/format';
 
@@ -20,6 +21,7 @@ export function PostCard({
   post,
   initialExpanded = false,
   isAuthenticated = false,
+  ownerMenu = null,
 }: PostCardProps & { isAuthenticated?: boolean }) {
   const initials = post.author.username.slice(0, 2).toUpperCase();
   const [expanded, setExpanded] = useState(initialExpanded);
@@ -40,7 +42,7 @@ export function PostCard({
           />
           <AppAvatarFallback>{initials}</AppAvatarFallback>
         </AppAvatar>
-        <div>
+        <div className="flex-1">
           {post.author.slug ? (
             <Link
               href={`/user/${post.author.slug}` as Route}
@@ -55,8 +57,17 @@ export function PostCard({
           )}
           <p className="text-xs text-muted-foreground">
             {formatDate(post.createdAt)}
+            {post.isEdited ? ' · modifié' : ''}
           </p>
         </div>
+        {ownerMenu ? (
+          <PostOwnerMenu
+            postItemId={ownerMenu.postItemId}
+            postSlug={ownerMenu.postSlug}
+            canEdit={ownerMenu.canEdit}
+            editLockReason={ownerMenu.editLockReason ?? null}
+          />
+        ) : null}
       </header>
 
       {post.title ? (
