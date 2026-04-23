@@ -1,0 +1,17 @@
+components:
+  concentration: 0.7823
+  coverage: 0.8944
+  kish: 0.5822
+  variability: 0.8362
+confidence_band: robuste
+confidence_score: 74
+marginal_slack:
+  __intercept__: 0.065436
+  age::m: 0.0
+  age::y: 0.281461
+  sex::F: 0.146143
+n: 500
+n_clipped: 176
+weight_max: 2.0
+weight_min: 0.5
+weight_sum: 532.7181
