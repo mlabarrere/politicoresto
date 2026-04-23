@@ -45,7 +45,7 @@ from tests.stress.r_oracle import (
     RSkipped,
     call_r_oracle,
 )
-from weighting.calibration import calibrate
+from weighting.calibration import CellConstraint, calibrate
 
 # Stress tolerance is deliberately looser than the grid bank's 1e-6.
 # The randomised scenarios occasionally produce corners where our
@@ -159,9 +159,14 @@ def test_random_panel_parity_against_r() -> None:
             continue
         assert isinstance(r_result, ROracleResult)
 
+        cells = [
+            CellConstraint(dims, cats, share)
+            for dims, cats, share in scenario.cells
+        ]
         our_result = calibrate(
             scenario.respondents.drop(columns=["poll_answer"]),
             scenario.marginals,
+            cells=cells if cells else None,
             bounds=scenario.bounds,
         )
         examined += 1

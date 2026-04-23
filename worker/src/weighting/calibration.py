@@ -18,6 +18,15 @@ achieved end-to-end on our test bank (see ``tests/external_benchmark``).
 A cheaper one-shot ``truncation="clip"`` fallback is kept for
 differential testing against the iterative path — it is **never** the
 default.
+
+**Cross-tab cells.** In addition to 1D marginals, :func:`calibrate`
+accepts `cells`: a list of ``CellConstraint`` describing joint
+distribution targets (e.g. "Femmes 18-24 = 5.5% du total"). Each cell
+adds one indicator column to the calibration matrix. Cells and
+marginals should cover DISJOINT dimensions — calibrating on
+``age × sex`` cells AND ``age`` or ``sex`` marginals makes the system
+linearly dependent. The wrapper does not automatically drop redundant
+columns; it is the caller's responsibility.
 """
 
 from __future__ import annotations
@@ -40,6 +49,37 @@ with warnings.catch_warnings():
 DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.5, 2.0)
 """INSEE CALMAR default — no respondent counts for less than half or more
 than double the baseline."""
+
+
+@dataclass(frozen=True)
+class CellConstraint:
+    """A joint-distribution target for a cross-tab cell.
+
+    Example: ``CellConstraint(("age_bucket", "sex"), ("18_24", "F"), 0.055)``
+    says "5.5 % of the target population is Females aged 18-24".
+
+    The list of dimensions must match a non-empty subset of columns
+    present in the respondents frame. The categories tuple must be the
+    same length as dimensions. The share is the fraction of the total
+    population this cell represents.
+    """
+
+    dimensions: tuple[str, ...]
+    categories: tuple[str, ...]
+    share: float
+
+    def __post_init__(self) -> None:
+        if len(self.dimensions) != len(self.categories):
+            raise ValueError(
+                f"CellConstraint: len(dimensions)={len(self.dimensions)} "
+                f"!= len(categories)={len(self.categories)}"
+            )
+        if len(self.dimensions) < 2:
+            raise ValueError("CellConstraint: at least 2 dimensions required")
+        if not (0 <= self.share <= 1):
+            raise ValueError(
+                f"CellConstraint: share must be in [0, 1]; got {self.share}"
+            )
 
 DEFAULT_MAX_ITER: Final[int] = 50
 """Hard cap on iterative CALMAR iterations. Real-world cases converge in
@@ -92,6 +132,7 @@ class CalibrationResult:
 def _build_aux_vars(
     respondents: pd.DataFrame,
     marginals: dict[str, dict[str, float]],
+    cells: list[CellConstraint] | None = None,
 ) -> tuple[npt.NDArray[np.float64], list[str], dict[str, float]]:
     """Dummy-encode the categorical dimensions in ``marginals``.
 
@@ -135,6 +176,42 @@ def _build_aux_vars(
             totals[col_label] = float(shares_by_category[category]) * float(n)
             dim_frame[col_label] = (respondents[dimension] == category).astype(float)
         frames.append(dim_frame)
+
+    # ── Cross-tab cell constraints. Each cell adds one indicator column. ──
+    # For each group of cells sharing the same dimension set, drop ONE cell
+    # (the alphabetically-last categories tuple) as the reference — same
+    # trap as with marginals: without dropping, the sum of cells on a
+    # dimension set equals the all-ones intercept.
+    if cells:
+        # Group cells by their dimension tuple.
+        grouped: dict[tuple[str, ...], list[CellConstraint]] = {}
+        for cell in cells:
+            grouped.setdefault(cell.dimensions, []).append(cell)
+
+        cell_frame = pd.DataFrame(index=respondents.index)
+        for dims, group in grouped.items():
+            for d in dims:
+                if d not in respondents.columns:
+                    raise KeyError(
+                        f"calibration: cell dimension '{d}' is not a column on respondents"
+                    )
+            # Sort categories tuples lexicographically → drop the last.
+            ordered = sorted(group, key=lambda c: c.categories)
+            if len(ordered) < 2:
+                continue
+            kept_cells = ordered[:-1]
+            for cell in kept_cells:
+                col_label = (
+                    "cell::" + "×".join(dims) + "::" + "|".join(cell.categories)
+                )
+                columns.append(col_label)
+                totals[col_label] = float(cell.share) * float(n)
+                mask = pd.Series(True, index=respondents.index)
+                for dim, cat in zip(dims, cell.categories, strict=True):
+                    mask &= respondents[dim] == cat
+                cell_frame[col_label] = mask.astype(float)
+        if len(cell_frame.columns) > 0:
+            frames.append(cell_frame)
 
     aux = pd.concat(frames, axis=1).to_numpy(dtype=np.float64)
     return aux, columns, totals
@@ -270,8 +347,9 @@ def _iterative_truncation(
 
 def calibrate(
     respondents: pd.DataFrame,
-    marginals: dict[str, dict[str, float]],
+    marginals: dict[str, dict[str, float]] | None = None,
     *,
+    cells: list[CellConstraint] | None = None,
     bounds: tuple[float, float] = DEFAULT_BOUNDS,
     truncation: TruncationMethod = "iterative",
     max_iter: int = DEFAULT_MAX_ITER,
@@ -282,12 +360,19 @@ def calibrate(
     ----------
     respondents:
         One row per respondent. Must contain a column for each key in
-        ``marginals``; values are category labels.
+        ``marginals`` or each dimension referenced by ``cells``.
     marginals:
         ``{dimension: {category: share}}`` where every share is in
         ``[0, 1]`` and shares within a dimension sum to ≤ 1. The
         "unknown" bucket strategy (K-1a) treats declined categories as
         an additional row in each dimension's share map.
+    cells:
+        Optional list of :class:`CellConstraint` for joint-distribution
+        targets (e.g. age × sex). Cells and marginals must cover
+        DISJOINT dimension sets — cells on ``age × sex`` already
+        imply the ``age`` and ``sex`` marginals; adding those
+        separately makes the linear system rank-deficient. The wrapper
+        does NOT auto-drop redundant columns; it is the caller's job.
     bounds:
         Inclusive ``(low, high)`` g-ratio bounds. Default ``(0.5, 2.0)``
         matches INSEE's CALMAR default.
@@ -305,6 +390,10 @@ def calibrate(
     -------
     CalibrationResult
     """
+    marginals = marginals or {}
+    cells = cells or []
+    if not marginals and not cells:
+        raise ValueError("calibrate: at least one of marginals or cells is required")
     if bounds[0] <= 0 or bounds[0] >= 1 or bounds[1] <= 1:
         raise ValueError(f"bounds must satisfy 0 < low < 1 < high; got {bounds}")
     if respondents.empty:
@@ -314,7 +403,7 @@ def calibrate(
 
     n = len(respondents)
     initial_weight = np.ones(n, dtype=np.float64)
-    aux, columns, totals = _build_aux_vars(respondents, marginals)
+    aux, columns, totals = _build_aux_vars(respondents, marginals, cells)
 
     if truncation == "clip":
         # One-shot fallback: run unbounded, clip g in place, report slack.

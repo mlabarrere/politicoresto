@@ -143,6 +143,21 @@ class SupabaseClient:
             out.setdefault(r["dimension"], {})[r["category"]] = float(r["share"])
         return out
 
+    def fetch_reference_cells(
+        self, as_of: str
+    ) -> list[tuple[tuple[str, ...], tuple[str, ...], float]]:
+        """Return joint-distribution targets (cross-tab cells).
+
+        Each element is ``(dimensions, categories, share)``. Shape matches
+        what the pipeline passes to :func:`calibrate` via
+        ``CellConstraint``.
+        """
+        rows = self._rpc("weighting_fetch_reference_cells", {"p_as_of": as_of})
+        return [
+            (tuple(r["dimensions"]), tuple(r["categories"]), float(r["share"]))
+            for r in rows
+        ]
+
     def fetch_poll_options(self, poll_id: str) -> list[PollOption]:
         rows = self._rpc("weighting_fetch_poll_options", {"p_poll_id": poll_id})
         return [
