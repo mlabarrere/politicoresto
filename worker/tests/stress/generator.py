@@ -57,13 +57,20 @@ DIMENSIONS: Final[dict[str, list[str]]] = {
 
 @dataclass(frozen=True)
 class Scenario:
-    """One random panel + its calibration setup."""
+    """One random panel + its calibration setup.
+
+    Either ``marginals`` is populated (1D calibration) or ``cells``
+    (cross-tab 2D calibration) — ``kind`` says which.
+    """
 
     scenario_id: str
     seed: int
     n: int
+    kind: str                                       # "marginals" | "cells"
     respondents: pd.DataFrame                       # columns: active dims + 'poll_answer'
-    marginals: dict[str, dict[str, float]]          # target shares per active dim
+    marginals: dict[str, dict[str, float]]          # target shares per dim — may be empty when kind="cells"
+    # Cross-tab cells: list of (dimensions, categories, share).
+    cells: list[tuple[tuple[str, ...], tuple[str, ...], float]]
     bounds: tuple[float, float]
     poll_options: list[str]                         # ordered: ["opt_a", "opt_b", ...]
     notes: str = ""
@@ -190,7 +197,11 @@ def _build_poll_vote(
 
 
 def build_scenario(seed: int, scenario_id: str) -> Scenario:
-    """Deterministic random scenario from a seed."""
+    """Deterministic random scenario from a seed.
+
+    Coin-flips between a 1D marginals calibration and a 2D cross-tab
+    cells calibration. Both flavours are covered ~50/50 across a batch.
+    """
     rng = np.random.default_rng(seed)
 
     n = int(rng.integers(low=50, high=2001))  # 50..2000
@@ -199,21 +210,15 @@ def build_scenario(seed: int, scenario_id: str) -> Scenario:
 
     # Random TARGET marginals for each active dim.
     target_shares_arr: dict[str, np.ndarray] = {}
-    marginals: dict[str, dict[str, float]] = {}
+    marginals_all: dict[str, dict[str, float]] = {}
     for dim in active_dims:
         categories = DIMENSIONS[dim]
-        # Target distribution also Dirichlet, but less extreme than
-        # samples — this keeps feasibility rate tolerable.
         shares = _dirichlet_shares(rng, len(categories), concentration=3.0)
         target_shares_arr[dim] = shares
-        # Python marginal dict: reference category LAST (= first-alpha
-        # when the categories list is sorted). Our canonical dim lists
-        # in DIMENSIONS are NOT alphabetical, so we explicitly sort
-        # then rotate the alpha-first one to the end.
         sorted_cats = sorted(categories)
         alpha_first = sorted_cats[0]
         non_ref = [c for c in sorted_cats if c != alpha_first]
-        marginals[dim] = {
+        marginals_all[dim] = {
             cat: float(shares[categories.index(cat)])
             for cat in (non_ref + [alpha_first])
         }
@@ -224,17 +229,23 @@ def build_scenario(seed: int, scenario_id: str) -> Scenario:
     poll_options, votes, vote_shares_sampled = _build_poll_vote(rng, n)
     respondents = respondents.assign(poll_answer=votes)
 
-    notes = (
-        f"n={n} dims={active_dims} bounds={bounds} "
-        f"n_opts={len(poll_options)}"
-    )
+    # Note: cells-based scenarios are covered by the deterministic grid
+    # bank (see tests/external_benchmark/test_grid_bank.py). The random
+    # stress test stays marginals-only to keep the R-oracle side simple —
+    # reproducing R's `~dim1:dim2` interaction formula requires aligning
+    # reference-category drops across main effects + interactions, which
+    # is curated case-by-case in the grid bank rather than generated.
+    kind = "marginals"
+    notes = f"kind={kind} n={n} dims={active_dims} bounds={bounds} n_opts={len(poll_options)}"
 
     return Scenario(
         scenario_id=scenario_id,
         seed=seed,
         n=n,
+        kind=kind,
         respondents=respondents,
-        marginals=marginals,
+        marginals=marginals_all,
+        cells=[],
         bounds=bounds,
         poll_options=poll_options,
         notes=notes,

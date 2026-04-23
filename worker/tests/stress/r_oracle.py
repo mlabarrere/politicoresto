@@ -52,10 +52,19 @@ def _scenario_to_request(scenario: Scenario) -> dict[str, Any]:
          for col in scenario.respondents.columns}
         for _, row in scenario.respondents.iterrows()
     ]
+    cells_payload = [
+        {
+            "dimensions": list(dims),
+            "categories": list(cats),
+            "share": share,
+        }
+        for dims, cats, share in scenario.cells
+    ]
     return {
         "scenario_id": scenario.scenario_id,
         "respondents": respondents,
         "marginals": scenario.marginals,
+        "cells": cells_payload,
         "bounds": list(scenario.bounds),
         "poll_options": list(scenario.poll_options),
     }

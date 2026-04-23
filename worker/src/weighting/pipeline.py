@@ -16,7 +16,7 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
-from .calibration import calibrate
+from .calibration import CellConstraint, calibrate
 from .estimation import OptionEstimate, estimate_shares
 from .score import compute_confidence
 from .supabase_client import PollOption, Snapshot, SupabaseClient
@@ -72,6 +72,42 @@ def _build_respondents(
         row["option_id"] = s.option_id
         records.append(row)
     return pd.DataFrame.from_records(records)
+
+
+def _shape_cells(
+    ref_cells: list[tuple[tuple[str, ...], tuple[str, ...], float]],
+) -> list[CellConstraint]:
+    """Convert raw DB cell rows to a list of :class:`CellConstraint`.
+
+    Skips cells whose dimensions are not all in our canonical list —
+    defensive in case the ref table carries extra dimensions we don't
+    know how to fill on the respondent side.
+    """
+    out: list[CellConstraint] = []
+    for dims, cats, share in ref_cells:
+        if not all(d in CANONICAL_DIMS for d in dims):
+            continue
+        out.append(CellConstraint(dims, cats, share))
+    return out
+
+
+def _shape_marginals_disjoint_from_cells(
+    reference: dict[str, dict[str, float]],
+    cells: list[CellConstraint],
+) -> dict[str, dict[str, float]]:
+    """Keep only marginals for dimensions NOT covered by any cell.
+
+    Calibrating on both ``sex`` marginal AND ``age × sex`` cells makes
+    the linear system rank-deficient (sum over age of `(age_i, F)` cells
+    equals the `sex=F` marginal exactly). CALMAR convention: cells
+    trump marginals for the dimensions they cover.
+    """
+    covered: set[str] = set()
+    for cell in cells:
+        for dim in cell.dimensions:
+            covered.add(dim)
+    pruned_ref = {dim: cats for dim, cats in reference.items() if dim not in covered}
+    return _shape_marginals(pruned_ref)
 
 
 def _shape_marginals(
@@ -203,7 +239,13 @@ def run(
         )
 
     respondents = _build_respondents(snapshots, reference)
-    marginals = _shape_marginals(reference)
+    # Cross-tab cells: if present at this as_of, they replace the 1D
+    # marginals for the dimensions they cover (pattern CALMAR). Cells
+    # + marginals on disjoint dims only — covered by the DB seed by
+    # convention.
+    ref_cells = client.fetch_reference_cells(ref_as_of)
+    cells = _shape_cells(ref_cells)
+    marginals = _shape_marginals_disjoint_from_cells(reference, cells)
     poll_options = client.fetch_poll_options(poll_id)
     if not poll_options:
         raise PipelineInputError(f"Poll {poll_id} has no active options")
@@ -212,6 +254,7 @@ def run(
     calib = calibrate(
         respondents.drop(columns=["option_id"]),
         marginals,
+        cells=cells,
         bounds=bounds,
     )
 
