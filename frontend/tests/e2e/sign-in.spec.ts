@@ -9,7 +9,9 @@ test.describe('User Story 1 — sign-in', () => {
     // After helper completes, we should already be on /me (it navigates there
     // and asserts we're not bounced to /auth/login).
     await expect(page).toHaveURL(/\/me(\?|$)/);
-    await expect(page.getByRole('heading', { name: /Profil/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Profil', exact: true }),
+    ).toBeVisible();
   });
 
   test('failure path: anonymous visit to /me redirects to /auth/login', async ({

@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { signInAsSeedUser } from './helpers/auth';
+import { wipeSeedUserPosts } from './helpers/cleanup';
+
+test.beforeAll(wipeSeedUserPosts);
 
 /**
  * User Story 9 — UI responsiveness.

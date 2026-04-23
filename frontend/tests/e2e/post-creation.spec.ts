@@ -17,6 +17,9 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 import { signInAsSeedUser } from './helpers/auth';
+import { wipeSeedUserPosts } from './helpers/cleanup';
+
+test.beforeAll(wipeSeedUserPosts);
 
 async function fillTitleAndBody(page: Page, title: string, body: string) {
   await page.locator('input[name="title"]').fill(title);

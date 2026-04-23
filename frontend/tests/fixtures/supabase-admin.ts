@@ -170,11 +170,18 @@ export async function createTestPoll(options: {
   optionIds: string[];
 }> {
   const adminPre = adminClient();
-  // Loop until seed user has 0 posts. Admin deletes usually propagate in
-  // one pass, but CASCADE down through post_poll, post_poll_option,
-  // post_poll_response, post (comments), reaction can occasionally take
-  // a moment to settle — retry with a short backoff.
+  // See createTestPost for the rationale: `post` rows must be hard-deleted
+  // before `thread_post` rows, because post.thread_post_id has
+  // ON DELETE SET NULL but a check constraint forbids the null-ed state.
   for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: seedPosts } = await adminPre
+      .from('thread_post')
+      .select('id')
+      .eq('created_by', SEED_USER.userId);
+    const ids = (seedPosts ?? []).map((p) => String(p.id));
+    if (ids.length > 0) {
+      await adminPre.from('post').delete().in('thread_post_id', ids);
+    }
     await adminPre
       .from('thread_post')
       .delete()
@@ -238,34 +245,64 @@ export async function createTestPost(title: string): Promise<{
   postItemId: string;
 }> {
   // Pre-wipe seed-user posts so the 8/24h RPC rate limit never trips
-  // across test files (fileParallelism:false keeps this safe).
+  // across test files. We retry both the wipe *and* the creation: the
+  // delete usually propagates immediately, but under load (many specs
+  // run back-to-back in the full Playwright matrix) we occasionally see
+  // 'Daily post limit reached' even after a fresh delete — so if the
+  // create returns the rate-limit error we wipe + retry once more.
   const adminPre = adminClient();
-  // Loop until seed user has 0 posts. Admin deletes usually propagate in
-  // one pass, but CASCADE down through post_poll, post_poll_option,
-  // post_poll_response, post (comments), reaction can occasionally take
-  // a moment to settle — retry with a short backoff.
-  for (let attempt = 0; attempt < 5; attempt++) {
-    await adminPre
-      .from('thread_post')
-      .delete()
-      .eq('created_by', SEED_USER.userId);
-    const { count } = await adminPre
-      .from('thread_post')
-      .select('id', { count: 'exact', head: true })
-      .eq('created_by', SEED_USER.userId);
-    if ((count ?? 0) === 0) break;
+  async function wipeSeedPosts() {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      // Delete the child `post` rows first. `post.thread_post_id` has
+      // ON DELETE SET NULL, but a check constraint forbids the null-ed
+      // state, so a direct thread_post DELETE silently rolls back when
+      // any `post` row refers to it (typical after comment-creating
+      // specs have run). Hard-deleting children first sidesteps the
+      // constraint and lets the thread_post DELETE actually take effect.
+      const { data: seedPosts } = await adminPre
+        .from('thread_post')
+        .select('id')
+        .eq('created_by', SEED_USER.userId);
+      const ids = (seedPosts ?? []).map((p) => String(p.id));
+      if (ids.length > 0) {
+        await adminPre.from('post').delete().in('thread_post_id', ids);
+      }
+      await adminPre
+        .from('thread_post')
+        .delete()
+        .eq('created_by', SEED_USER.userId);
+      const { count } = await adminPre
+        .from('thread_post')
+        .select('id', { count: 'exact', head: true })
+        .eq('created_by', SEED_USER.userId);
+      if ((count ?? 0) === 0) return;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 150);
+      });
+    }
+  }
+
+  await wipeSeedPosts();
+  const user = await userClient(SEED_USER.email);
+  let data: unknown = null;
+  let error: { message: string } | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await user
+      .rpc('rpc_create_post_full', {
+        p_title: title,
+        p_body: 'integration-test body',
+        p_mode: 'post',
+      })
+      .single();
+    data = res.data;
+    error = res.error;
+    if (!error) break;
+    if (!/daily post limit/i.test(error.message)) break;
+    await wipeSeedPosts();
     await new Promise<void>((resolve) => {
-      setTimeout(resolve, 100);
+      setTimeout(resolve, 200);
     });
   }
-  const user = await userClient(SEED_USER.email);
-  const { data, error } = await user
-    .rpc('rpc_create_post_full', {
-      p_title: title,
-      p_body: 'integration-test body',
-      p_mode: 'post',
-    })
-    .single();
   if (error) {
     throw new Error(`createTestPost failed: ${error.message}`);
   }
