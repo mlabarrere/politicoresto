@@ -25,7 +25,7 @@ const mockedCreateServerSupabaseClient = vi.mocked(createServerSupabaseClient);
 
 function makeHomeScreenData(
   overrides: Partial<HomeScreenData> = {},
-): HomeScreenData {
+): HomeScreenData & { nextCursor: null } {
   const feed = [
     buildHomeFeedTopic(),
     buildHomeFeedTopic({
@@ -61,6 +61,7 @@ function makeHomeScreenData(
   return {
     feed,
     subjects: [],
+    nextCursor: null,
     ...overrides,
   };
 }
@@ -84,7 +85,7 @@ describe('homePage', () => {
       error: null,
     });
 
-    render(await HomePage());
+    render(await HomePage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getAllByText('Partis').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/LFI/).length).toBeGreaterThan(0);
@@ -98,7 +99,7 @@ describe('homePage', () => {
       error: null,
     });
 
-    render(await HomePage());
+    render(await HomePage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByText('Aucun post visible')).toBeInTheDocument();
   });
@@ -109,7 +110,7 @@ describe('homePage', () => {
       error: 'relation public.v_feed_global does not exist',
     });
 
-    render(await HomePage());
+    render(await HomePage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.queryByText('Feed partiel')).not.toBeInTheDocument();
     expect(screen.queryByText(/v_feed_global/)).not.toBeInTheDocument();
