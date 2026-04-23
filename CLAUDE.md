@@ -285,6 +285,41 @@ fails loudly — which is the correct behaviour.
   ESLint config at `frontend/.eslintrc.cjs` (legacy format required by
   style-guide v6). A handful of default rules disabled with written
   justifications (see the file header). `no-console: error` enforced.
+- 2026-04-23 — Session 4 reality-gap closeout (10-gap audit):
+  - Poll votes are **final**: `submit_post_poll_vote` uses `on conflict do nothing`
+    + row_count guard raising `Already voted` (migration `20260422140000`).
+  - Post edit/delete UI ships. Owner menu on `PostCard` with a `@base-ui/react`
+    Dialog confirm modal. Editing a root article also updates `topic.title`
+    so the home feed heading stays in sync (migration `20260423080000`).
+  - Post edits show a "modifié" indicator (`ForumPost.isEdited` from
+    `updated_at !== created_at`).
+  - Poll edit: new RPC `rpc_update_post_poll` rewrites question + option
+    labels in place; **soft-locks** once any vote is cast
+    (`exists(post_poll_response)` check). UI disables Edit with tooltip
+    when `sample_size > 0` (migration `20260423080500`).
+  - Profile demographics: DOB + postal_code on
+    `user_private_political_profile`, resolved_city on `app_profile`,
+    `has_seen_completion_nudge` flag. Hard age floor = 18 at the RPC
+    layer — under-18 DOBs are **never persisted** (migration
+    `20260423081000`).
+  - Onboarding stays **username-only**. Progressive demographic capture
+    via a dismissible `CompletionBanner` on `/me?section=profile` and a
+    one-time `PostCreateNudgeModal` rendered on `/` when `?nudge=1` is
+    appended by `createPostAction` for users with an incomplete profile.
+  - Postal code → city resolved server-side via `geo.api.gouv.fr` (free,
+    no key; multi-commune codes pick the first match).
+  - Voting-history tile labels: drop the `shortName()` truncation. Render
+    the full label with `line-clamp-2` + `title=` tooltip. Accent fidelity
+    lives on the data side (seed). Vote-click latency killed with
+    `useOptimistic` — UI flips `aria-pressed` in the same frame, server
+    action + `revalidatePath('/me')` run in the background.
+  - Home feed cursor pagination: `limit(24)` → `FEED_PAGE_SIZE=20` with a
+    base64url-encoded `{last_activity_at, editorial_feed_rank, topic_id}`
+    cursor. Route handler `/api/feed?cursor=...` returns `{items, nextCursor}`.
+    Client `post-feed.tsx` appends batches via fetch on "Load more" click
+    (no more 30-item cap).
+  - Deferred (explicit user decisions): poll weighting methodology, @mentions
+    backend, change-email flow, self-reported political bloc.
 
 ## Instructions to future sessions
 
