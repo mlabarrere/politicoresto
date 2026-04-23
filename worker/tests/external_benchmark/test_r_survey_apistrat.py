@@ -56,16 +56,10 @@ def test_apistrat_linear_matches_r_survey() -> None:
     assert ours.min() >= 0.1 - 1e-9
     assert ours.max() <= 10.0 + 1e-9
 
-    # Element-wise comparison. With NO clipping, parity should be near-
-    # floating-point-exact (see the balanced_tight fixture, which hits
-    # 1e-6 parity). On apistrat_linear a handful of weights hit the
-    # lower bound (0.1) on at least one side, and R's truncation is
-    # an iterative CALMAR while ours is a single clip-and-slack pass
-    # (see calibration.py docstring). The two disagree by up to ~0.12%
-    # on the clipped subset. 5e-3 gives safe headroom while still
-    # catching any real divergence.
+    # Default iterative CALMAR matches R's CALMAR even when bounds
+    # bite. Same 1e-6 gate as the unclipped benchmarks.
     max_rel_diff = np.max(np.abs(ours - r_weights) / np.maximum(r_weights, 1e-9))
-    assert max_rel_diff < 5e-3, (
+    assert max_rel_diff < 1e-6, (
         f"apistrat_linear: max relative weight diff vs R = {max_rel_diff:.3e} "
         f"(ours range [{ours.min():.3f}, {ours.max():.3f}], "
         f"R range [{r_weights.min():.3f}, {r_weights.max():.3f}])"

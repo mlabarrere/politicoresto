@@ -77,13 +77,38 @@ For every poll we:
 
 ### Linear truncation
 
-`samplics` exposes a `bounded` flag that it does not actually use.
-Our wrapper implements the INSEE-standard clip: unbounded
-calibration → clip `w/w0` to `[low, high]` → report how far marginal
-constraints drift as `marginal_slack`. A full CALMAR-style iterative
-truncation (fix out-of-bounds at the boundary, re-solve on the rest)
-is deferred; it buys a bit of accuracy at significant algorithmic
-complexity.
+We implement the full **Deville-Särndal / CALMAR iterative linear-
+truncated algorithm** (1992 paper + INSEE CALMAR 2 user manual):
+
+1. Solve unbounded linear calibration on every unit.
+2. Any unit whose g-ratio `w/w0` is outside the bounds is fixed at
+   the boundary. Its contribution is subtracted from the target
+   totals and the linear system is re-solved on the free subset.
+3. Repeat until no newly violating unit appears (convergence) or
+   `max_iter=50` is reached (hard cap; real inputs converge in ≤ 5).
+
+This is what R's `survey::calibrate(..., bounds=…)` does. Our
+wrapper reproduces R's output at **1e-6 relative parity across a 45-
+scenario grid bank** — see `tests/external_benchmark/`. The bank
+covers n from 15 to 3000, 1 to 3 calibration dimensions, skew from
+none to severe, and bounds from loose `[0.05, 20]` to tight
+`[0.5, 2]`. Drift above 1e-6 fails CI.
+
+A cheaper single-shot `truncation="clip"` path is preserved as a
+differential-test oracle but is never the default.
+
+### CI
+
+Two GitHub Actions workflows (see `.github/workflows/`):
+
+- `worker-ci.yml` — runs on every PR touching `worker/**`. Steps:
+  `uv sync` → ruff → mypy --strict → pytest all layers. Uses the
+  committed R benchmark CSVs; no R install needed. Fast (~2 min).
+- `worker-fixtures-refresh.yml` — weekly cron + manual dispatch.
+  Installs R, regenerates all fixtures via the `scripts/*.R`, runs
+  pytest against them, opens a PR if the committed CSVs drift.
+  Stale-fixture drift becomes a reviewable artefact, not a silent
+  gap.
 
 ## References
 

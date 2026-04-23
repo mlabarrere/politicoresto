@@ -324,6 +324,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
+    { name = "pyyaml" },
     { name = "ruff" },
 ]
 
@@ -346,6 +347,7 @@ dev = [
     { name = "pytest", specifier = ">=8.1" },
     { name = "pytest-cov", specifier = ">=5.0" },
     { name = "pytest-regressions", specifier = ">=2.5" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.4" },
 ]
 

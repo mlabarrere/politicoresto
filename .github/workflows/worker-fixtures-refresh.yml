@@ -1,0 +1,97 @@
+name: Worker Fixtures Refresh
+
+# Regenerates the R-survey benchmark fixtures weekly (and on manual
+# trigger). If the committed CSVs diverge from what R produces today —
+# e.g. the `survey` package updated — this workflow opens a PR with the
+# refreshed fixtures for review.
+#
+# Fixture drift becomes a reviewable artefact instead of a silent gap.
+
+on:
+  schedule:
+    # Every Monday at 04:00 UTC.
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    name: Regenerate R benchmark fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.3'
+
+      - name: Cache R packages
+        id: r-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER || '~/R' }}
+          key: r-${{ runner.os }}-survey-4.5
+
+      - name: Install survey package
+        if: steps.r-cache.outputs.cache-hit != 'true'
+        run: |
+          Rscript -e 'install.packages("survey", repos="https://cloud.r-project.org")'
+
+      - name: Regenerate all benchmark fixtures
+        run: |
+          Rscript worker/tests/external_benchmark/scripts/generate_apistrat.R
+          Rscript worker/tests/external_benchmark/scripts/generate_deville_sarndal.R
+          Rscript worker/tests/external_benchmark/scripts/generate_grid_bank.R
+          Rscript worker/tests/external_benchmark/scripts/generate_insee_calmar.R
+
+      - name: Detect fixture drift
+        id: diff
+        run: |
+          set +e
+          git diff --stat --exit-code worker/tests/external_benchmark/data/
+          status=$?
+          echo "drift=$status" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Install uv + run worker verify on refreshed fixtures
+        if: steps.diff.outputs.drift == '1'
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: '0.7.19'
+          enable-cache: true
+          cache-dependency-glob: 'worker/uv.lock'
+
+      - name: Verify refreshed fixtures still pass our wrapper
+        if: steps.diff.outputs.drift == '1'
+        working-directory: worker
+        run: |
+          uv python install 3.12
+          uv sync
+          uv run pytest tests/external_benchmark -ra
+
+      - name: Open PR with refreshed fixtures
+        if: steps.diff.outputs.drift == '1'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/weighting-fixture-refresh
+          commit-message: 'chore(weighting): refresh R benchmark fixtures'
+          title: 'chore(weighting): refresh R benchmark fixtures'
+          body: |
+            Automated weekly refresh of the R-survey benchmark fixtures.
+            The diff reflects changes in R's `survey` package output for
+            our bank of ~45 calibration scenarios.
+
+            The Python wrapper's iterative CALMAR has been re-run
+            against these refreshed fixtures and passes at 1e-6 parity.
+
+            Review the CSV diff — if numerical changes are minor and
+            our tests still pass, merge. If changes are substantial,
+            investigate whether `survey` upstream changed behaviour
+            and whether our wrapper needs to follow.
+          labels: |
+            weighting
+            chore

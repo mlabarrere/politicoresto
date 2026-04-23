@@ -1,0 +1,58 @@
+name: Worker CI
+
+# Pre-merge gate for the Python weighting worker.
+# Runs `make verify` (ruff + mypy --strict + pytest all layers) against
+# the committed R benchmark fixtures. Does NOT install R — the fixture
+# bank is refreshed on a schedule by `worker-fixtures-refresh.yml`.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/worker-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/worker-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Worker verify (lint + typecheck + pytest all layers)
+    if: github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: '0.7.19'
+          enable-cache: true
+          cache-dependency-glob: 'worker/uv.lock'
+
+      - name: Pin Python
+        run: uv python install 3.12
+
+      - name: Install deps
+        run: uv sync
+
+      - name: Ruff
+        run: uv run ruff check src/ tests/
+
+      - name: mypy --strict
+        run: uv run mypy src/
+
+      - name: Pytest (all layers)
+        run: uv run pytest -ra
