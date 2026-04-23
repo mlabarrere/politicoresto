@@ -70,6 +70,7 @@ markers = [
   "differential: Wrapper-vs-raw-samplics parity tests.",
   "golden: Frozen-output regression tests via pytest-regressions.",
   "external_benchmark: Cross-checks against R `survey` or other published outputs.",
+  "stress: Random-panel R-vs-Python parity. Requires R installed. Slower (~30s/50 scenarios).",
 ]
 
 [build-system]

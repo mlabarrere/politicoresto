@@ -22,12 +22,14 @@ worker/
 │   └── __init__.py
 ├── tests/
 │   ├── unit/            # Deterministic, hand-checkable (48 tests).
-│   ├── property/        # Hypothesis-based invariants (~500 cases).
-│   ├── differential/    # Our wrapper vs. raw samplics.
+│   ├── property/        # Hypothesis-based invariants (~300 cases).
+│   ├── differential/    # Our wrapper vs. raw samplics, iterative vs clip.
 │   ├── golden/          # Frozen regressions via pytest-regressions.
-│   └── external_benchmark/
-│                        # R `survey::calibrate` on apistrat (stub
-│                        # pending committed benchmark CSV).
+│   ├── external_benchmark/
+│   │                    # 46 committed R survey::calibrate fixtures at
+│   │                    # 1e-6 parity (apistrat + 41 grid bank + INSEE 4D).
+│   └── stress/          # Random-panel R-vs-Python parity (requires R
+│                        # locally; generates 50 seeded scenarios per run).
 ├── pyproject.toml
 └── Makefile
 ```
@@ -45,8 +47,31 @@ make verify
 make unit       # fastest
 make property   # Hypothesis
 make golden     # regression set
-make external   # skipped until benchmark CSV is committed
+make external   # 46 R-survey fixtures, committed CSVs
+make stress     # 50 fresh random scenarios R-vs-Python (needs R local)
+
+# Reproduce a failed stress run:
+make stress-replay SEED=3137275882
 ```
+
+## Random stress test
+
+`make stress` generates **50 random PoliticoResto-shaped panels** each
+run — random demographic dimensions (age, sex, region, CSP, education,
+past_vote_pr1_2022), random population marginals, random bounds,
+random poll answers — and asserts R-vs-Python parity at 1e-6 on every
+feasible scenario.
+
+Randomness is seeded: the master seed is printed at test start, and
+any failure can be replayed locally with `make stress-replay SEED=…`.
+
+Scenarios R refuses (infeasible / non-convergent) are skipped; if
+more than 30 % of a run skips, the test fails to flag a bias in the
+generator. Typical run: 40-45 examined, 5-10 skipped, ~35 s total.
+
+Environment controls (`STRESS_SEED`, `STRESS_SCENARIO_COUNT`,
+`STRESS_TOLERANCE`, `STRESS_MAX_SKIPS`, `STRESS_GH_ISSUE_ON_FAIL`)
+are documented at the top of `tests/stress/test_random_panels.py`.
 
 ## Methodology (short version)
 

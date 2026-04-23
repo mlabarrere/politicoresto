@@ -7,7 +7,7 @@
 #   make unit      — unit layer only (fast).
 #   make clean     — drop caches and the virtualenv.
 
-.PHONY: install verify test unit property differential golden external lint fmt typecheck clean
+.PHONY: install verify test unit property differential golden external stress stress-replay lint fmt typecheck clean
 
 install:
 	uv sync
@@ -38,6 +38,17 @@ golden:
 
 external:
 	.venv/bin/python -m pytest -m external_benchmark
+
+# Random-panel R-vs-Python parity. Requires R installed locally.
+# Produces a fresh master_seed each run; the log prints it so any
+# failure is reproducible via `make stress-replay SEED=<n>`.
+stress:
+	.venv/bin/python -m pytest -m stress -s
+
+# Reproduce a past stress failure: make stress-replay SEED=12345
+stress-replay:
+	@if [ -z "$(SEED)" ]; then echo "Usage: make stress-replay SEED=<master_seed>"; exit 1; fi
+	STRESS_SEED=$(SEED) .venv/bin/python -m pytest -m stress -s
 
 verify: lint typecheck test
 	@echo ""
