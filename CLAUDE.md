@@ -320,6 +320,13 @@ fails loudly — which is the correct behaviour.
     (no more 30-item cap).
   - Deferred (explicit user decisions): poll weighting methodology, @mentions
     backend, change-email flow, self-reported political bloc.
+- 2026-04-23 — Weighting worker lives in `worker/` as a top-level sibling of
+  `frontend/` and `supabase/`. **Monorepo is the default.** A split into its
+  own repo is re-evaluated post-v1 *only if* (1) product is in prod with real
+  users, (2) at least one editorial benchmark has concluded that reweighting
+  measurably improves truthfulness, (3) explicit decision to open-source the
+  worker. Railway deploy can target the `worker/` subdirectory directly —
+  splitting is not a deployment prerequisite.
 
 ## Instructions to future sessions
 

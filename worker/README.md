@@ -6,10 +6,10 @@ bounds (`[0.5, 2.0]`, INSEE CALMAR default). Implemented on top of
 [`samplics`](https://github.com/samplics-org/samplics) — peer-reviewed
 in JOSS 2021, validated against R's `survey` package.
 
-During the local-first phase this folder lives inside the main
-repository. It will be extracted into its own GitHub repo + Railway
-deployment once the math layer proves out in production (see
-`docs/weighting-phasing.md`).
+Lives as a top-level folder of the main `politicoresto` repo
+alongside `frontend/` and `supabase/`. Monorepo is the default;
+a separate repo is only considered post-v1 if we decide to
+open-source the worker (see `docs/weighting-phasing.md`).
 
 ## Layout
 

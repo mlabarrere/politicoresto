@@ -1,6 +1,6 @@
 # Weighting worker — phasing
 
-4 phases, one PR per phase, phase-gate review by the founder before the next starts. Everything local-first. Worker code lives in a new top-level `worker/` folder in this repo until phase 4; a standalone `politicoresto-weighting-worker` repo only happens after v1 proves locally.
+4 phases, one PR per phase, phase-gate review by the founder before the next starts. Everything local-first. Worker code lives in a top-level `worker/` folder alongside `frontend/` and `supabase/` — **monorepo remains the default**. A split into a standalone `politicoresto-weighting-worker` repo is re-evaluated only when ALL of the following are true: (1) product is in production with real users, (2) at least one editorial benchmark has concluded that reweighting measurably improves truthfulness, (3) there is an explicit decision to open-source the worker (blog post / README / licence prepared).
 
 **Commit discipline:** conventional commits. No `.skip`, no `fixme`, no mocks of the system under test.
 **Go/no-go gate at the end of each phase:** the founder confirms acceptance criteria before phase N+1 opens.
@@ -154,7 +154,8 @@ The `v_post_poll_summary` view keeps mirroring legacy columns, so the pre-phase-
 
 ## Post-v1 (not in this plan)
 
-- Split worker into `politicoresto-weighting-worker` repo (F-1 later) + Railway deploy (F-2).
+- Railway deployment of the worker — can run from the monorepo via a Root Directory setting, no split needed.
+- **Evaluate** a split of the worker into `politicoresto-weighting-worker` repo ONLY IF the three triggers above (prod + benchmark + OSS decision) all fire. Until then, monorepo is the answer.
 - Remove legacy mirror columns from `v_post_poll_summary`.
 - Commission des Sondages registration decision (I-1 after release).
 - v2 options: MRP for sub-national, additional marginals (diplôme, patrimoine), partial-vote-history weighting.
