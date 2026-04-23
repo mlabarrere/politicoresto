@@ -48,9 +48,14 @@ describe('reaction bar auth gate and toggle flow', () => {
     const leftButton = screen.getByLabelText("C'est de gauche !");
     fireEvent.click(leftButton);
 
+    // Wait for BOTH the count update AND the button re-enabled before
+    // firing the second click. Under coverage instrumentation, React's
+    // state updates can batch such that aria-pressed flips before the
+    // submitting guard clears, and a premature second click is dropped.
     await waitFor(() => {
       expect(leftButton).toHaveAttribute('aria-pressed', 'true');
       expect(leftButton).toHaveTextContent('3');
+      expect(leftButton).not.toBeDisabled();
     });
 
     fireEvent.click(leftButton);
@@ -85,6 +90,7 @@ describe('reaction bar auth gate and toggle flow', () => {
     await waitFor(() => {
       expect(rightButton).toHaveAttribute('aria-pressed', 'true');
       expect(rightButton).toHaveTextContent('2');
+      expect(rightButton).not.toBeDisabled();
     });
 
     fireEvent.click(rightButton);
