@@ -4,6 +4,9 @@ export interface ProfileDemographics {
   date_of_birth: string | null;
   postal_code: string | null;
   resolved_city: string | null;
+  sex: 'F' | 'M' | 'other' | null;
+  csp: string | null;
+  education: 'none' | 'bac' | 'bac2' | 'bac3_plus' | null;
 }
 
 export interface ProfileCompletion {
@@ -16,7 +19,7 @@ export async function getProfileDemographics(): Promise<ProfileDemographics> {
   const supabase = await createServerSupabaseClient();
   const { data: upp } = await supabase
     .from('user_private_political_profile')
-    .select('date_of_birth, postal_code')
+    .select('date_of_birth, postal_code, sex, csp, education')
     .maybeSingle();
   const { data: ap } = await supabase
     .from('app_profile')
@@ -26,6 +29,9 @@ export async function getProfileDemographics(): Promise<ProfileDemographics> {
     date_of_birth: upp?.date_of_birth ?? null,
     postal_code: upp?.postal_code ?? null,
     resolved_city: ap?.resolved_city ?? null,
+    sex: (upp?.sex ?? null) as ProfileDemographics['sex'],
+    csp: upp?.csp ?? null,
+    education: (upp?.education ?? null) as ProfileDemographics['education'],
   };
 }
 

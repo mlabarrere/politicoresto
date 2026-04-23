@@ -51,4 +51,27 @@ create trigger trg_snapshot_enqueue
   after insert on public.survey_respondent_snapshot
   for each row execute function public.tg_enqueue_weighting();
 
+-- ─────────────────────────────────────────────────────────────
+-- Test / observability helper — small public-facing RPC that
+-- counts queue messages for a given poll_id. Used by the
+-- weighting integration test; harmless in production (read-only,
+-- nothing sensitive returned).
+-- ─────────────────────────────────────────────────────────────
+create or replace function public.weighting_queue_depth(p_poll_id uuid)
+returns integer
+language sql
+stable
+security definer
+set search_path = public, pgmq
+as $$
+  select count(*)::integer
+  from pgmq.q_weighting
+  where (message->>'poll_id')::uuid = p_poll_id;
+$$;
+
+comment on function public.weighting_queue_depth(uuid) is
+  'Count of pgmq.weighting messages referencing this poll. Observability / test helper.';
+
+grant execute on function public.weighting_queue_depth(uuid) to anon, authenticated, service_role;
+
 commit;

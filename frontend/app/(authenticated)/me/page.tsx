@@ -103,6 +103,9 @@ export default async function MePage({
                     date_of_birth: null,
                     postal_code: null,
                     resolved_city: null,
+                    sex: null,
+                    csp: null,
+                    education: null,
                   }
                 }
                 maxDob={maxDobIso()}

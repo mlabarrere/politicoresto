@@ -33,6 +33,29 @@ async function resolveCity(postalCode: string): Promise<string | null> {
   }
 }
 
+const SEX_VALUES = new Set(['F', 'M', 'other']);
+const EDUCATION_VALUES = new Set(['none', 'bac', 'bac2', 'bac3_plus']);
+const CSP_VALUES = new Set([
+  'agriculteurs',
+  'artisans_commercants_chefs',
+  'cadres_professions_intellectuelles',
+  'professions_intermediaires',
+  'employes',
+  'ouvriers',
+  'retraites',
+  'sans_activite',
+]);
+
+function readOptional(
+  formData: FormData,
+  key: string,
+  allowed: Set<string>,
+): string | null {
+  const raw = String(formData.get(key) ?? '').trim();
+  if (!raw) return null;
+  return allowed.has(raw) ? raw : null;
+}
+
 export async function updateDemographicsAction(formData: FormData) {
   const dob = String(formData.get('date_of_birth') ?? '').trim();
   const postal = String(formData.get('postal_code') ?? '').trim();
@@ -40,6 +63,10 @@ export async function updateDemographicsAction(formData: FormData) {
   if (!dob) throw new Error('Date of birth required');
   if (!POSTAL_RE.test(postal))
     throw new Error('Invalid postal code (5 digits expected)');
+
+  const sex = readOptional(formData, 'sex', SEX_VALUES);
+  const csp = readOptional(formData, 'csp', CSP_VALUES);
+  const education = readOptional(formData, 'education', EDUCATION_VALUES);
 
   const supabase = await createServerSupabaseClient();
   const userId = await getAuthUserId(supabase);
@@ -51,6 +78,9 @@ export async function updateDemographicsAction(formData: FormData) {
     p_date_of_birth: dob,
     p_postal_code: postal,
     p_resolved_city: city,
+    p_sex: sex,
+    p_csp: csp,
+    p_education: education,
   });
 
   if (error) {
@@ -75,6 +105,9 @@ export async function updateDemographicsAction(formData: FormData) {
       user_id: userId,
       postal_code: postal,
       city,
+      has_sex: sex !== null,
+      has_csp: csp !== null,
+      has_education: education !== null,
     },
     'demographics updated',
   );
