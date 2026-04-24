@@ -176,7 +176,7 @@ def test_pipeline_writes_estimate_for_seeded_poll(
         assert outcome.n_respondents == 100
         assert outcome.confidence_band in ("indicatif", "correctable", "robuste")
         assert 0 <= outcome.confidence_score <= 100
-        assert outcome.ref_as_of == "2022-04-15"
+        assert outcome.ref_as_of == "2021-01-01"  # INSEE RP 2021 seed
 
         # The view should now surface the non-zero estimate fields.
         import httpx
