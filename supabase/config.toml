@@ -75,6 +75,20 @@ enable_confirmations = false
 double_confirm_changes = false
 secure_password_change = false
 
+# OAuth 2.1 Authorization Server — powers the MCP feature exposed at
+# /api/mcp. Claude Desktop / Claude web discover the AS via our Protected
+# Resource Metadata document, then go through Supabase's own OAuth dance
+# (including Google SSO) to obtain an access token that RLS applies to.
+# Public beta — GA nov 2025 (see Supabase OAuth 2.1 server docs).
+[auth.oauth_server]
+enabled = true
+allow_dynamic_registration = true
+# Supabase redirects the user-agent to ${site_url}${authorization_url_path}
+# after the initial /authorize call. That page (app/oauth/consent/page.tsx)
+# presents the client + scopes, calls approveAuthorization/denyAuthorization,
+# and Supabase completes the flow back to the OAuth client.
+authorization_url_path = "/oauth/consent"
+
 # OAuth providers are configured in the Supabase Dashboard per environment.
 # Locally we enable Google to exercise the full OAuth round-trip against a
 # real Google Cloud OAuth client (staging client ID — localhost:3000 is in

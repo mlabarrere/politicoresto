@@ -351,6 +351,18 @@ fails loudly — which is the correct behaviour.
   measurably improves truthfulness, (3) explicit decision to open-source the
   worker. Railway deploy can target the `worker/` subdirectory directly —
   splitting is not a deployment prerequisite.
+- 2026-04-24 — MCP (Model Context Protocol) user-mode resource server shipped
+  as a Next.js route (`frontend/app/api/mcp/[transport]/route.ts`), using
+  `mcp-handler@^1.1.0`. Auth delegated to Supabase's OAuth 2.1 Authorization
+  Server (GA nov 2025) with DCR — zero custom OAuth bridge, zero
+  `service_role` in the path. The `[auth.oauth_server]` block in
+  `supabase/config.toml` enables it locally; Dashboard toggle for staging /
+  prod. Claude Desktop reaches `/api/mcp`, discovers the PRM at
+  `/.well-known/oauth-protected-resource`, authenticates via Google SSO
+  through Supabase, and sends the resulting Supabase JWT as a Bearer — RLS
+  applies exactly as with the GUI. Six tools in v0.1: whoami, browse_topics,
+  read_topic, reply_to_post, react (+ remove_my_reaction), edit_my_profile.
+  Enums typed end-to-end via Zod → JSON Schema. See `docs/mcp.md`.
 
 ## Instructions to future sessions
 
