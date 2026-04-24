@@ -40,7 +40,10 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
     const loginUrl = new URL('/auth/login', 'http://placeholder');
     loginUrl.searchParams.set('next', next);
     const path = `${loginUrl.pathname}?${loginUrl.searchParams.toString()}`;
-    redirect(path as Parameters<typeof redirect>[0]);
+    // typedRoutes: redirect's parameter is RouteImpl<string> which rejects
+    // arbitrary runtime-built paths even though the underlying impl accepts
+    // any string. Cast through `never` to satisfy both lint and tsc.
+    redirect(path as never);
   }
 
   const { data, error } =
@@ -68,7 +71,9 @@ export default async function ConsentPage({ searchParams }: ConsentPageProps) {
   // Already consented — Supabase returns a straight redirect URL pointing
   // back to the OAuth client (e.g. mcp-remote's loopback callback).
   if ('redirect_url' in data) {
-    redirect(data.redirect_url as Parameters<typeof redirect>[0]);
+    // External URL provided by Supabase OAuth server (loopback callback
+    // for mcp-remote, etc.) — not a typed app route.
+    redirect(data.redirect_url as never);
   }
 
   const clientName = data.client.name || data.client.id;
