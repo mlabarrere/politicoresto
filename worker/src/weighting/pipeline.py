@@ -174,12 +174,17 @@ def _shape_cells(
     ref_cells: list[tuple[tuple[str, ...], tuple[str, ...], float]],
     *,
     allowed_dims: set[str] | None = None,
+    respondents: pd.DataFrame | None = None,
 ) -> list[CellConstraint]:
     """Convert raw DB cell rows to a list of :class:`CellConstraint`.
 
     Skips cells whose dimensions are not all in our canonical list.
     If ``allowed_dims`` is provided, also skips cells touching a dim
     that we chose to drop for feasibility (see ``pick_calibration_dims``).
+    If ``respondents`` is provided, also skips cells with zero matching
+    respondents — those add infeasible constraints (the calibrator
+    cannot redistribute mass to an empty stratum). This is the
+    standard "structural zero" handling in CALMAR.
     """
     out: list[CellConstraint] = []
     for dims, cats, share in ref_cells:
@@ -187,6 +192,15 @@ def _shape_cells(
             continue
         if allowed_dims is not None and not all(d in allowed_dims for d in dims):
             continue
+        if respondents is not None:
+            mask = np.ones(len(respondents), dtype=bool)
+            for dim, cat in zip(dims, cats, strict=True):
+                if dim not in respondents.columns:
+                    mask = np.zeros(len(respondents), dtype=bool)
+                    break
+                mask &= (respondents[dim] == cat).to_numpy()
+            if not mask.any():
+                continue
         out.append(CellConstraint(dims, cats, share))
     return out
 
@@ -366,7 +380,19 @@ def run(
         n_respondents=len(snapshots),
         available_in_reference=dims_with_signal,
     )
-    reference_filtered = {d: reference[d] for d in selected_dims}
+
+    # Structural zeros: drop reference categories with zero respondents
+    # and renormalise the remaining shares to sum to 1. Without this
+    # step the linear system is infeasible — we'd be asked to assign
+    # positive weight mass to a category that has no units. Standard
+    # CALMAR treatment.
+    reference_filtered: dict[str, dict[str, float]] = {}
+    for dim in selected_dims:
+        present = set(respondents[dim].unique()) if dim in respondents.columns else set()
+        cats = {c: s for c, s in reference[dim].items() if c in present}
+        total = sum(cats.values())
+        if total > 0:
+            reference_filtered[dim] = {c: s / total for c, s in cats.items()}
 
     # Cross-tab cells: if present at this as_of, they replace the 1D
     # marginals for the dimensions they cover (pattern CALMAR). Cells
@@ -374,7 +400,11 @@ def run(
     # convention. Cells keep their priority through the dim ordering
     # in CANONICAL_DIMS.
     ref_cells = client.fetch_reference_cells(ref_as_of)
-    cells = _shape_cells(ref_cells, allowed_dims=set(selected_dims))
+    cells = _shape_cells(
+        ref_cells,
+        allowed_dims=set(selected_dims),
+        respondents=respondents,
+    )
     marginals = _shape_marginals_disjoint_from_cells(reference_filtered, cells)
     poll_options = client.fetch_poll_options(poll_id)
     if not poll_options:
