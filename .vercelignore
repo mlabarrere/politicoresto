@@ -1,0 +1,25 @@
+# Python worker runtime artefacts — not needed in the Vercel bundle
+# (the function bundles only worker/src/weighting/** via vercel.json).
+worker/.venv/
+worker/.mypy_cache/
+worker/.pytest_cache/
+worker/.ruff_cache/
+worker/**/__pycache__/
+worker/tests/
+worker/data/
+worker/scripts/
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+.supabase/
+
+# Node / build caches
+**/node_modules/
+**/.next/
+**/test-results/
+**/playwright-report/
+
+# Dev stuff
+.claude/
+.git/

@@ -91,7 +91,9 @@ export async function updateSession(request: NextRequest) {
   // (le serveur fera sa propre gate si besoin via RLS ou requireSession).
   const pathname = request.nextUrl.pathname;
   const needsAuthGate =
-    request.method === 'GET' && pathname.startsWith('/me') && !claims?.sub;
+    request.method === 'GET' &&
+    (pathname === '/me' || pathname.startsWith('/me/')) &&
+    !claims?.sub;
 
   if (needsAuthGate) {
     log.info(

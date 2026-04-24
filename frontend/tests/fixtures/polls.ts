@@ -82,6 +82,16 @@ const basePoll: PostPollSummaryView = {
     { option_id: 'o4', label: 'Reduction deficit', sort_order: 3 },
   ],
   selected_option_id: null,
+  confidence_score: 52,
+  confidence_band: 'correctable',
+  confidence_components: {
+    kish: 0.6,
+    coverage: 0.7,
+    variability: 0.5,
+    concentration: 0.8,
+  },
+  corrected_ci95: null,
+  computed_with_ref_as_of: null,
 };
 
 export function buildPollSummary(

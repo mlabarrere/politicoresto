@@ -103,6 +103,30 @@ recoverable) · `error` (attention needed) · `fatal` (subsystem failure).
 See skill `logging` for field conventions, the event catalog, and request
 correlation.
 
+## Railway (weighting worker host)
+
+The Python weighting worker is too heavy for Vercel Python Functions
+(~600 MB bundle, Lambda cap is 500 MB — scipy + samplics + pandas +
+numpy won't fit). It runs on **Railway** instead, triggered by a
+Supabase Database Webhook on every vote.
+
+Railway CLI is installed and pre-authenticated on this machine.
+
+```bash
+railway whoami                        # verify auth
+railway link -p content-imagination   # link the repo to the project
+railway status                        # service + env info
+railway up                            # deploy from current dir
+railway logs                          # tail deploy / runtime logs
+railway variables                     # read/set env vars
+railway domain                        # inspect / generate public URL
+```
+
+Project: `content-imagination` · environment: `production` · service:
+the worker FastAPI app in `worker/`. See
+`docs/weighting-railway-deploy.md` for the full playbook (Supabase
+webhook wiring, env vars, rollback).
+
 ## CI / deployment summary
 
 | Workflow | Trigger | What it does |

@@ -11,11 +11,18 @@
 #   3. auth grep guards     — forbidden patterns our ESLint can't catch
 #   4. typecheck            — tsc --noEmit
 #   5. unit tests           — vitest run
+#   6. integration tests    — vitest, only if `supabase status` reports a running
+#                             local stack (skipped otherwise with a clear warning)
+#   7. E2E tests            — Playwright, same gating as (6)
 #
-# Integration (requires `supabase start`) and E2E (Playwright) run separately
-# via `npm run test:integration` / `npm run test:e2e`. Both are enforced on
-# every PR in CI (see .github/workflows/ci.yml). They are kept out of this
-# pre-push gate so that `git push` does not require a running local stack.
+# Rationale: for full-stack / UI changes, "verify green on unit alone" has
+# produced false confidence (see phase 4: four real bugs shipped that only
+# integration + E2E caught). When the local Supabase stack is up, the cost
+# of running the full pyramid is ~1 minute — we run it. When it's down, we
+# warn, so the author knows the gate is partial and CI will still catch
+# regressions.
+#
+# Opt out (rare) with SKIP_INTEGRATION=1 or SKIP_E2E=1.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -25,13 +32,13 @@ cd "$repo_root/frontend"
 step() { printf '\n\033[1;34m[verify]\033[0m %s\n' "$*"; }
 fail() { printf '\033[1;31m[verify]\033[0m %s\n' "$*" >&2; exit 1; }
 
-step "1/5 prettier --check"
+step "1/7 prettier --check"
 ./node_modules/.bin/prettier --check . || fail "prettier found formatting issues — run 'prettier --write .'"
 
-step "2/5 eslint (max-warnings=0)"
+step "2/7 eslint (max-warnings=0)"
 ./node_modules/.bin/eslint . --max-warnings=0 || fail "eslint failed"
 
-step "3/5 auth guard greps"
+step "3/7 auth guard greps"
 # Forbidden patterns the Vercel guide / ESLint can't cleanly express.
 #
 #   a) @supabase/auth-helpers-nextjs is the legacy auth lib; banned by Session 2.
@@ -67,11 +74,40 @@ fi
 
 printf '  [ok] no forbidden auth patterns\n'
 
-step "4/5 typecheck"
+step "4/7 typecheck"
 npm run -s typecheck || fail "typecheck failed"
 
-step "5/5 unit tests"
+step "5/7 unit tests"
 npm run -s test:unit || fail "unit tests failed"
 
+# Detect running local Supabase stack. `supabase status` exits 0 only when
+# containers are up and reachable. We redirect stderr to /dev/null so the
+# absence of stack doesn't pollute our output.
+supabase_up=no
+if command -v supabase >/dev/null 2>&1; then
+  if supabase status >/dev/null 2>&1; then
+    supabase_up=yes
+  fi
+fi
+
+if [ "${SKIP_INTEGRATION:-}" = "1" ]; then
+  step "6/7 integration tests — SKIPPED (SKIP_INTEGRATION=1)"
+elif [ "$supabase_up" = "yes" ]; then
+  step "6/7 integration tests (local Supabase detected)"
+  npm run -s test:integration || fail "integration tests failed"
+else
+  step "6/7 integration tests — SKIPPED (run \`supabase start\` to enable)"
+  printf '  \033[1;33m[warn]\033[0m verify is partial: CI will still run integration.\n'
+fi
+
+if [ "${SKIP_E2E:-}" = "1" ]; then
+  step "7/7 E2E tests — SKIPPED (SKIP_E2E=1)"
+elif [ "$supabase_up" = "yes" ]; then
+  step "7/7 E2E tests (Playwright + local Supabase detected)"
+  npm run -s test:e2e || fail "E2E tests failed"
+else
+  step "7/7 E2E tests — SKIPPED (run \`supabase start\` to enable)"
+  printf '  \033[1;33m[warn]\033[0m verify is partial: CI will still run E2E.\n'
+fi
+
 printf '\n\033[1;32m[verify]\033[0m all checks passed\n'
-printf '\033[1;34m[verify]\033[0m reminder: integration + E2E run in CI. For local gate, run \`npm run test:integration\` + \`npm run test:e2e\` with the local Supabase stack up.\n'

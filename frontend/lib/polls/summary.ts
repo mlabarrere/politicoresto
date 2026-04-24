@@ -98,5 +98,25 @@ export function normalizePostPollSummary(
       typeof row.selected_option_id === 'string'
         ? row.selected_option_id
         : null,
+    confidence_score: asNumber(row.confidence_score, 0),
+    confidence_band:
+      row.confidence_band === 'robuste' ||
+      row.confidence_band === 'correctable' ||
+      row.confidence_band === 'indicatif'
+        ? row.confidence_band
+        : null,
+    confidence_components:
+      row.confidence_components &&
+      typeof row.confidence_components === 'object' &&
+      !Array.isArray(row.confidence_components)
+        ? (row.confidence_components as PostPollSummaryView['confidence_components'])
+        : null,
+    corrected_ci95:
+      row.corrected_ci95 &&
+      typeof row.corrected_ci95 === 'object' &&
+      !Array.isArray(row.corrected_ci95)
+        ? (row.corrected_ci95 as PostPollSummaryView['corrected_ci95'])
+        : null,
+    computed_with_ref_as_of: asString(row.computed_with_ref_as_of, '') || null,
   };
 }

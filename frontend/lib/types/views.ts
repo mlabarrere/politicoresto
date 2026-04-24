@@ -144,6 +144,16 @@ export interface PostPollSummaryView {
   corrected_results: PostPollResultPoint[];
   options: PostPollOptionSummary[];
   selected_option_id: string | null;
+  confidence_score: number;
+  confidence_band: 'indicatif' | 'correctable' | 'robuste' | null;
+  confidence_components: {
+    kish?: number;
+    coverage?: number;
+    variability?: number;
+    concentration?: number;
+  } | null;
+  corrected_ci95: Record<string, [number, number]> | null;
+  computed_with_ref_as_of: string | null;
 }
 
 export interface SpaceRow {
