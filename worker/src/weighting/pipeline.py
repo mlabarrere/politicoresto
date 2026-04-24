@@ -23,20 +23,69 @@ from .supabase_client import PollOption, Snapshot, SupabaseClient
 
 log = logging.getLogger("weighting.pipeline")
 
-# Marginals the worker calibrates against — the canonical PoliticoResto
-# six. Order is significant: it decides which category becomes R's
-# reference drop (= last one after the alpha sort inside `calibrate`).
+# Calibration dimensions ordered by PRIORITY (highest first).
+#
+# Rationale — "vote recall weighting" is standard practice across all
+# major French pollsters (IFOP, Ipsos, Kantar, Harris). Past vote is
+# the strongest predictor of current political preference, far stronger
+# than age or sex alone. A female voter who backed Le Pen in 2022
+# predicts her 2027 stance better than her 2027 age bracket does.
+#
+# The tuple below drives two things:
+#   1. The ordering of marginal constraints in the calibration system.
+#   2. The priority ranking used by ``pick_calibration_dims(n, available)``
+#      when we have to drop constraints to stay feasible under our
+#      panel size.
+#
+# Additions (new election slugs) go in the vote block, ordered most-
+# recent first. Demographic dims stay at the bottom.
 CANONICAL_DIMS: Final[tuple[str, ...]] = (
+    # ── vote recall (strongest predictor) ──
+    "past_vote_pr1_2022",
+    # ── demographic structure (fallback when past vote is unavailable) ──
     "age_bucket",
     "sex",
     "region",
     "csp",
     "education",
-    "past_vote_pr1_2022",
 )
+
+# Minimum panel sizes per extra calibration constraint — INSEE rule of
+# thumb ``n_min ≈ 10 × k`` keeps the truncated linear system solvable
+# with bounds [0.5, 2.0]. We apply it when picking dimensions
+# dynamically: the worker drops low-priority dims when n is small.
+MIN_RESPONDENTS_PER_DIM: Final[int] = 10
+
 
 UNKNOWN_CATEGORY: Final[str] = "unknown"
 """Bucket label for a respondent who declined a dimension (K-1a)."""
+
+
+def pick_calibration_dims(
+    n_respondents: int,
+    available_in_reference: set[str],
+) -> list[str]:
+    """Pick which dimensions to calibrate on, priority-first.
+
+    ``available_in_reference`` is the set of dims we have marginals for
+    (typically pulled from ``survey_ref_marginal`` at the relevant
+    ``as_of``). We walk ``CANONICAL_DIMS`` in order, keeping any dim
+    that is in the reference AND whose cumulative category count stays
+    under the feasibility budget ``n_respondents / MIN_RESPONDENTS_PER_DIM``.
+
+    Returns the ordered list of selected dimensions. Always includes
+    the highest-priority available dim, even if the budget is tight —
+    calibrating on something beats calibrating on nothing.
+    """
+    budget = max(1, n_respondents // MIN_RESPONDENTS_PER_DIM)
+    selected: list[str] = []
+    for dim in CANONICAL_DIMS:
+        if dim not in available_in_reference:
+            continue
+        if selected and len(selected) >= budget:
+            break
+        selected.append(dim)
+    return selected
 
 
 @dataclass(frozen=True)
@@ -76,16 +125,20 @@ def _build_respondents(
 
 def _shape_cells(
     ref_cells: list[tuple[tuple[str, ...], tuple[str, ...], float]],
+    *,
+    allowed_dims: set[str] | None = None,
 ) -> list[CellConstraint]:
     """Convert raw DB cell rows to a list of :class:`CellConstraint`.
 
-    Skips cells whose dimensions are not all in our canonical list —
-    defensive in case the ref table carries extra dimensions we don't
-    know how to fill on the respondent side.
+    Skips cells whose dimensions are not all in our canonical list.
+    If ``allowed_dims`` is provided, also skips cells touching a dim
+    that we chose to drop for feasibility (see ``pick_calibration_dims``).
     """
     out: list[CellConstraint] = []
     for dims, cats, share in ref_cells:
         if not all(d in CANONICAL_DIMS for d in dims):
+            continue
+        if allowed_dims is not None and not all(d in allowed_dims for d in dims):
             continue
         out.append(CellConstraint(dims, cats, share))
     return out
@@ -239,13 +292,24 @@ def run(
         )
 
     respondents = _build_respondents(snapshots, reference)
+
+    # Priority-aware dimension pick: past_vote trumps demographics, and
+    # we drop low-priority dims if the panel is small (INSEE rule
+    # n_min ≈ 10 × k).
+    selected_dims = pick_calibration_dims(
+        n_respondents=len(snapshots),
+        available_in_reference=set(reference.keys()),
+    )
+    reference_filtered = {d: reference[d] for d in selected_dims}
+
     # Cross-tab cells: if present at this as_of, they replace the 1D
     # marginals for the dimensions they cover (pattern CALMAR). Cells
     # + marginals on disjoint dims only — covered by the DB seed by
-    # convention.
+    # convention. Cells keep their priority through the dim ordering
+    # in CANONICAL_DIMS.
     ref_cells = client.fetch_reference_cells(ref_as_of)
-    cells = _shape_cells(ref_cells)
-    marginals = _shape_marginals_disjoint_from_cells(reference, cells)
+    cells = _shape_cells(ref_cells, allowed_dims=set(selected_dims))
+    marginals = _shape_marginals_disjoint_from_cells(reference_filtered, cells)
     poll_options = client.fetch_poll_options(poll_id)
     if not poll_options:
         raise PipelineInputError(f"Poll {poll_id} has no active options")
