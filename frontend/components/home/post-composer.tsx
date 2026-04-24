@@ -325,7 +325,21 @@ export function PostComposer({
         />
       ) : null}
 
-      <form action={action} className="space-y-4">
+      <form
+        action={async (fd) => {
+          // Clear the saved draft BEFORE dispatching the server action.
+          // Otherwise a successful publish leaves the draft in localStorage
+          // and the composer reloads it next time /post/new is visited —
+          // pre-filling a new post with the title / body of the poll we
+          // just published, and vice-versa. (The action always redirects
+          // on success so we never come back here to clean up.)
+          if (typeof window !== 'undefined') {
+            window.localStorage.removeItem(DRAFT_KEY);
+          }
+          await action(fd);
+        }}
+        className="space-y-4"
+      >
         <input type="hidden" name="redirect_path" value={redirectPath} />
         <input type="hidden" name="post_mode" value={draft.mode} />
         <input type="hidden" name="body_format" value="markdown" />

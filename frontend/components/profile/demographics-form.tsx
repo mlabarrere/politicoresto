@@ -79,9 +79,10 @@ export function DemographicsForm({
       ) {
         throw caught;
       }
-      setError(
-        caught instanceof Error ? caught.message : 'Enregistrement impossible.',
-      );
+      const rawMessage =
+        caught instanceof Error ? caught.message : 'Enregistrement impossible.';
+      const isMasked = /Server Components render/i.test(rawMessage);
+      setError(isMasked ? 'Enregistrement impossible.' : rawMessage);
       setPending(false);
     }
   }

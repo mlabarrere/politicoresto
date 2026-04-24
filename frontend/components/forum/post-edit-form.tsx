@@ -41,9 +41,10 @@ export function PostEditForm({
       ) {
         throw caught;
       }
-      setError(
-        caught instanceof Error ? caught.message : 'Modification impossible.',
-      );
+      const rawMessage =
+        caught instanceof Error ? caught.message : 'Modification impossible.';
+      const isMasked = /Server Components render/i.test(rawMessage);
+      setError(isMasked ? 'Modification impossible.' : rawMessage);
       setPending(false);
     }
   }
