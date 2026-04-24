@@ -34,6 +34,13 @@ export function PostEditForm({
     try {
       await action(formData);
     } catch (caught) {
+      if (
+        caught instanceof Error &&
+        (caught.message === 'NEXT_REDIRECT' ||
+          (caught as { digest?: string }).digest?.startsWith('NEXT_REDIRECT'))
+      ) {
+        throw caught;
+      }
       setError(
         caught instanceof Error ? caught.message : 'Modification impossible.',
       );

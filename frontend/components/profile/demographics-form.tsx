@@ -67,6 +67,18 @@ export function DemographicsForm({
     try {
       await action(formData);
     } catch (caught) {
+      // Next.js server actions throw NEXT_REDIRECT when they call
+      // `redirect()`. That is not an error — it's the signal the
+      // framework uses to navigate. Rethrow so Next handles it,
+      // otherwise the user sees "NEXT_REDIRECT" rendered as an
+      // error message.
+      if (
+        caught instanceof Error &&
+        (caught.message === 'NEXT_REDIRECT' ||
+          (caught as { digest?: string }).digest?.startsWith('NEXT_REDIRECT'))
+      ) {
+        throw caught;
+      }
       setError(
         caught instanceof Error ? caught.message : 'Enregistrement impossible.',
       );
