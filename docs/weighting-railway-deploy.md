@@ -95,20 +95,48 @@ healthcheck.
 railway domain --service weighting-worker   # → génère weighting-worker-<hash>.up.railway.app
 ```
 
-### 4. Webhook Supabase
+### 4. Seeder `public.weighting_worker_config`
 
-Dans **Supabase Dashboard → Database → Webhooks → Create a new hook** :
+Le trigger `weighting_worker_trigger` (migration `20260424170000`) lit
+l'URL et le secret dans une table `public.weighting_worker_config`.
+C'est ce qui fait pointer chaque environnement Supabase vers SON
+propre worker Railway. Sans cette ligne, le trigger est un no-op
+silencieux (voting continue de marcher, mais l'estimate n'est jamais
+calculée).
 
-| Champ | Valeur |
-|---|---|
-| Name | `weighting_worker_trigger` |
-| Table | `public.survey_respondent_snapshot` |
-| Events | `INSERT` |
-| Type | HTTP Request |
-| Method | POST |
-| URL | `https://weighting-worker-<hash>.up.railway.app/process` |
-| HTTP Headers | `authorization: Bearer <WEIGHTING_CRON_SECRET>` |
-| Timeout (ms) | 5000 |
+```sql
+-- côté staging (à exécuter une fois via MCP ou SQL Editor)
+insert into public.weighting_worker_config (id, url, secret) values
+  (1,
+   'https://weighting-worker-staging-production.up.railway.app/process',
+   '<WEIGHTING_CRON_SECRET>')
+on conflict (id) do update
+  set url = excluded.url,
+      secret = excluded.secret,
+      updated_at = now();
+
+-- côté prod — même commande, URL différente
+insert into public.weighting_worker_config (id, url, secret) values
+  (1,
+   'https://weighting-worker-production.up.railway.app/process',
+   '<WEIGHTING_CRON_SECRET>')
+on conflict (id) do update
+  set url = excluded.url,
+      secret = excluded.secret,
+      updated_at = now();
+```
+
+Le secret est le même que la var Railway `WEIGHTING_CRON_SECRET`
+exposée à la fonction. La table a RLS `for all using (false)` donc
+seul service_role / superuser peut la lire/écrire — c'est pourquoi le
+seed passe par MCP ou SQL Editor et pas par l'UI app.
+
+#### Rotation du secret
+
+1. Générer un nouveau secret : `openssl rand -hex 32`
+2. `railway variables --service weighting-worker --set "WEIGHTING_CRON_SECRET=..."` (et staging)
+3. Mettre à jour `weighting_worker_config.secret` sur les 2 envs Supabase (SQL ci-dessus)
+4. Railway redémarre le service automatiquement à la MAJ de vars
 
 Supabase envoie un POST par vote. Le handler dédupe par `poll_id`
 dans le batch — un burst de 50 votes = 1 `pipeline.run`. pgmq sert
