@@ -23,6 +23,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/integration/**/*.int.test.ts'],
+    setupFiles: ['./tests/integration/setup-env.ts'],
     // Integration tests touch a shared local DB — serialize to avoid
     // cross-test interference until we add per-test schema/txn isolation.
     fileParallelism: false,
