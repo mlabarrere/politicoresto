@@ -40,7 +40,9 @@ begin
     where as_of = v_as_of
       and dimension like 'past_vote_%';
 
-  -- Pour chaque élection, insérer une marge par (candidat | abstention | blanc | nul)
+  -- Pour chaque élection, insérer une marge par (candidat | abstention | blanc | nul).
+  -- On ignore les lignes incomplètes (pct_exprimes null) — typique quand
+  -- un scrutin n'a que le total votes/pct_inscrits mais pas pct_exprimes.
   insert into public.survey_ref_marginal (as_of, dimension, category, share, source_label, source_url)
   select
     v_as_of                                                                     as as_of,
@@ -56,7 +58,11 @@ begin
     e.source_url                                                                as source_url
   from public.election_result er
   join public.election e on e.id = er.election_id
-  where er.candidate_name is not null or er.list_label is not null;
+  where (er.candidate_name is not null or er.list_label is not null)
+    and er.pct_exprimes is not null
+    and e.votants is not null
+    and e.inscrits is not null
+    and e.inscrits > 0;
 
   -- Abstention / blanc / nul par élection.
   insert into public.survey_ref_marginal (as_of, dimension, category, share, source_label, source_url)

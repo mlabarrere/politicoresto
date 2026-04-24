@@ -340,12 +340,31 @@ def run(
 
     respondents = _build_respondents(snapshots, reference)
 
+    # Resilience to missing data: a dim can be in the reference but have
+    # zero respondents who declared anything for it (all UNKNOWN). That
+    # produces a column of zeros in the aux matrix → rank-deficient
+    # system → calibration crash. Drop those dims up-front.
+    dims_with_signal = {
+        dim for dim in reference
+        if dim in respondents.columns
+        and (respondents[dim] != UNKNOWN_CATEGORY).any()
+    }
+    if not dims_with_signal:
+        log.warning(
+            "pipeline.no_signal",
+            extra={"poll_id": poll_id, "n": len(snapshots)},
+        )
+        # Fall back to intercept-only calibration: weights = 1 everywhere.
+        # The corrected distribution will equal the raw; the confidence
+        # score will collapse via the coverage term. That's the right
+        # signal to the UI — "we couldn't correct meaningfully".
+
     # Priority-aware dimension pick: past_vote trumps demographics, and
     # we drop low-priority dims if the panel is small (INSEE rule
     # n_min ≈ 10 × k).
     selected_dims = pick_calibration_dims(
         n_respondents=len(snapshots),
-        available_in_reference=set(reference.keys()),
+        available_in_reference=dims_with_signal,
     )
     reference_filtered = {d: reference[d] for d in selected_dims}
 
@@ -361,13 +380,36 @@ def run(
     if not poll_options:
         raise PipelineInputError(f"Poll {poll_id} has no active options")
 
-    # 1. Calibrate.
-    calib = calibrate(
-        respondents.drop(columns=["option_id"]),
-        marginals,
-        cells=cells,
-        bounds=bounds,
-    )
+    # 1. Calibrate — or skip cleanly if we have nothing to calibrate on.
+    if not marginals and not cells:
+        # No usable reference for this panel. Fall back to weights=1:
+        # corrected == raw, confidence score will collapse via the
+        # coverage component. Surfacing this gracefully is preferable
+        # to raising — the UI still gets a valid (if unhelpful)
+        # estimate row.
+        import numpy as _np
+
+        n = len(snapshots)
+        weights_fallback = _np.ones(n, dtype=_np.float64)
+
+        from .calibration import CalibrationResult as _CalibrationResult
+
+        calib = _CalibrationResult(
+            weights=weights_fallback,
+            bounds=bounds,
+            n_clipped=0,
+            marginal_slack={"__no_reference__": 1.0},
+            truncation="iterative",
+            n_iterations=0,
+            converged=False,
+        )
+    else:
+        calib = calibrate(
+            respondents.drop(columns=["option_id"]),
+            marginals,
+            cells=cells,
+            bounds=bounds,
+        )
 
     # 2. Estimate shares + CI.
     est = estimate_shares(
