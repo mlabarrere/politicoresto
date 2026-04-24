@@ -44,8 +44,24 @@ export function PollEditForm({
     try {
       await action(formData);
     } catch (caught) {
+      if (
+        caught instanceof Error &&
+        (caught.message === 'NEXT_REDIRECT' ||
+          (caught as { digest?: string }).digest?.startsWith('NEXT_REDIRECT'))
+      ) {
+        throw caught;
+      }
+      // Next 16 masks server-action error messages in production for security
+      // ("An error occurred in the Server Components render..."). Detect that
+      // and fall back to a domain-specific message instead of leaking the
+      // framework's generic text to the user.
+      const rawMessage =
+        caught instanceof Error ? caught.message : 'Modification impossible.';
+      const isMasked = /Server Components render/i.test(rawMessage);
       setError(
-        caught instanceof Error ? caught.message : 'Modification impossible.',
+        isMasked
+          ? 'Sondage verrouillé (votes déjà enregistrés) ou modification invalide.'
+          : rawMessage,
       );
       setPending(false);
     }
