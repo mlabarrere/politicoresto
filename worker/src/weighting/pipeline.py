@@ -31,17 +31,35 @@ log = logging.getLogger("weighting.pipeline")
 # than age or sex alone. A female voter who backed Le Pen in 2022
 # predicts her 2027 stance better than her 2027 age bracket does.
 #
+# Multi-election block — the more recent and the higher-turnout
+# the scrutin, the more informative the signal. PR1 > PR2 > legis
+# > euro is a defensible default ordering.
+#
 # The tuple below drives two things:
 #   1. The ordering of marginal constraints in the calibration system.
 #   2. The priority ranking used by ``pick_calibration_dims(n, available)``
 #      when we have to drop constraints to stay feasible under our
 #      panel size.
 #
-# Additions (new election slugs) go in the vote block, ordered most-
-# recent first. Demographic dims stay at the bottom.
+# Dimension name convention : ``past_vote_<election-slug-with-underscores>``.
+# Pipeline.run() derives these from the snapshot's ``past_votes`` dict
+# (keys = election.slug, values = candidate name | abstention | blanc | nul).
 CANONICAL_DIMS: Final[tuple[str, ...]] = (
-    # ── vote recall (strongest predictor) ──
-    "past_vote_pr1_2022",
+    # ── vote recall (strongest predictor) — most recent first ──
+    "past_vote_presidentielle_2022_t1",
+    "past_vote_presidentielle_2022_t2",
+    "past_vote_legislatives_2022_t1",
+    "past_vote_legislatives_2022_t2",
+    "past_vote_europeennes_2019",
+    "past_vote_presidentielle_2017_t1",
+    "past_vote_presidentielle_2017_t2",
+    "past_vote_legislatives_2017_t1",
+    "past_vote_legislatives_2017_t2",
+    "past_vote_europeennes_2014",
+    "past_vote_presidentielle_2012_t1",
+    "past_vote_presidentielle_2012_t2",
+    "past_vote_legislatives_2012_t1",
+    "past_vote_legislatives_2012_t2",
     # ── demographic structure (fallback when past vote is unavailable) ──
     "age_bucket",
     "sex",
@@ -49,6 +67,16 @@ CANONICAL_DIMS: Final[tuple[str, ...]] = (
     "csp",
     "education",
 )
+
+
+def _past_vote_dim_name(election_slug: str) -> str:
+    """Map an election slug to the calibration dimension name.
+
+    ``presidentielle-2022-t1`` → ``past_vote_presidentielle_2022_t1``.
+    Matches the `dimension` column stored in `survey_ref_marginal` by
+    the seed migration (phase 3d.2).
+    """
+    return "past_vote_" + election_slug.replace("-", "_")
 
 # Minimum panel sizes per extra calibration constraint — INSEE rule of
 # thumb ``n_min ≈ 10 × k`` keeps the truncated linear system solvable
@@ -110,13 +138,32 @@ def _build_respondents(
     and the snapshots. Missing values become UNKNOWN_CATEGORY so the
     unknown-bucket target (which we require to be present in the
     reference) can match them.
+
+    Past-vote dimensions are drawn from ``Snapshot.past_votes`` (jsonb),
+    keyed by the election slug. Missing key → UNKNOWN_CATEGORY.
     """
     active_dims = [d for d in CANONICAL_DIMS if d in reference]
+
+    # Demographic dims are direct attributes. Past-vote dims are in the
+    # ``past_votes`` jsonb; we pre-compute a slug→column mapping.
+    demographic_dims = [
+        d for d in active_dims if not d.startswith("past_vote_")
+    ]
+    past_vote_dims = [
+        d for d in active_dims if d.startswith("past_vote_")
+    ]
+
     records: list[dict[str, str]] = []
     for s in snapshots:
         row: dict[str, str] = {}
-        for d in active_dims:
-            val = getattr(s, d)
+        for d in demographic_dims:
+            val = getattr(s, d, None)
+            row[d] = val if val is not None else UNKNOWN_CATEGORY
+        for d in past_vote_dims:
+            # Dim "past_vote_presidentielle_2022_t1" → slug
+            # "presidentielle-2022-t1". Inverse of _past_vote_dim_name.
+            slug = d[len("past_vote_"):].replace("_", "-")
+            val = s.past_votes.get(slug)
             row[d] = val if val is not None else UNKNOWN_CATEGORY
         row["option_id"] = s.option_id
         records.append(row)

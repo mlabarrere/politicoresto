@@ -21,7 +21,16 @@ JSON = dict[str, Any]
 
 @dataclass(frozen=True)
 class Snapshot:
-    """A frozen respondent profile, as stored by the atomic vote RPC."""
+    """A frozen respondent profile, as stored by the atomic vote RPC.
+
+    ``past_votes`` carries the full electoral history as a dict keyed
+    by election slug — "presidentielle-2022-t1", "legislatives-2017-t2",
+    "europeennes-2019" etc. Values are candidate names ("Macron",
+    "Le Pen"), or procedural choices ("abstention", "blanc", "nul",
+    "non_inscrit", "ne_se_prononce_pas"). Empty dict if the user never
+    declared anything. Normalised dimension names for calibration are
+    derived on the Python side as ``past_vote_<slug-with-underscores>``.
+    """
 
     snapshot_id: str
     user_id: str
@@ -31,10 +40,11 @@ class Snapshot:
     region: str | None
     csp: str | None
     education: str | None
-    past_vote_pr1_2022: str | None
+    past_vote_pr1_2022: str | None           # legacy scalar, kept for one release
+    past_votes: dict[str, str]               # full history, keyed by election.slug
     is_partial: bool
-    ref_as_of: str                  # ISO date
-    snapshotted_at: str             # ISO timestamp
+    ref_as_of: str                           # ISO date
+    snapshotted_at: str                      # ISO timestamp
 
 
 @dataclass(frozen=True)
@@ -128,6 +138,13 @@ class SupabaseClient:
                 csp=r["csp"],
                 education=r["education"],
                 past_vote_pr1_2022=r["past_vote_pr1_2022"],
+                # past_votes jsonb from Postgres → dict on the Python side.
+                # Defensive: missing key / null → empty dict.
+                past_votes={
+                    str(k): str(v)
+                    for k, v in (r.get("past_votes") or {}).items()
+                    if v is not None
+                },
                 is_partial=bool(r["is_partial"]),
                 ref_as_of=r["ref_as_of"],
                 snapshotted_at=r["snapshotted_at"],
