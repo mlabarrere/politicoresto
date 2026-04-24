@@ -125,6 +125,14 @@ test.describe('User Story — weighted poll display', () => {
     try {
       const [optA, optB] = poll.optionIds;
       if (!optA || !optB) throw new Error('expected two option ids');
+      await signInAsSeedUser(page);
+      await page.goto(`/post/${poll.slug}`);
+      // Cast a vote so the UI swaps from options to results.
+      await page.getByRole('button', { name: /^A$/ }).click();
+      await expect(page.getByText(/R[eé]sultat brut/)).toBeVisible({
+        timeout: 10_000,
+      });
+      // Overwrite worker-computed estimate with our deterministic fixture.
       await seedEstimate(poll.postItemId, [optA, optB], {
         score: 62,
         band: 'correctable',
@@ -133,8 +141,7 @@ test.describe('User Story — weighted poll display', () => {
         ci95AByOption: [0.53, 0.63],
         ci95BByOption: [0.37, 0.47],
       });
-      await signInAsSeedUser(page);
-      await page.goto(`/post/${poll.slug}`);
+      await page.reload();
 
       await expect(page.getByText(/Fiabilit[eé] 62\/100/)).toBeVisible({
         timeout: 10_000,
@@ -168,14 +175,19 @@ test.describe('User Story — weighted poll display', () => {
     try {
       const [optA, optB] = poll.optionIds;
       if (!optA || !optB) throw new Error('expected two option ids');
+      await signInAsSeedUser(page);
+      await page.goto(`/post/${poll.slug}`);
+      await page.getByRole('button', { name: /^A$/ }).click();
+      await expect(page.getByText(/R[eé]sultat brut/)).toBeVisible({
+        timeout: 10_000,
+      });
       await seedEstimate(poll.postItemId, [optA, optB], {
         score: 22,
         band: 'indicatif',
         rawA: 0.8,
         correctedA: 0.6,
       });
-      await signInAsSeedUser(page);
-      await page.goto(`/post/${poll.slug}`);
+      await page.reload();
 
       await expect(page.getByText(/Fiabilit[eé] 22\/100/)).toBeVisible({
         timeout: 10_000,
@@ -206,10 +218,10 @@ test.describe('User Story — weighted poll display', () => {
         name: /M[eé]thodologie des sondages PoliticoResto/,
       }),
     ).toBeVisible();
-    await expect(page.getByText(/Deville/)).toBeVisible();
-    await expect(page.getByText(/S[aä]rndal/)).toBeVisible();
+    await expect(page.getByText(/Deville/).first()).toBeVisible();
+    await expect(page.getByText(/S[aä]rndal/).first()).toBeVisible();
     // Mentions clés de la doc.
-    await expect(page.getByText(/samplics/)).toBeVisible();
-    await expect(page.getByText(/INSEE/)).toBeVisible();
+    await expect(page.getByText(/samplics/).first()).toBeVisible();
+    await expect(page.getByText(/INSEE/).first()).toBeVisible();
   });
 });
