@@ -1,0 +1,12 @@
+# Vercel Python Function deps for api/weighting/process.py.
+# Must stay in lock-step with worker/pyproject.toml runtime deps.
+
+samplics>=0.6.0,<0.7
+numpy>=1.26
+pandas>=2.2
+scipy>=1.12
+
+structlog>=24.1
+pydantic>=2.7
+pydantic-settings>=2.2
+httpx>=0.27
