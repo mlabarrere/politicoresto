@@ -23,20 +23,97 @@ from .supabase_client import PollOption, Snapshot, SupabaseClient
 
 log = logging.getLogger("weighting.pipeline")
 
-# Marginals the worker calibrates against — the canonical PoliticoResto
-# six. Order is significant: it decides which category becomes R's
-# reference drop (= last one after the alpha sort inside `calibrate`).
+# Calibration dimensions ordered by PRIORITY (highest first).
+#
+# Rationale — "vote recall weighting" is standard practice across all
+# major French pollsters (IFOP, Ipsos, Kantar, Harris). Past vote is
+# the strongest predictor of current political preference, far stronger
+# than age or sex alone. A female voter who backed Le Pen in 2022
+# predicts her 2027 stance better than her 2027 age bracket does.
+#
+# Multi-election block — the more recent and the higher-turnout
+# the scrutin, the more informative the signal. PR1 > PR2 > legis
+# > euro is a defensible default ordering.
+#
+# The tuple below drives two things:
+#   1. The ordering of marginal constraints in the calibration system.
+#   2. The priority ranking used by ``pick_calibration_dims(n, available)``
+#      when we have to drop constraints to stay feasible under our
+#      panel size.
+#
+# Dimension name convention : ``past_vote_<election-slug-with-underscores>``.
+# Pipeline.run() derives these from the snapshot's ``past_votes`` dict
+# (keys = election.slug, values = candidate name | abstention | blanc | nul).
 CANONICAL_DIMS: Final[tuple[str, ...]] = (
+    # ── vote recall (strongest predictor) — most recent first ──
+    "past_vote_presidentielle_2022_t1",
+    "past_vote_presidentielle_2022_t2",
+    "past_vote_legislatives_2022_t1",
+    "past_vote_legislatives_2022_t2",
+    "past_vote_europeennes_2019",
+    "past_vote_presidentielle_2017_t1",
+    "past_vote_presidentielle_2017_t2",
+    "past_vote_legislatives_2017_t1",
+    "past_vote_legislatives_2017_t2",
+    "past_vote_europeennes_2014",
+    "past_vote_presidentielle_2012_t1",
+    "past_vote_presidentielle_2012_t2",
+    "past_vote_legislatives_2012_t1",
+    "past_vote_legislatives_2012_t2",
+    # ── demographic structure (fallback when past vote is unavailable) ──
     "age_bucket",
     "sex",
     "region",
     "csp",
     "education",
-    "past_vote_pr1_2022",
 )
+
+
+def _past_vote_dim_name(election_slug: str) -> str:
+    """Map an election slug to the calibration dimension name.
+
+    ``presidentielle-2022-t1`` → ``past_vote_presidentielle_2022_t1``.
+    Matches the `dimension` column stored in `survey_ref_marginal` by
+    the seed migration (phase 3d.2).
+    """
+    return "past_vote_" + election_slug.replace("-", "_")
+
+# Minimum panel sizes per extra calibration constraint — INSEE rule of
+# thumb ``n_min ≈ 10 × k`` keeps the truncated linear system solvable
+# with bounds [0.5, 2.0]. We apply it when picking dimensions
+# dynamically: the worker drops low-priority dims when n is small.
+MIN_RESPONDENTS_PER_DIM: Final[int] = 10
+
 
 UNKNOWN_CATEGORY: Final[str] = "unknown"
 """Bucket label for a respondent who declined a dimension (K-1a)."""
+
+
+def pick_calibration_dims(
+    n_respondents: int,
+    available_in_reference: set[str],
+) -> list[str]:
+    """Pick which dimensions to calibrate on, priority-first.
+
+    ``available_in_reference`` is the set of dims we have marginals for
+    (typically pulled from ``survey_ref_marginal`` at the relevant
+    ``as_of``). We walk ``CANONICAL_DIMS`` in order, keeping any dim
+    that is in the reference AND whose cumulative category count stays
+    under the feasibility budget ``n_respondents / MIN_RESPONDENTS_PER_DIM``.
+
+    Returns the ordered list of selected dimensions. Always includes
+    the highest-priority available dim, even if the budget is tight —
+    calibrating on something beats calibrating on nothing.
+    """
+    budget = max(1, n_respondents // MIN_RESPONDENTS_PER_DIM)
+    selected: list[str] = []
+    for dim in CANONICAL_DIMS:
+        if dim not in available_in_reference:
+            continue
+        if selected and len(selected) >= budget:
+            break
+        selected.append(dim)
+    return selected
 
 
 @dataclass(frozen=True)
@@ -61,13 +138,32 @@ def _build_respondents(
     and the snapshots. Missing values become UNKNOWN_CATEGORY so the
     unknown-bucket target (which we require to be present in the
     reference) can match them.
+
+    Past-vote dimensions are drawn from ``Snapshot.past_votes`` (jsonb),
+    keyed by the election slug. Missing key → UNKNOWN_CATEGORY.
     """
     active_dims = [d for d in CANONICAL_DIMS if d in reference]
+
+    # Demographic dims are direct attributes. Past-vote dims are in the
+    # ``past_votes`` jsonb; we pre-compute a slug→column mapping.
+    demographic_dims = [
+        d for d in active_dims if not d.startswith("past_vote_")
+    ]
+    past_vote_dims = [
+        d for d in active_dims if d.startswith("past_vote_")
+    ]
+
     records: list[dict[str, str]] = []
     for s in snapshots:
         row: dict[str, str] = {}
-        for d in active_dims:
-            val = getattr(s, d)
+        for d in demographic_dims:
+            val = getattr(s, d, None)
+            row[d] = val if val is not None else UNKNOWN_CATEGORY
+        for d in past_vote_dims:
+            # Dim "past_vote_presidentielle_2022_t1" → slug
+            # "presidentielle-2022-t1". Inverse of _past_vote_dim_name.
+            slug = d[len("past_vote_"):].replace("_", "-")
+            val = s.past_votes.get(slug)
             row[d] = val if val is not None else UNKNOWN_CATEGORY
         row["option_id"] = s.option_id
         records.append(row)
@@ -76,16 +172,20 @@ def _build_respondents(
 
 def _shape_cells(
     ref_cells: list[tuple[tuple[str, ...], tuple[str, ...], float]],
+    *,
+    allowed_dims: set[str] | None = None,
 ) -> list[CellConstraint]:
     """Convert raw DB cell rows to a list of :class:`CellConstraint`.
 
-    Skips cells whose dimensions are not all in our canonical list —
-    defensive in case the ref table carries extra dimensions we don't
-    know how to fill on the respondent side.
+    Skips cells whose dimensions are not all in our canonical list.
+    If ``allowed_dims`` is provided, also skips cells touching a dim
+    that we chose to drop for feasibility (see ``pick_calibration_dims``).
     """
     out: list[CellConstraint] = []
     for dims, cats, share in ref_cells:
         if not all(d in CANONICAL_DIMS for d in dims):
+            continue
+        if allowed_dims is not None and not all(d in allowed_dims for d in dims):
             continue
         out.append(CellConstraint(dims, cats, share))
     return out
@@ -239,24 +339,77 @@ def run(
         )
 
     respondents = _build_respondents(snapshots, reference)
+
+    # Resilience to missing data: a dim can be in the reference but have
+    # zero respondents who declared anything for it (all UNKNOWN). That
+    # produces a column of zeros in the aux matrix → rank-deficient
+    # system → calibration crash. Drop those dims up-front.
+    dims_with_signal = {
+        dim for dim in reference
+        if dim in respondents.columns
+        and (respondents[dim] != UNKNOWN_CATEGORY).any()
+    }
+    if not dims_with_signal:
+        log.warning(
+            "pipeline.no_signal",
+            extra={"poll_id": poll_id, "n": len(snapshots)},
+        )
+        # Fall back to intercept-only calibration: weights = 1 everywhere.
+        # The corrected distribution will equal the raw; the confidence
+        # score will collapse via the coverage term. That's the right
+        # signal to the UI — "we couldn't correct meaningfully".
+
+    # Priority-aware dimension pick: past_vote trumps demographics, and
+    # we drop low-priority dims if the panel is small (INSEE rule
+    # n_min ≈ 10 × k).
+    selected_dims = pick_calibration_dims(
+        n_respondents=len(snapshots),
+        available_in_reference=dims_with_signal,
+    )
+    reference_filtered = {d: reference[d] for d in selected_dims}
+
     # Cross-tab cells: if present at this as_of, they replace the 1D
     # marginals for the dimensions they cover (pattern CALMAR). Cells
     # + marginals on disjoint dims only — covered by the DB seed by
-    # convention.
+    # convention. Cells keep their priority through the dim ordering
+    # in CANONICAL_DIMS.
     ref_cells = client.fetch_reference_cells(ref_as_of)
-    cells = _shape_cells(ref_cells)
-    marginals = _shape_marginals_disjoint_from_cells(reference, cells)
+    cells = _shape_cells(ref_cells, allowed_dims=set(selected_dims))
+    marginals = _shape_marginals_disjoint_from_cells(reference_filtered, cells)
     poll_options = client.fetch_poll_options(poll_id)
     if not poll_options:
         raise PipelineInputError(f"Poll {poll_id} has no active options")
 
-    # 1. Calibrate.
-    calib = calibrate(
-        respondents.drop(columns=["option_id"]),
-        marginals,
-        cells=cells,
-        bounds=bounds,
-    )
+    # 1. Calibrate — or skip cleanly if we have nothing to calibrate on.
+    if not marginals and not cells:
+        # No usable reference for this panel. Fall back to weights=1:
+        # corrected == raw, confidence score will collapse via the
+        # coverage component. Surfacing this gracefully is preferable
+        # to raising — the UI still gets a valid (if unhelpful)
+        # estimate row.
+        import numpy as _np
+
+        n = len(snapshots)
+        weights_fallback = _np.ones(n, dtype=_np.float64)
+
+        from .calibration import CalibrationResult as _CalibrationResult
+
+        calib = _CalibrationResult(
+            weights=weights_fallback,
+            bounds=bounds,
+            n_clipped=0,
+            marginal_slack={"__no_reference__": 1.0},
+            truncation="iterative",
+            n_iterations=0,
+            converged=False,
+        )
+    else:
+        calib = calibrate(
+            respondents.drop(columns=["option_id"]),
+            marginals,
+            cells=cells,
+            bounds=bounds,
+        )
 
     # 2. Estimate shares + CI.
     est = estimate_shares(
