@@ -90,7 +90,7 @@ def test_imbalanced_two_dims() -> None:
 
     # Weights respect the [0.5, 2.0] bounds — structural invariant of the
     # iterative-truncated CALMAR.
-    assert 0.5 - 1e-9 <= float(r.weights.min())
+    assert float(r.weights.min()) >= 0.5 - 1e-9
     assert float(r.weights.max()) <= 2.0 + 1e-9
 
     # The iterative CALMAR converged.
