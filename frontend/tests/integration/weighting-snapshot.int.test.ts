@@ -121,7 +121,7 @@ describe('weighting snapshot pipeline (integration)', () => {
     expect(snap?.csp).toBe('employes');
     expect(snap?.education).toBe('bac2');
     expect(snap?.is_partial).toBe(false);
-    expect(snap?.ref_as_of).toBe('2022-04-15');
+    expect(snap?.ref_as_of).toBe('2021-01-01'); // INSEE RP 2021 baseline
 
     expect(await queueDepth()).toBe(before + 1);
   });
