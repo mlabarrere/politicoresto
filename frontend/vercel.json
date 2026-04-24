@@ -2,5 +2,16 @@
   "github": {
     "enabled": false,
     "silent": true
-  }
+  },
+
+  "functions": {
+    "api/weighting/process.py": {
+      "runtime": "python3.12",
+      "maxDuration": 60,
+      "memory": 1024,
+      "includeFiles": "../worker/src/weighting/**"
+    }
+  },
+
+  "crons": [{ "path": "/api/weighting/process", "schedule": "* * * * *" }]
 }
