@@ -11,7 +11,5 @@
       "memory": 1024,
       "includeFiles": "../worker/src/weighting/**"
     }
-  },
-
-  "crons": [{ "path": "/api/weighting/process", "schedule": "* * * * *" }]
+  }
 }

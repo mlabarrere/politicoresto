@@ -2,19 +2,26 @@
 
 Endpoint: ``/api/weighting/process``
 
-Triggered by Vercel Cron every minute (see ``frontend/vercel.json``).
+Triggered by **Supabase Database Webhook** on INSERT into
+``survey_respondent_snapshot`` (every vote). The webhook carries
+``authorization: Bearer $WEIGHTING_CRON_SECRET`` so the endpoint
+authenticates without relying on Vercel Cron (which is Pro-only at
+the minute granularity we need).
+
 For each invocation:
 
-    1. Verify the request came from Vercel Cron via the
-       ``x-vercel-cron`` header (signed by Vercel) or a shared-secret
-       env ``WEIGHTING_CRON_SECRET`` (for manual runs).
+    1. Verify the bearer secret.
     2. Read up to N messages from ``pgmq.q_weighting`` via the
        ``weighting_queue_read`` RPC.
     3. Dedupe by ``poll_id`` within the batch (one pipeline run per
-       unique poll).
+       unique poll — bursts collapse naturally).
     4. Run ``weighting.pipeline.run(poll_id)`` for each.
     5. Archive messages on success; dead-letter after
        ``max_retries`` failed reads.
+
+The ``x-vercel-cron`` header is still accepted for operational
+fallback if we ever add a scheduled sweep (e.g. hourly safety-net on
+Pro).
 
 The Python code shared with the old ``worker/src/weighting/`` package
 lives bundled inside this function via Vercel's ``includeFiles`` (see
