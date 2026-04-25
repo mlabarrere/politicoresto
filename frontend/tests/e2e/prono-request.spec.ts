@@ -71,7 +71,11 @@ test.describe('User Story — Pronos lot 2 (request + admin)', () => {
       .getByRole('button', { name: /^Soumettre la demande$/i })
       .click({ force: true });
 
-    await expect(page).toHaveURL(/\/post\/[^/?]+(\?|$)/, { timeout: 10_000 });
+    // The action redirects to the new prono's slug URL. Reject the
+    // failure-path '/post/new?error=…' redirect explicitly so a
+    // server-side throw doesn't sneak through this assertion.
+    await expect(page).not.toHaveURL(/\/post\/new/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/post\/[^/?]+(\?|$)/);
     await expect(
       page.getByText(/Demande en attente de validation/),
     ).toBeVisible();
@@ -109,14 +113,23 @@ test.describe('User Story — Pronos lot 2 (request + admin)', () => {
         page.locator('[class*="rounded"]').filter({ hasText: pending!.title }),
       )
       .first();
-    await card
-      .getByRole('button', { name: /^Publier$/i })
-      .click({ force: true });
+    const publishBtn = card.getByRole('button', { name: /^Publier$/i });
+    await publishBtn.scrollIntoViewIfNeeded();
+    // Wait for the server action's POST to round-trip — Playwright's
+    // click() returns on event dispatch, not on the form-action result.
+    await Promise.all([
+      page.waitForResponse(
+        (resp) =>
+          resp.url().endsWith('/admin/pronos') &&
+          resp.request().method() === 'POST',
+        { timeout: 10_000 },
+      ),
+      publishBtn.click(),
+    ]);
 
-    await expect(page.getByText(pending!.title)).toHaveCount(0, {
-      timeout: 10_000,
-    });
-
+    // Verify via DB ground-truth — after publish, the topic flips to
+    // 'open' and surfaces lower on the page (in the open list), so we
+    // can't rely on a UI absence assertion.
     const { data: topic } = await admin
       .from('topic')
       .select('topic_status')

@@ -146,6 +146,98 @@ export async function publishPronoAction(formData: FormData): Promise<void> {
 }
 
 /**
+ * `resolvePronoAction` — moderator resolves (or voids) a prono.
+ *
+ * Form fields:
+ *   - question_id (required)
+ *   - resolution_kind (required, 'resolved' | 'voided')
+ *   - winning_option_ids[] (required when resolved)
+ *   - betting_cutoff_at (optional ISO datetime; default now())
+ *   - resolution_note (optional)
+ *   - void_reason (required when voided)
+ *   - topic_slug (for redirect)
+ */
+export async function resolvePronoAction(formData: FormData): Promise<void> {
+  const questionId = String(formData.get('question_id') ?? '').trim();
+  const kind = String(formData.get('resolution_kind') ?? '').trim();
+  const winningIds = formData
+    .getAll('winning_option_ids')
+    .map((v) => String(v ?? '').trim())
+    .filter((v) => v.length > 0);
+  const cutoffRaw = String(formData.get('betting_cutoff_at') ?? '').trim();
+  const note = String(formData.get('resolution_note') ?? '').trim() || null;
+  const voidReason = String(formData.get('void_reason') ?? '').trim() || null;
+  const topicSlug = String(formData.get('topic_slug') ?? '').trim();
+
+  if (!questionId) throw new Error('Pronostic invalide');
+  if (kind !== 'resolved' && kind !== 'voided') {
+    throw new Error('Type de résolution invalide');
+  }
+  if (kind === 'resolved' && winningIds.length === 0) {
+    throw new Error('Sélectionnez au moins une option gagnante');
+  }
+  if (kind === 'voided' && !voidReason) {
+    throw new Error("Indiquez la raison de l'annulation");
+  }
+
+  // datetime-local inputs send "YYYY-MM-DDTHH:MM" without timezone.
+  // Treat them as local time and convert to UTC ISO. An empty value
+  // means default = now(), which the RPC handles natively.
+  let cutoffIso: string | null = null;
+  if (cutoffRaw) {
+    const parsed = new Date(cutoffRaw);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new Error('Horodatage de fermeture invalide');
+    }
+    cutoffIso = parsed.toISOString();
+  }
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.rpc('rpc_resolve_prono', {
+      p_question_id: questionId,
+      p_resolution_kind: kind,
+      p_winning_option_ids: kind === 'resolved' ? winningIds : null,
+      p_betting_cutoff_at: cutoffIso,
+      p_resolution_note: note,
+      p_void_reason: kind === 'voided' ? voidReason : null,
+    });
+    if (error) {
+      log.error(
+        {
+          event: 'pronos.resolve.rpc_failed',
+          question_id: questionId,
+          kind,
+          message: error.message,
+          code: error.code,
+        },
+        'resolve prono rpc failed',
+      );
+      throw new Error('Résolution refusée.');
+    }
+    log.info(
+      {
+        event: 'pronos.resolve.ok',
+        question_id: questionId,
+        kind,
+        winners: winningIds.length,
+      },
+      'prono resolved',
+    );
+    if (topicSlug) revalidatePath(`/post/${topicSlug}`);
+    revalidatePath('/admin/pronos');
+    revalidatePath('/pronos');
+    revalidatePath('/pronos/leaderboard');
+  } catch (error) {
+    logError(log, error, {
+      event: 'pronos.resolve.failed',
+      question_id: questionId,
+    });
+    throw error;
+  }
+}
+
+/**
  * `placeBetAction` — auth user places (or updates) a bet on an option.
  * Reads `question_id`, `option_id`, `topic_slug` from the form data so
  * the server action can revalidate the right slug after success.

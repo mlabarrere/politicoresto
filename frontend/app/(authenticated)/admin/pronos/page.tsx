@@ -47,6 +47,38 @@ export default async function AdminPronosPage() {
 
   const rows = (data ?? []) as QueueRow[];
 
+  // Open pronos awaiting resolution. Cheap query — no aggregation, just
+  // a topic.topic_status filter joined to prono_question.
+  const { data: openRows } = await supabase
+    .from('prono_question')
+    .select(
+      'id, topic_id, question_text, topic:topic!inner(slug, title, topic_status)',
+    )
+    .eq('topic.topic_status', 'open')
+    .order('created_at', { ascending: false });
+
+  interface OpenRowWire {
+    id: string;
+    topic_id: string;
+    question_text: string;
+    topic:
+      | { slug: string; title: string; topic_status: string }
+      | { slug: string; title: string; topic_status: string }[]
+      | null;
+  }
+  interface OpenRow {
+    id: string;
+    topic_id: string;
+    question_text: string;
+    topic: { slug: string; title: string; topic_status: string };
+  }
+  const opens: OpenRow[] = ((openRows ?? []) as unknown as OpenRowWire[])
+    .map((r) => {
+      const t = Array.isArray(r.topic) ? r.topic[0] : r.topic;
+      return t ? { ...r, topic: t } : null;
+    })
+    .filter((r): r is OpenRow => r !== null);
+
   return (
     <PageContainer>
       <div className="mx-auto w-full max-w-4xl space-y-4">
@@ -123,6 +155,41 @@ export default async function AdminPronosPage() {
                   Ouvrir la discussion
                 </AppButton>
               </div>
+            </AppCard>
+          ))
+        )}
+
+        <header className="space-y-1 pt-6">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            Pronostics ouverts ({opens.length})
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Ouvrez la page d&apos;un pronostic pour le résoudre ou
+            l&apos;annuler.
+          </p>
+        </header>
+        {opens.length === 0 ? (
+          <EmptyState
+            title="Aucun pronostic ouvert"
+            body="Les pronostics publiés apparaîtront ici tant qu'ils ne sont pas résolus."
+          />
+        ) : (
+          opens.map((row) => (
+            <AppCard key={row.id} className="flex flex-wrap items-center gap-3">
+              <div className="flex-1 space-y-1">
+                <h3 className="text-base font-medium text-foreground">
+                  {row.topic.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {row.question_text}
+                </p>
+              </div>
+              <AppButton href={`/admin/pronos/${row.topic_id}`}>
+                Modérer
+              </AppButton>
+              <AppButton variant="ghost" href={`/post/${row.topic.slug}`}>
+                Page publique
+              </AppButton>
             </AppCard>
           ))
         )}

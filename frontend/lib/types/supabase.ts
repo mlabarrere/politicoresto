@@ -686,24 +686,33 @@ export type Database = {
           bet_at: string;
           id: string;
           is_pruned: boolean;
+          is_winner: boolean | null;
+          multiplier: number | null;
           option_id: string;
           question_id: string;
+          smoothed_share: number | null;
           user_id: string;
         };
         Insert: {
           bet_at?: string;
           id?: string;
           is_pruned?: boolean;
+          is_winner?: boolean | null;
+          multiplier?: number | null;
           option_id: string;
           question_id: string;
+          smoothed_share?: number | null;
           user_id: string;
         };
         Update: {
           bet_at?: string;
           id?: string;
           is_pruned?: boolean;
+          is_winner?: boolean | null;
+          multiplier?: number | null;
           option_id?: string;
           question_id?: string;
+          smoothed_share?: number | null;
           user_id?: string;
         };
         Relationships: [

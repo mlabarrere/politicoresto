@@ -214,9 +214,24 @@ describe('pronos rpcs (integration)', () => {
     // After resolution, RLS lets a third party read all bets.
     const { data: allBets } = await alice.client
       .from('prono_bet')
-      .select('user_id')
+      .select('user_id, is_winner, multiplier, smoothed_share')
       .eq('question_id', question!.id);
     expect(allBets).toHaveLength(3);
+
+    // Sentinelle metadata is populated on every non-pruned bet row,
+    // including losing bets (no ledger row but bet.multiplier set).
+    for (const bet of allBets!) {
+      expect(typeof bet.multiplier).toBe('number');
+      expect(typeof bet.smoothed_share).toBe('number');
+      expect(typeof bet.is_winner).toBe('boolean');
+      // Cap and floor invariants from the formula.
+      expect(bet.multiplier).toBeLessThanOrEqual(5);
+      expect(bet.multiplier).toBeGreaterThanOrEqual(1 / 5);
+      expect(bet.smoothed_share).toBeGreaterThanOrEqual(0);
+      expect(bet.smoothed_share).toBeLessThanOrEqual(1);
+    }
+    const carolBet = allBets!.find((b) => b.user_id === carol.userId)!;
+    expect(carolBet.is_winner).toBe(false);
   });
 
   it('reject path: modo rejects pending request, demandeur is notified', async () => {
