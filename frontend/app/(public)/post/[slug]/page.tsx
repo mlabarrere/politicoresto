@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/layout/empty-state';
 import { PageContainer } from '@/components/layout/page-container';
 import { ScreenState } from '@/components/layout/screen-state';
 import { PronoDetail } from '@/components/prono/prono-detail';
+import { PronoOptionAddedBanner } from '@/components/prono/prono-option-added-banner';
 import { PronoResolutionBanner } from '@/components/prono/prono-resolution-banner';
 import { getPostDetail } from '@/lib/data/public/posts';
 import { getPronoSummaryByTopicId } from '@/lib/data/public/pronos';
@@ -123,6 +124,7 @@ export default async function PostDetailPage({
         {prono?.resolution_kind ? (
           <PronoResolutionBanner summary={prono} userBets={userBets} />
         ) : null}
+        {prono ? <PronoOptionAddedBanner options={prono.options} /> : null}
         {op ? (
           <ForumPage
             post={mapPostViewToForumPost(op, post.title)}

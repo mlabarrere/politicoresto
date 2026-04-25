@@ -7,6 +7,7 @@ export interface PronoOptionView {
   sort_order: number;
   is_catchall: boolean;
   is_active: boolean;
+  is_late: boolean;
   added_at: string;
   bet_count: number;
   share: number;
@@ -46,6 +47,7 @@ function asOption(value: unknown): PronoOptionView | null {
     sort_order: Number(v.sort_order ?? 0),
     is_catchall: Boolean(v.is_catchall),
     is_active: v.is_active !== false,
+    is_late: Boolean(v.is_late),
     added_at: typeof v.added_at === 'string' ? v.added_at : '',
     bet_count: Number(v.bet_count ?? 0),
     share: Number(v.share ?? 0),

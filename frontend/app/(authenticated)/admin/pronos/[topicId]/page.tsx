@@ -5,7 +5,7 @@ import { AppInput } from '@/components/app/app-input';
 import { AppTextarea } from '@/components/app/app-textarea';
 import { EmptyState } from '@/components/layout/empty-state';
 import { PageContainer } from '@/components/layout/page-container';
-import { resolvePronoAction } from '@/lib/actions/pronos';
+import { addOptionAction, resolvePronoAction } from '@/lib/actions/pronos';
 import { getPronoSummaryByTopicId } from '@/lib/data/public/pronos';
 import { requireSession } from '@/lib/guards/require-session';
 import { isModeratorClaim } from '@/lib/supabase/auth-role';
@@ -186,6 +186,52 @@ export default async function AdminPronoDetailPage({
               </label>
               <AppButton type="submit" variant="secondary">
                 Annuler le pronostic
+              </AppButton>
+            </form>
+          </AppCard>
+        ) : null}
+
+        {isOpen ? (
+          <AppCard className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">
+              Ajouter une option
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Les parieurs précédents recevront une notification, l&apos;option
+              sera marquée comme ajoutée le jour{' '}
+              {new Date().toLocaleDateString('fr-FR')}.
+            </p>
+            <form
+              action={addOptionAction}
+              className="flex flex-wrap items-end gap-2"
+            >
+              <input
+                type="hidden"
+                name="question_id"
+                value={summary.question_id}
+              />
+              <input
+                type="hidden"
+                name="topic_slug"
+                value={summary.topic_slug}
+              />
+              <label
+                htmlFor="add-option-label"
+                className="flex-1 space-y-1 text-sm"
+              >
+                <span className="text-xs font-medium text-muted-foreground">
+                  Libellé
+                </span>
+                <AppInput
+                  id="add-option-label"
+                  name="label"
+                  required
+                  maxLength={120}
+                  placeholder="Nouvelle option (ex. : Bayrou)"
+                />
+              </label>
+              <AppButton type="submit" variant="secondary">
+                Ajouter
               </AppButton>
             </form>
           </AppCard>

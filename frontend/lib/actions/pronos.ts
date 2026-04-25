@@ -146,6 +146,84 @@ export async function publishPronoAction(formData: FormData): Promise<void> {
 }
 
 /**
+ * `addOptionAction` — moderator adds a late option to a published prono.
+ * Triggers `prono_option_added` notifications to every existing bettor.
+ */
+export async function addOptionAction(formData: FormData): Promise<void> {
+  const questionId = String(formData.get('question_id') ?? '').trim();
+  const label = String(formData.get('label') ?? '').trim();
+  const topicSlug = String(formData.get('topic_slug') ?? '').trim();
+  if (!questionId) throw new Error('Pronostic invalide');
+  if (!label) throw new Error('Libellé requis');
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.rpc('rpc_add_option', {
+      p_question_id: questionId,
+      p_label: label,
+    });
+    if (error) {
+      log.error(
+        {
+          event: 'pronos.add_option.rpc_failed',
+          question_id: questionId,
+          message: error.message,
+          code: error.code,
+        },
+        'add option rpc failed',
+      );
+      throw new Error('Ajout de l’option refusé.');
+    }
+    log.info(
+      { event: 'pronos.add_option.ok', question_id: questionId, label },
+      'option added',
+    );
+    if (topicSlug) revalidatePath(`/post/${topicSlug}`);
+    revalidatePath('/admin/pronos');
+  } catch (error) {
+    logError(log, error, {
+      event: 'pronos.add_option.failed',
+      question_id: questionId,
+    });
+    throw error;
+  }
+}
+
+/**
+ * `markNotificationReadAction` — flips a single user_notification row.
+ * RLS forbids touching another user's row, defence-in-depth via the
+ * `user_id = auth.uid()` predicate on UPDATE.
+ */
+export async function markNotificationReadAction(
+  formData: FormData,
+): Promise<void> {
+  const notificationId = String(formData.get('notification_id') ?? '').trim();
+  if (!notificationId) throw new Error('Notification invalide');
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase
+      .from('user_notification')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+    if (error) {
+      log.error(
+        {
+          event: 'pronos.notif_read.failed',
+          message: error.message,
+          code: error.code,
+        },
+        'mark notification read failed',
+      );
+      throw new Error('Lecture impossible.');
+    }
+    revalidatePath('/me/notifications');
+  } catch (error) {
+    logError(log, error, { event: 'pronos.notif_read.failed' });
+    throw error;
+  }
+}
+
+/**
  * `resolvePronoAction` — moderator resolves (or voids) a prono.
  *
  * Form fields:

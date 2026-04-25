@@ -839,6 +839,7 @@ export type Database = {
           id: string;
           is_active: boolean;
           is_catchall: boolean;
+          is_late: boolean;
           label: string;
           question_id: string;
           sort_order: number;
@@ -848,6 +849,7 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           is_catchall?: boolean;
+          is_late?: boolean;
           label: string;
           question_id: string;
           sort_order?: number;
@@ -857,6 +859,7 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           is_catchall?: boolean;
+          is_late?: boolean;
           label?: string;
           question_id?: string;
           sort_order?: number;
