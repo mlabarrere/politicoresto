@@ -19,7 +19,12 @@ Ce runbook couvre l'exploitation de PoliticoResto sur Vercel + Supabase.
 
 ### Avant promotion prod
 
-1. appliquer migrations Supabase requises
+1. appliquer migrations Supabase requises **avant** le déploiement
+   frontend — le frontend Pronostics consomme `v_prono_summary`,
+   `v_prono_leaderboard`, `v_prono_user_history`, `v_prono_admin_queue`
+   et appelle `rpc_request_prono`, `rpc_publish_prono`, `rpc_reject_prono`,
+   `rpc_place_bet`, `rpc_remove_bet`, `rpc_resolve_prono`, `rpc_add_option`.
+   Vercel passera en erreur si ces objets n'existent pas encore.
 2. verifier objets SQL critiques (views + RPC)
 3. lancer tests unitaires/e2e critiques
 
@@ -31,6 +36,9 @@ Ce runbook couvre l'exploitation de PoliticoResto sur Vercel + Supabase.
    - creation `/post/new`
    - detail `/post/[slug]`
    - profil `/me`
+   - liste pronos `/pronos`
+   - classement pronos `/pronos/leaderboard`
+   - explication mécanique `/pronos/comment-ca-marche`
 
 ## Incidents frequents
 

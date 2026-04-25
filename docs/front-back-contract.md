@@ -17,6 +17,11 @@ Definir la source de verite des objets SQL consommes par le frontend et eviter t
 - Posts du sujet: `v_thread_posts` (ou alias compat `v_posts`).
 - Commentaires: `v_post_comments`.
 - Sondages: `v_post_poll_summary`.
+- Pronostics:
+  - `v_prono_summary` (page detail + liste).
+  - `v_prono_leaderboard` (classement public).
+  - `v_prono_user_history` (historique perso + banniere retroactive).
+  - `v_prono_admin_queue` (queue moderation, gardee par `is_moderator()`).
 
 ## Contrat ecriture (auth)
 
@@ -25,6 +30,11 @@ Definir la source de verite des objets SQL consommes par le frontend et eviter t
 - Creation commentaire: `create_comment` (alias compat possible: `create_post_comment`).
 - Reaction: `react_post` avec `reaction_target_type` conforme (`thread_post|comment`).
 - Sondage: `create_post_poll`, `submit_post_poll_vote`, `rpc_update_thread_post`.
+- Pronostics:
+  - utilisateur : `rpc_request_prono`, `rpc_place_bet`, `rpc_remove_bet`.
+  - moderation : `rpc_publish_prono`, `rpc_reject_prono`, `rpc_resolve_prono`,
+    `rpc_add_option` (gardes `is_moderator()`).
+  - notifications : update direct `user_notification.is_read` (RLS self-only).
 
 ## Invariants critiques
 

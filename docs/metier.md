@@ -41,7 +41,7 @@ Regle critique: un topic expose au public doit toujours avoir un post initial ou
 
 - Acceder a `/post/new` via CTA global.
 - Composer en Markdown.
-- Choisir mode `Post` ou `Sondage` (`Paris` desactive).
+- Choisir mode `Post`, `Sondage` ou `Demande de prono`.
 - Publier, puis retrouver son sujet dans le feed et le detail.
 
 ### Parcours espace personnel
@@ -61,7 +61,36 @@ Regle critique: un topic expose au public doit toujours avoir un post initial ou
 - Le redressement depend du profil des repondants et de leur historique de vote declare.
 - Le wording doit rester non trompeur: panel volontaire, estimation corrigee evolutive.
 
+## Pronostics
+
+Jeu social entre amis politises, sans argent, articule sur un classement public.
+
+- Un utilisateur soumet une demande via le composer (3e tab). Topic en
+  `pending_review`, discussion ouverte, pas encore de paris.
+- PoliticoResto (modo) valide ou refuse depuis `/admin/pronos`. Validation
+  bascule le topic en `open` et ouvre les paris ; refus en `rejected` avec
+  raison.
+- Pendant l'ouverture, les utilisateurs cliquent une option (multi-options
+  toleree si `allow_multiple = true`). Multiplicateur sentinelle calcule
+  uniquement a la resolution : `1 / part_lissée` plafonne a x5 (lissage
+  N=10, prior `1/N_options`). Jamais affiche avant resolution.
+- Le modo tranche depuis `/admin/pronos/[topicId]` : choisit la (les)
+  option(s) gagnante(s), fixe l'horodatage de fermeture, optionnellement
+  une note. Il peut aussi annuler avec raison (`voided`) — paris
+  conserves en lecture mais zero point.
+- Resolution propage : reputation_ledger pour les gagnants, banniere
+  retroactive sur la page du prono ("vous aviez parie X, vous gagnez Y
+  points avec un multiplicateur xZ"), notifications in-app.
+- Options ajoutables apres publication (`is_late = true`). Chaque ajout
+  emet une notif aux parieurs precedents et un marqueur chronologique
+  apparait sur la page publique.
+- Classement global `/pronos/leaderboard` : precision moyenne =
+  `points / (n_paris × 50)` (50 = 10 base × x5 plafond).
+- Voir `docs/pronos.md` pour la mecanique complete et les details
+  d'architecture.
+
 ## Hors scope actuel
 
-- Workflow complet `Paris` (tab present mais desactive).
+- Score de representativite du panel pronos (phase 2 — reutilisation du
+  worker de redressement existant).
 - Features historiques non alignees au contrat runtime courant.

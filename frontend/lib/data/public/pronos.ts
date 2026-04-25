@@ -137,19 +137,74 @@ export async function getPronoSummariesByTopicIds(
   return map;
 }
 
-export async function getOpenPronos(
-  options: { supabase?: SupabaseClient; limit?: number } = {},
+export type PronoListStatus = 'open' | 'resolved' | 'mine';
+export type PronoListSort = 'activity' | 'panel' | 'recent';
+
+interface PronoListOptions {
+  supabase?: SupabaseClient;
+  limit?: number;
+  status?: PronoListStatus;
+  sort?: PronoListSort;
+  userId?: string | null;
+}
+
+export async function getPronoList(
+  options: PronoListOptions = {},
 ): Promise<PronoSummaryView[]> {
   const supabase = options.supabase ?? (await createServerSupabaseClient());
   const limit = options.limit ?? 50;
-  const { data, error } = await supabase
-    .from('v_prono_summary')
-    .select('*')
-    .eq('topic_status', 'open')
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  const status = options.status ?? 'open';
+
+  let query = supabase.from('v_prono_summary').select('*');
+
+  if (status === 'open') {
+    query = query.eq('topic_status', 'open');
+  } else if (status === 'resolved') {
+    query = query.not('resolution_kind', 'is', null);
+  } else if (status === 'mine') {
+    if (!options.userId) return [];
+    // Resolve the question_ids the user has bet on first (RLS keeps
+    // the SELECT to their own rows). Then narrow v_prono_summary.
+    const { data: betRows } = await supabase
+      .from('prono_bet')
+      .select('question_id')
+      .eq('user_id', options.userId);
+    const questionIds = Array.from(
+      new Set(
+        ((betRows ?? []) as { question_id: string }[]).map(
+          (b) => b.question_id,
+        ),
+      ),
+    );
+    if (questionIds.length === 0) return [];
+    query = query.in('question_id', questionIds);
+  }
+
+  // Sort. `activity` proxy = updated_at (touched on every bet/option
+  // mutation via the underlying RPCs). `panel` = total_bets desc.
+  // `recent` = created_at desc (default fallback).
+  const sort = options.sort ?? 'activity';
+  if (sort === 'activity') {
+    query = query.order('updated_at', { ascending: false });
+  } else if (sort === 'panel') {
+    query = query.order('total_bets', { ascending: false });
+  } else {
+    query = query.order('created_at', { ascending: false });
+  }
+
+  const { data, error } = await query.limit(limit);
   if (error || !data) return [];
   return data
     .map((row) => normalize(row as Record<string, unknown>))
     .filter((s): s is PronoSummaryView => s !== null);
+}
+
+/**
+ * Backwards-compatible alias for {@link getPronoList} with default
+ * "open + activity" filter.
+ */
+export async function getOpenPronos(
+  options: { supabase?: SupabaseClient; limit?: number } = {},
+): Promise<PronoSummaryView[]> {
+  return getPronoList({ ...options, status: 'open', sort: 'activity' });
 }
