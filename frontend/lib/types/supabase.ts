@@ -674,6 +674,325 @@ export type Database = {
           },
         ];
       };
+      prono_bet: {
+        Row: {
+          bet_at: string;
+          id: string;
+          is_pruned: boolean;
+          option_id: string;
+          question_id: string;
+          user_id: string;
+        };
+        Insert: {
+          bet_at?: string;
+          id?: string;
+          is_pruned?: boolean;
+          option_id: string;
+          question_id: string;
+          user_id: string;
+        };
+        Update: {
+          bet_at?: string;
+          id?: string;
+          is_pruned?: boolean;
+          option_id?: string;
+          question_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_bet_option_id_fkey';
+            columns: ['option_id'];
+            isOneToOne: false;
+            referencedRelation: 'prono_option';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_option_id_fkey';
+            columns: ['option_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_user_history';
+            referencedColumns: ['option_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'prono_question';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_summary';
+            referencedColumns: ['question_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      prono_distribution_snapshot: {
+        Row: {
+          active_options_count: number;
+          captured_at: string;
+          id: number;
+          option_id: string;
+          question_id: string;
+          share: number;
+          total_bets: number;
+        };
+        Insert: {
+          active_options_count: number;
+          captured_at?: string;
+          id?: number;
+          option_id: string;
+          question_id: string;
+          share: number;
+          total_bets: number;
+        };
+        Update: {
+          active_options_count?: number;
+          captured_at?: string;
+          id?: number;
+          option_id?: string;
+          question_id?: string;
+          share?: number;
+          total_bets?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_distribution_snapshot_option_id_fkey';
+            columns: ['option_id'];
+            isOneToOne: false;
+            referencedRelation: 'prono_option';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_distribution_snapshot_option_id_fkey';
+            columns: ['option_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_user_history';
+            referencedColumns: ['option_id'];
+          },
+          {
+            foreignKeyName: 'prono_distribution_snapshot_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'prono_question';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_distribution_snapshot_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_summary';
+            referencedColumns: ['question_id'];
+          },
+        ];
+      };
+      prono_option: {
+        Row: {
+          added_at: string;
+          id: string;
+          is_active: boolean;
+          is_catchall: boolean;
+          label: string;
+          question_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          added_at?: string;
+          id?: string;
+          is_active?: boolean;
+          is_catchall?: boolean;
+          label: string;
+          question_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          added_at?: string;
+          id?: string;
+          is_active?: boolean;
+          is_catchall?: boolean;
+          label?: string;
+          question_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_option_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'prono_question';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_option_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_summary';
+            referencedColumns: ['question_id'];
+          },
+        ];
+      };
+      prono_question: {
+        Row: {
+          allow_multiple: boolean;
+          betting_cutoff_at: string | null;
+          created_at: string;
+          id: string;
+          question_text: string;
+          requested_by: string;
+          thread_post_id: string | null;
+          topic_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          allow_multiple?: boolean;
+          betting_cutoff_at?: string | null;
+          created_at?: string;
+          id?: string;
+          question_text: string;
+          requested_by: string;
+          thread_post_id?: string | null;
+          topic_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          allow_multiple?: boolean;
+          betting_cutoff_at?: string | null;
+          created_at?: string;
+          id?: string;
+          question_text?: string;
+          requested_by?: string;
+          thread_post_id?: string | null;
+          topic_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_question_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_thread_post_id_fkey';
+            columns: ['thread_post_id'];
+            isOneToOne: true;
+            referencedRelation: 'thread_post';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_question_thread_post_id_fkey';
+            columns: ['thread_post_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_thread_posts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'topic';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_feed_global';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_thread_detail';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      prono_resolution: {
+        Row: {
+          question_id: string;
+          resolution_kind: string;
+          resolution_note: string | null;
+          resolved_at: string;
+          resolved_by: string;
+          void_reason: string | null;
+          winning_option_ids: string[] | null;
+        };
+        Insert: {
+          question_id: string;
+          resolution_kind: string;
+          resolution_note?: string | null;
+          resolved_at?: string;
+          resolved_by: string;
+          void_reason?: string | null;
+          winning_option_ids?: string[] | null;
+        };
+        Update: {
+          question_id?: string;
+          resolution_kind?: string;
+          resolution_note?: string | null;
+          resolved_at?: string;
+          resolved_by?: string;
+          void_reason?: string | null;
+          winning_option_ids?: string[] | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_resolution_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: true;
+            referencedRelation: 'prono_question';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_resolution_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_prono_summary';
+            referencedColumns: ['question_id'];
+          },
+          {
+            foreignKeyName: 'prono_resolution_resolved_by_fkey';
+            columns: ['resolved_by'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_resolution_resolved_by_fkey';
+            columns: ['resolved_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
       reaction: {
         Row: {
           created_at: string;
@@ -739,6 +1058,54 @@ export type Database = {
           region_label?: string;
         };
         Relationships: [];
+      };
+      reputation_ledger: {
+        Row: {
+          created_at: string;
+          delta: number;
+          event_type: Database['public']['Enums']['reputation_event_type'];
+          id: string;
+          metadata: Json;
+          reference_entity_id: string | null;
+          reference_entity_type: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          delta: number;
+          event_type: Database['public']['Enums']['reputation_event_type'];
+          id?: string;
+          metadata?: Json;
+          reference_entity_id?: string | null;
+          reference_entity_type: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          delta?: number;
+          event_type?: Database['public']['Enums']['reputation_event_type'];
+          id?: string;
+          metadata?: Json;
+          reference_entity_id?: string | null;
+          reference_entity_type?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reputation_ledger_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'reputation_ledger_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+        ];
       };
       subject: {
         Row: {
@@ -1652,6 +2019,48 @@ export type Database = {
           },
         ];
       };
+      user_notification: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_read: boolean;
+          kind: string;
+          payload: Json;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_read?: boolean;
+          kind: string;
+          payload?: Json;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_read?: boolean;
+          kind?: string;
+          payload?: Json;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_notification_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'user_notification_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
       user_private_political_profile: {
         Row: {
           created_at: string;
@@ -1974,6 +2383,169 @@ export type Database = {
           },
         ];
       };
+      v_prono_leaderboard: {
+        Row: {
+          bets_count: number | null;
+          display_name: string | null;
+          precision_pct: number | null;
+          rank: number | null;
+          total_max_possible: number | null;
+          total_score: number | null;
+          user_id: string | null;
+          username: string | null;
+          wins_count: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_bet_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+        ];
+      };
+      v_prono_summary: {
+        Row: {
+          allow_multiple: boolean | null;
+          betting_cutoff_at: string | null;
+          created_at: string | null;
+          current_user_bets: string[] | null;
+          options: Json | null;
+          question_id: string | null;
+          question_text: string | null;
+          requested_by_display_name: string | null;
+          requested_by_user_id: string | null;
+          requested_by_username: string | null;
+          resolution_kind: string | null;
+          resolution_note: string | null;
+          resolved_at: string | null;
+          title: string | null;
+          topic_id: string | null;
+          topic_slug: string | null;
+          topic_status: Database['public']['Enums']['topic_status'] | null;
+          total_bets: number | null;
+          updated_at: string | null;
+          void_reason: string | null;
+          winning_option_ids: string[] | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_question_requested_by_fkey';
+            columns: ['requested_by_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_requested_by_fkey';
+            columns: ['requested_by_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'topic';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_feed_global';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_thread_detail';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      v_prono_user_history: {
+        Row: {
+          bet_at: string | null;
+          is_catchall: boolean | null;
+          is_pruned: boolean | null;
+          multiplier: number | null;
+          option_id: string | null;
+          option_label: string | null;
+          points_earned: number | null;
+          question_id: string | null;
+          resolution_kind: string | null;
+          resolved_at: string | null;
+          smoothed_share: number | null;
+          title: string | null;
+          topic_id: string | null;
+          topic_slug: string | null;
+          user_id: string | null;
+          was_correct: boolean | null;
+          winning_option_ids: string[] | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_bet_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'prono_question';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_summary';
+            referencedColumns: ['question_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'topic';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_feed_global';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_thread_detail';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       v_thread_detail: {
         Row: {
           close_at: string | null;
@@ -2255,6 +2827,11 @@ export type Database = {
         };
         Returns: undefined;
       };
+      prono_capture_distribution: {
+        Args: { p_question_id: string };
+        Returns: undefined;
+      };
+      prono_make_slug: { Args: { p_title: string }; Returns: string };
       react_post: {
         Args: {
           p_reaction_type: Database['public']['Enums']['reaction_type'];
@@ -2292,6 +2869,10 @@ export type Database = {
           p_topic_id: string;
         };
         Returns: undefined;
+      };
+      rpc_add_option: {
+        Args: { p_label: string; p_question_id: string };
+        Returns: string;
       };
       rpc_create_poll: {
         Args: {
@@ -2460,6 +3041,19 @@ export type Database = {
         }[];
       };
       rpc_mark_completion_nudge_seen: { Args: never; Returns: undefined };
+      rpc_place_bet: {
+        Args: { p_option_id: string; p_question_id: string };
+        Returns: undefined;
+      };
+      rpc_publish_prono: { Args: { p_topic_id: string }; Returns: undefined };
+      rpc_reject_prono: {
+        Args: { p_reason: string; p_topic_id: string };
+        Returns: undefined;
+      };
+      rpc_remove_bet: {
+        Args: { p_option_id: string; p_question_id: string };
+        Returns: undefined;
+      };
       rpc_report_content: {
         Args: {
           p_reason_code: string;
@@ -2468,6 +3062,26 @@ export type Database = {
           p_target_type: string;
         };
         Returns: Json;
+      };
+      rpc_request_prono: {
+        Args: {
+          p_allow_multiple?: boolean;
+          p_options: string[];
+          p_question_text: string;
+          p_title: string;
+        };
+        Returns: string;
+      };
+      rpc_resolve_prono: {
+        Args: {
+          p_betting_cutoff_at?: string;
+          p_question_id: string;
+          p_resolution_kind: string;
+          p_resolution_note?: string;
+          p_void_reason?: string;
+          p_winning_option_ids?: string[];
+        };
+        Returns: undefined;
       };
       rpc_update_comment: {
         Args: { p_body_markdown: string; p_comment_id: string };
@@ -2820,10 +3434,12 @@ export type Database = {
       thread_post_type: 'article' | 'poll' | 'market';
       topic_status:
         | 'draft'
+        | 'pending_review'
         | 'open'
         | 'locked'
         | 'resolved'
         | 'archived'
+        | 'rejected'
         | 'removed';
       visibility_level:
         | 'public'
@@ -3076,10 +3692,12 @@ export const Constants = {
       thread_post_type: ['article', 'poll', 'market'],
       topic_status: [
         'draft',
+        'pending_review',
         'open',
         'locked',
         'resolved',
         'archived',
+        'rejected',
         'removed',
       ],
       visibility_level: [
