@@ -13,9 +13,17 @@ async function fetchTopicDetail({
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
   slug: string;
 }) {
+  // Query `topic` directly (instead of v_thread_detail) so we also find
+  // topics in pending_review / rejected status — those are pronos that
+  // never made it through moderation but whose owner / discussers still
+  // need to reach the page (banner + commentary). RLS on `topic` already
+  // hides drafts/removed/non-public rows, so this isn't a privacy
+  // regression.
+  // The downstream `toThreadRow` mapper expects an `effective_visibility`
+  // field; alias the table column so callers don't change.
   return await supabase
-    .from("v_thread_detail")
-    .select("id, slug, title, description, topic_status, effective_visibility, open_at, close_at, created_at, space_id")
+    .from("topic")
+    .select("id, slug, title, description, topic_status, effective_visibility:visibility, open_at, close_at, created_at, space_id")
     .eq("slug", slug)
     .maybeSingle();
 }

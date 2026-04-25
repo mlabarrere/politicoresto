@@ -4,7 +4,9 @@ import { ForumPage } from '@/components/forum/forum-page';
 import { EmptyState } from '@/components/layout/empty-state';
 import { PageContainer } from '@/components/layout/page-container';
 import { ScreenState } from '@/components/layout/screen-state';
+import { PronoDetail } from '@/components/prono/prono-detail';
 import { getPostDetail } from '@/lib/data/public/posts';
+import { getPronoSummaryByTopicId } from '@/lib/data/public/pronos';
 import {
   buildForumCommentTree,
   mapPostViewToForumPost,
@@ -50,6 +52,10 @@ export default async function PostDetailPage({
 
   const post = detail.post;
   const op = detail.posts[0] ?? null;
+  const isMarket = op?.type === 'market';
+  const prono = isMarket
+    ? await getPronoSummaryByTopicId(String(post.id), { supabase })
+    : null;
 
   return (
     <PageContainer>
@@ -66,6 +72,12 @@ export default async function PostDetailPage({
             tone="danger"
             title="🚫 Demande refusée"
             body="Cette demande n'a pas été retenue par PoliticoResto. La discussion reste consultable mais les paris sont fermés."
+          />
+        ) : null}
+        {prono && post.topic_status === 'open' ? (
+          <PronoDetail
+            summary={prono}
+            isAuthenticated={Boolean(currentUserId)}
           />
         ) : null}
         {op ? (

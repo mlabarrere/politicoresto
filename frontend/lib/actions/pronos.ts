@@ -146,6 +146,99 @@ export async function publishPronoAction(formData: FormData): Promise<void> {
 }
 
 /**
+ * `placeBetAction` — auth user places (or updates) a bet on an option.
+ * Reads `question_id`, `option_id`, `topic_slug` from the form data so
+ * the server action can revalidate the right slug after success.
+ */
+export async function placeBetAction(formData: FormData): Promise<void> {
+  const questionId = String(formData.get('question_id') ?? '').trim();
+  const optionId = String(formData.get('option_id') ?? '').trim();
+  const topicSlug = String(formData.get('topic_slug') ?? '').trim();
+  if (!questionId || !optionId) throw new Error('Pronostic invalide');
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.rpc('rpc_place_bet', {
+      p_question_id: questionId,
+      p_option_id: optionId,
+    });
+    if (error) {
+      log.error(
+        {
+          event: 'pronos.bet.rpc_failed',
+          question_id: questionId,
+          message: error.message,
+          code: error.code,
+        },
+        'place bet rpc failed',
+      );
+      throw new Error('Pari refusé.');
+    }
+    log.info(
+      {
+        event: 'pronos.bet.placed',
+        question_id: questionId,
+        option_id: optionId,
+      },
+      'bet placed',
+    );
+    if (topicSlug) revalidatePath(`/post/${topicSlug}`);
+    revalidatePath('/pronos');
+    revalidatePath('/');
+  } catch (error) {
+    logError(log, error, {
+      event: 'pronos.bet.failed',
+      question_id: questionId,
+    });
+    throw error;
+  }
+}
+
+/**
+ * `removeBetAction` — auth user retires their bet on an option.
+ */
+export async function removeBetAction(formData: FormData): Promise<void> {
+  const questionId = String(formData.get('question_id') ?? '').trim();
+  const optionId = String(formData.get('option_id') ?? '').trim();
+  const topicSlug = String(formData.get('topic_slug') ?? '').trim();
+  if (!questionId || !optionId) throw new Error('Pronostic invalide');
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.rpc('rpc_remove_bet', {
+      p_question_id: questionId,
+      p_option_id: optionId,
+    });
+    if (error) {
+      log.error(
+        {
+          event: 'pronos.bet.remove_rpc_failed',
+          question_id: questionId,
+          message: error.message,
+          code: error.code,
+        },
+        'remove bet rpc failed',
+      );
+      throw new Error('Retrait impossible.');
+    }
+    log.info(
+      {
+        event: 'pronos.bet.removed',
+        question_id: questionId,
+        option_id: optionId,
+      },
+      'bet removed',
+    );
+    if (topicSlug) revalidatePath(`/post/${topicSlug}`);
+    revalidatePath('/pronos');
+  } catch (error) {
+    logError(log, error, {
+      event: 'pronos.bet.remove_failed',
+      question_id: questionId,
+    });
+    throw error;
+  }
+}
+
+/**
  * `rejectPronoAction` — moderator rejects a pending request with a reason.
  */
 export async function rejectPronoAction(formData: FormData): Promise<void> {
