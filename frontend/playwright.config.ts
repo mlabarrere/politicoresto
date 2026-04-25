@@ -118,6 +118,9 @@ export default defineConfig({
           // real env is populated — Supabase env above IS populated,
           // but t3-env still checks a few things it shouldn't for E2E.
           SKIP_ENV_VALIDATION: 'true',
+          // MCP surface is OFF by default (lot 0); E2E suite covers its
+          // security tests, so we opt-in inside the test webServer.
+          MCP_ENABLED: 'true',
         },
       },
   projects: [

@@ -10,6 +10,23 @@ passe par Supabase (OAuth 2.1 + Google SSO), reçoit un access_token, et toute
 écriture est filtrée par RLS exactement comme un clic dans le navigateur. Le
 code de la route n'utilise jamais `service_role`.
 
+## Activation (feature flag)
+
+La surface MCP est gardée par la variable d'environnement `MCP_ENABLED`
+(serveur uniquement). Par défaut **désactivée** — les deux endpoints
+(`/api/mcp/*` et `/.well-known/oauth-protected-resource`) renvoient `404`
+tant que le flag n'est pas explicitement positionné à `true`.
+
+```bash
+# frontend/.env.local
+MCP_ENABLED=true
+```
+
+L'objectif : éviter qu'un déploiement de staging ou un worktree expérimental
+expose la surface sans intention. Pour activer en preview/prod, ajouter
+`MCP_ENABLED=true` dans les variables d'environnement Vercel du projet
+correspondant.
+
 ## Architecture
 
 ```
