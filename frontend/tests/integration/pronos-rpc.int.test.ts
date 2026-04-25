@@ -320,6 +320,88 @@ describe('pronos rpcs (integration)', () => {
       .select('id')
       .eq('question_id', q!.id);
     expect(bets).toHaveLength(1);
+
+    // Regression (review #3) : voided must flip topic_status out of
+    // 'open' so feeds, the admin queue and the public PronoDetail
+    // stop treating the topic as actionable.
+    const { data: topicAfter } = await admin
+      .from('topic')
+      .select('topic_status')
+      .eq('id', topicId)
+      .single();
+    expect(topicAfter?.topic_status).not.toBe('open');
+  });
+
+  it('rejects duplicate-only options (regression: distinct count bypass)', async () => {
+    const { error } = await alice.client.rpc('rpc_request_prono', {
+      p_title: 'Test duplicate',
+      p_question_text: 'Doublons',
+      p_options: ['Oui', 'Oui'],
+      p_allow_multiple: false,
+    });
+    expect(error).not.toBeNull();
+    expect(error?.message).toMatch(/Au moins deux options distinctes/);
+  });
+
+  it('rejects whitespace-only duplicate variants', async () => {
+    const { error } = await alice.client.rpc('rpc_request_prono', {
+      p_title: 'Test trim doublon',
+      p_question_text: 'Trim',
+      p_options: ['Oui', '  Oui  ', ''],
+      p_allow_multiple: false,
+    });
+    expect(error).not.toBeNull();
+    expect(error?.message).toMatch(/Au moins deux options distinctes/);
+  });
+
+  it('single-choice mode: concurrent bets on different options keep one row (regression: race)', async () => {
+    const { data: topicId } = await alice.client.rpc('rpc_request_prono', {
+      p_title: 'Test concurrent',
+      p_question_text: 'Concurrent bets',
+      p_options: ['A', 'B'],
+      p_allow_multiple: false,
+    });
+    cleanupTopicIds.push(topicId as string);
+    await modo.client.rpc('rpc_publish_prono', { p_topic_id: topicId });
+
+    const admin = adminClient();
+    const { data: q } = await admin
+      .from('prono_question')
+      .select('id')
+      .eq('topic_id', topicId)
+      .single();
+    const { data: opts } = await admin
+      .from('prono_option')
+      .select('id, label')
+      .eq('question_id', q!.id);
+    const a = opts!.find((o) => o.label === 'A')!;
+    const b = opts!.find((o) => o.label === 'B')!;
+
+    // Fire two competing place_bet calls in parallel — one per option.
+    // The advisory lock serializes them; whichever lands second
+    // overwrites the first, so the user must end up with exactly one
+    // active bet.
+    const [r1, r2] = await Promise.allSettled([
+      alice.client.rpc('rpc_place_bet', {
+        p_question_id: q!.id,
+        p_option_id: a.id,
+      }),
+      alice.client.rpc('rpc_place_bet', {
+        p_question_id: q!.id,
+        p_option_id: b.id,
+      }),
+    ]);
+    // Both calls should succeed (lock just orders them, doesn't reject).
+    expect(r1.status).toBe('fulfilled');
+    expect(r2.status).toBe('fulfilled');
+
+    const { data: bets } = await admin
+      .from('prono_bet')
+      .select('option_id')
+      .eq('question_id', q!.id)
+      .eq('user_id', alice.userId);
+    expect(bets).toHaveLength(1);
+    expect([a.id, b.id]).toContain(bets![0]!.option_id);
   });
 
   it('cutoff prunes late bets from scoring', async () => {
