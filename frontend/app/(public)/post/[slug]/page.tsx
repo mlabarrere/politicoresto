@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { AppBanner } from '@/components/app/app-banner';
 import { ForumPage } from '@/components/forum/forum-page';
 import { EmptyState } from '@/components/layout/empty-state';
 import { PageContainer } from '@/components/layout/page-container';
@@ -53,6 +54,20 @@ export default async function PostDetailPage({
   return (
     <PageContainer>
       <div className="mx-auto max-w-6xl space-y-4">
+        {post.topic_status === 'pending_review' ? (
+          <AppBanner
+            tone="warning"
+            title="📋 Demande en attente de validation"
+            body="Cette demande de pronostic est en cours de relecture par PoliticoResto. Vous pouvez en discuter ci-dessous, mais aucun pari n'est encore ouvert."
+          />
+        ) : null}
+        {post.topic_status === 'rejected' ? (
+          <AppBanner
+            tone="danger"
+            title="🚫 Demande refusée"
+            body="Cette demande n'a pas été retenue par PoliticoResto. La discussion reste consultable mais les paris sont fermés."
+          />
+        ) : null}
         {op ? (
           <ForumPage
             post={mapPostViewToForumPost(op, post.title)}

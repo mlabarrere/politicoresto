@@ -395,6 +395,13 @@ export type Database = {
             foreignKeyName: 'post_topic_id_fkey';
             columns: ['topic_id'];
             isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'post_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: false;
             referencedRelation: 'v_thread_detail';
             referencedColumns: ['id'];
           },
@@ -725,6 +732,13 @@ export type Database = {
             foreignKeyName: 'prono_bet_question_id_fkey';
             columns: ['question_id'];
             isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['question_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
             referencedRelation: 'v_prono_summary';
             referencedColumns: ['question_id'];
           },
@@ -798,6 +812,13 @@ export type Database = {
             foreignKeyName: 'prono_distribution_snapshot_question_id_fkey';
             columns: ['question_id'];
             isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['question_id'];
+          },
+          {
+            foreignKeyName: 'prono_distribution_snapshot_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
             referencedRelation: 'v_prono_summary';
             referencedColumns: ['question_id'];
           },
@@ -838,6 +859,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'prono_question';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_option_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['question_id'];
           },
           {
             foreignKeyName: 'prono_option_question_id_fkey';
@@ -929,6 +957,13 @@ export type Database = {
             foreignKeyName: 'prono_question_topic_id_fkey';
             columns: ['topic_id'];
             isOneToOne: true;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
             referencedRelation: 'v_thread_detail';
             referencedColumns: ['id'];
           },
@@ -969,6 +1004,13 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: 'prono_question';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'prono_resolution_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['question_id'];
           },
           {
             foreignKeyName: 'prono_resolution_question_id_fkey';
@@ -1545,6 +1587,13 @@ export type Database = {
             foreignKeyName: 'thread_post_thread_id_fkey';
             columns: ['thread_id'];
             isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'thread_post_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
             referencedRelation: 'v_thread_detail';
             referencedColumns: ['id'];
           },
@@ -1748,6 +1797,13 @@ export type Database = {
             foreignKeyName: 'topic_resolution_topic_id_fkey';
             columns: ['topic_id'];
             isOneToOne: true;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'topic_resolution_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
             referencedRelation: 'v_thread_detail';
             referencedColumns: ['id'];
           },
@@ -1814,6 +1870,13 @@ export type Database = {
             columns: ['topic_id'];
             isOneToOne: false;
             referencedRelation: 'v_feed_global';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'topic_resolution_source_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
             referencedColumns: ['topic_id'];
           },
           {
@@ -2306,6 +2369,13 @@ export type Database = {
             foreignKeyName: 'post_topic_id_fkey';
             columns: ['thread_id'];
             isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'post_topic_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
             referencedRelation: 'v_thread_detail';
             referencedColumns: ['id'];
           },
@@ -2378,8 +2448,46 @@ export type Database = {
             foreignKeyName: 'thread_post_thread_id_fkey';
             columns: ['post_id'];
             isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'thread_post_thread_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
             referencedRelation: 'v_thread_detail';
             referencedColumns: ['id'];
+          },
+        ];
+      };
+      v_prono_admin_queue: {
+        Row: {
+          allow_multiple: boolean | null;
+          option_count: number | null;
+          question_id: string | null;
+          question_text: string | null;
+          requested_at: string | null;
+          requested_by: string | null;
+          requested_by_display_name: string | null;
+          requested_by_username: string | null;
+          title: string | null;
+          topic_id: string | null;
+          topic_slug: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'prono_question_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'app_profile';
+            referencedColumns: ['user_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_requested_by_fkey';
+            columns: ['requested_by'];
+            isOneToOne: false;
+            referencedRelation: 'user_visibility_settings';
+            referencedColumns: ['user_id'];
           },
         ];
       };
@@ -2469,6 +2577,13 @@ export type Database = {
             foreignKeyName: 'prono_question_topic_id_fkey';
             columns: ['topic_id'];
             isOneToOne: true;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
             referencedRelation: 'v_thread_detail';
             referencedColumns: ['id'];
           },
@@ -2506,6 +2621,13 @@ export type Database = {
             foreignKeyName: 'prono_bet_question_id_fkey';
             columns: ['question_id'];
             isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
+            referencedColumns: ['question_id'];
+          },
+          {
+            foreignKeyName: 'prono_bet_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
             referencedRelation: 'v_prono_summary';
             referencedColumns: ['question_id'];
           },
@@ -2535,6 +2657,13 @@ export type Database = {
             columns: ['topic_id'];
             isOneToOne: true;
             referencedRelation: 'v_feed_global';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'prono_question_topic_id_fkey';
+            columns: ['topic_id'];
+            isOneToOne: true;
+            referencedRelation: 'v_prono_admin_queue';
             referencedColumns: ['topic_id'];
           },
           {
@@ -2635,6 +2764,13 @@ export type Database = {
             columns: ['thread_id'];
             isOneToOne: false;
             referencedRelation: 'v_feed_global';
+            referencedColumns: ['topic_id'];
+          },
+          {
+            foreignKeyName: 'thread_post_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_prono_admin_queue';
             referencedColumns: ['topic_id'];
           },
           {

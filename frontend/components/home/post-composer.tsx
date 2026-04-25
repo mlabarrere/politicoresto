@@ -29,16 +29,21 @@ const PARTY_OPTIONS = [
   { slug: 'reconquete', label: '⬛ Reconquête' },
 ];
 
+type ComposerMode = 'post' | 'poll' | 'prono';
+
 interface PostDraft {
   title: string;
   body: string;
   source_url: string;
   subject_ids: string[];
   party_tags: string[];
-  mode: 'post' | 'poll';
+  mode: ComposerMode;
   poll_question: string;
   poll_deadline_hours: string;
   poll_options: string[];
+  prono_question: string;
+  prono_options: string[];
+  prono_allow_multiple: boolean;
 }
 
 function buildDefaultDraft(): PostDraft {
@@ -52,16 +57,25 @@ function buildDefaultDraft(): PostDraft {
     poll_question: '',
     poll_deadline_hours: '24',
     poll_options: ['', ''],
+    prono_question: '',
+    prono_options: ['', ''],
+    prono_allow_multiple: false,
   };
+}
+
+function normalizeMode(value: unknown): ComposerMode {
+  return value === 'poll' || value === 'prono' ? value : 'post';
 }
 
 export function PostComposer({
   action,
+  pronoAction,
   redirectPath = '/',
   initialError = null,
   subjects = [],
 }: {
   action: (formData: FormData) => Promise<void>;
+  pronoAction?: (formData: FormData) => Promise<void>;
   redirectPath?: string;
   initialError?: string | null;
   subjects?: SubjectView[];
@@ -99,13 +113,20 @@ export function PostComposer({
         party_tags: Array.isArray(parsed.party_tags)
           ? parsed.party_tags.map(String)
           : [],
-        mode: parsed.mode === 'poll' ? 'poll' : 'post',
+        mode: normalizeMode(parsed.mode),
         poll_question: parsed.poll_question ?? '',
         poll_deadline_hours: parsed.poll_deadline_hours ?? '24',
         poll_options:
           Array.isArray(parsed.poll_options) && parsed.poll_options.length >= 2
             ? parsed.poll_options.map((entry) => String(entry ?? ''))
             : ['', ''],
+        prono_question: parsed.prono_question ?? '',
+        prono_options:
+          Array.isArray(parsed.prono_options) &&
+          parsed.prono_options.length >= 2
+            ? parsed.prono_options.map((entry) => String(entry ?? ''))
+            : ['', ''],
+        prono_allow_multiple: parsed.prono_allow_multiple === true,
       });
     } catch {
       window.localStorage.removeItem(DRAFT_KEY);
@@ -306,6 +327,118 @@ export function PostComposer({
     </div>
   );
 
+  const pronoTab = (
+    <div className="space-y-4">
+      <AppBanner
+        title="Demande de pronostic"
+        body="Une demande publique sera publiée. PoliticoResto valide ou refuse, puis ouvre les paris. L'option « Autre » est ajoutée automatiquement."
+      />
+
+      <section className="space-y-3 rounded-xl border border-dashed border-border p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Pronostic à proposer
+        </p>
+
+        <label
+          htmlFor="post-composer-prono-question"
+          className="block space-y-2"
+        >
+          <span className="text-xs font-medium text-muted-foreground">
+            Question
+          </span>
+          <AppInput
+            id="post-composer-prono-question"
+            name="prono_question"
+            required={draft.mode === 'prono'}
+            value={draft.prono_question}
+            onChange={(event) => {
+              setDraft((prev) => ({
+                ...prev,
+                prono_question: event.target.value,
+              }));
+            }}
+            placeholder="Bayrou sera-t-il toujours premier ministre au 31/12/2026 ?"
+          />
+        </label>
+
+        <div className="space-y-2">
+          <span className="text-xs font-medium text-muted-foreground">
+            Options ({draft.prono_options.length}/8)
+          </span>
+          {draft.prono_options.map((option, index) => (
+            <div
+              // eslint-disable-next-line react/no-array-index-key -- options are plain strings; no stable id, only append/remove-by-index
+              key={`prono-option-${index}`}
+              className="flex items-center gap-2"
+            >
+              <AppInput
+                required={draft.mode === 'prono' && index < 2}
+                name="prono_options"
+                value={option}
+                onChange={(event) => {
+                  const next = [...draft.prono_options];
+                  next[index] = event.target.value;
+                  setDraft((prev) => ({ ...prev, prono_options: next }));
+                }}
+                placeholder={`Option ${index + 1}`}
+              />
+              {draft.prono_options.length > 2 ? (
+                <AppButton
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setDraft((prev) => ({
+                      ...prev,
+                      prono_options: prev.prono_options.filter(
+                        (_, idx) => idx !== index,
+                      ),
+                    }));
+                  }}
+                >
+                  Retirer
+                </AppButton>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        {draft.prono_options.length < 8 ? (
+          <AppButton
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setDraft((prev) => ({
+                ...prev,
+                prono_options: [...prev.prono_options, ''],
+              }));
+            }}
+          >
+            Ajouter option
+          </AppButton>
+        ) : null}
+
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            name="prono_allow_multiple"
+            value="true"
+            checked={draft.prono_allow_multiple}
+            onChange={(event) => {
+              setDraft((prev) => ({
+                ...prev,
+                prono_allow_multiple: event.target.checked,
+              }));
+            }}
+          />
+          <span>
+            Autoriser plusieurs réponses simultanées (chaque option pariée
+            compte indépendamment).
+          </span>
+        </label>
+      </section>
+    </div>
+  );
+
   return (
     <AppCard className="mx-auto w-full max-w-4xl space-y-4">
       <header className="space-y-1">
@@ -335,6 +468,13 @@ export function PostComposer({
           // on success so we never come back here to clean up.)
           if (typeof window !== 'undefined') {
             window.localStorage.removeItem(DRAFT_KEY);
+          }
+          // The composer hosts three independent flows; the prono request
+          // takes a different RPC than `rpc_create_post_full`. Dispatch on
+          // the active mode so the parent can pass either or both actions.
+          if (fd.get('post_mode') === 'prono' && pronoAction) {
+            await pronoAction(fd);
+            return;
           }
           await action(fd);
         }}
@@ -451,14 +591,20 @@ export function PostComposer({
         <AppTabs
           value={draft.mode}
           onValueChange={(mode) => {
-            setDraft((prev) => ({
-              ...prev,
-              mode: mode === 'poll' ? 'poll' : 'post',
-            }));
+            setDraft((prev) => ({ ...prev, mode: normalizeMode(mode) }));
           }}
           items={[
             { key: 'post', label: 'Post', content: postTab },
             { key: 'poll', label: 'Sondage', content: pollTab },
+            ...(pronoAction
+              ? [
+                  {
+                    key: 'prono',
+                    label: 'Demande de prono',
+                    content: pronoTab,
+                  },
+                ]
+              : []),
           ]}
         />
 
@@ -475,7 +621,11 @@ export function PostComposer({
           <AppButton variant="secondary" href={redirectPath}>
             Annuler
           </AppButton>
-          <AppButton type="submit">Publier le post</AppButton>
+          <AppButton type="submit">
+            {draft.mode === 'prono'
+              ? 'Soumettre la demande'
+              : 'Publier le post'}
+          </AppButton>
         </footer>
       </form>
     </AppCard>
