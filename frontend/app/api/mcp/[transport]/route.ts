@@ -14,6 +14,7 @@
  *     pointer to our PRM.
  */
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
+import { isMcpEnabled } from '@/lib/mcp/feature-flag';
 import { MCP_PRM_PATH } from '@/lib/mcp/oauth-metadata';
 import { registerBrowseTopics } from '@/lib/mcp/tools/browse-topics';
 import { registerEditMyProfile } from '@/lib/mcp/tools/edit-profile';
@@ -48,4 +49,7 @@ const authHandler = withMcpAuth(mcpHandler, verifyMcpBearer, {
   resourceMetadataPath: MCP_PRM_PATH,
 });
 
-export { authHandler as GET, authHandler as POST, authHandler as DELETE };
+const gated = (req: Request) =>
+  isMcpEnabled() ? authHandler(req) : new Response(null, { status: 404 });
+
+export { gated as GET, gated as POST, gated as DELETE };

@@ -16,9 +16,23 @@ export async function AppShell({ children }: PropsWithChildren) {
   const userId = await getAuthUserId(supabase);
   const isAuthenticated = Boolean(userId);
 
+  // Unread-notification count for the header badge. RLS scopes the query
+  // to the current user; anonymous visitors get 0.
+  let unreadNotifications = 0;
+  if (userId) {
+    const { count } = await supabase
+      .from('user_notification')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_read', false);
+    unreadNotifications = count ?? 0;
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppHeader isAuthenticated={isAuthenticated} />
+      <AppHeader
+        isAuthenticated={isAuthenticated}
+        unreadNotifications={unreadNotifications}
+      />
       <main className="pb-20">{children}</main>
       <div className="fixed bottom-20 right-4 z-40 lg:hidden">
         <AppPrimaryCTA mode="fab" isAuthenticated={isAuthenticated} />

@@ -9,9 +9,13 @@ import {
   metadataCorsOptionsRequestHandler,
   protectedResourceHandler,
 } from 'mcp-handler';
+import { isMcpEnabled } from '@/lib/mcp/feature-flag';
 import { resourceUrlFor, supabaseAuthIssuer } from '@/lib/mcp/oauth-metadata';
 
 export async function GET(req: Request) {
+  if (!isMcpEnabled()) {
+    return new Response(null, { status: 404 });
+  }
   const handler = protectedResourceHandler({
     authServerUrls: [supabaseAuthIssuer()],
     resourceUrl: resourceUrlFor(req),

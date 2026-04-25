@@ -57,7 +57,10 @@ fi
 # exception: it creates a createServerClient with a custom cookie bridge that
 # writes to a specific NextResponse (see app/auth/callback/route.ts header
 # + .claude/skills/authentication/reference/supabase-auth-nextjs.md).
-adhoc_clients=$(grep -rEn "createBrowserClient\(|createServerClient\(|createClient\(" --include='*.ts' --include='*.tsx' app components lib 2>/dev/null | grep -v "^lib/supabase/" | grep -v "^app/auth/callback/route.ts" | grep -v "tests/" || true)
+# `app/dev/sign-in-as-seed/route.ts` follows the same pattern but is gated
+# triple — NODE_ENV !== 'production' AND DEV_AUTH_BYPASS=true AND a
+# service-role key — so it never reaches a Vercel Preview/Prod runtime.
+adhoc_clients=$(grep -rEn "createBrowserClient\(|createServerClient\(|createClient\(" --include='*.ts' --include='*.tsx' app components lib 2>/dev/null | grep -v "^lib/supabase/" | grep -v "^app/auth/callback/route.ts" | grep -v "^app/dev/sign-in-as-seed/route.ts" | grep -v "tests/" || true)
 if [ -n "$adhoc_clients" ]; then
   printf '%s\n' "$adhoc_clients" >&2
   fail "Supabase client created outside lib/supabase/ — use one of the four canonical factories"
