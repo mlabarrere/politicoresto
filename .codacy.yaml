@@ -33,6 +33,11 @@ exclude_paths:
   - "README.md"
   - ".claude/**"
   - ".claude/**/*"
+  # Framework BMAD installe via npx (code vendor third-party : scripts shell,
+  # templates, agents). On ne lint pas une dependance — ses metriques de
+  # complexite/duplication/securite ne sont pas les notres et polluent le repo.
+  - "_bmad/**"
+  - "_bmad/**/*"
   - "docs/**"
   - "docs/**/*"
   - "supabase/docs/**"
