@@ -39,3 +39,14 @@ exclude_paths:
   # Baseline migration is a pg_dump of pre-existing staging schema, not
   # hand-written code — style and complexity checks are noise on a dump.
   - "supabase/migrations/20260402193700_remote_baseline.sql"
+  # ESLint (Codacy's only enabled tool here) cannot parse CSS — it errors on
+  # the `@import`/`@layer` at-rules. The repo has no stylelint; CSS is owned by
+  # Prettier. Linting it with ESLint is a misapplied tool, not a real finding.
+  - "**/*.css"
+  # Tailwind config uses a default export by Tailwind/Next convention; the
+  # repo's own ESLint deliberately ignores this file (see frontend/.eslintrc.cjs
+  # ignorePatterns). Align Codacy's scope with the repo's authoritative linter.
+  - "frontend/tailwind.config.ts"
+  # Frozen poll/prono E2E specs (Tranche 2/3): excluded from the repo's tsconfig
+  # + eslint + Playwright run; not active code until the features unfreeze.
+  - "frontend/tests/_frozen-e2e/**"
