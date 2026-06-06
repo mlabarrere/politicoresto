@@ -62,6 +62,11 @@ purs sont déjà invisibles dans le feed** (filtre OP `type === 'article'`).
       (exclue de tsconfig + eslint + testDir Playwright) ; cas poll retiré de
       `post-creation.spec.ts`. Les tests d'**intégration** poll/prono restent —
       ils visent le backend (RPC) qui n'est **pas** gelé.
+- [x] **Surfaces résiduelles** (audit « carré ») : page d'édition ne propose
+      plus le `PollEditForm` (un post-sondage résiduel s'édite en article) ;
+      cloche **Notifications** retirée du header + requête `user_notification`
+      retirée de `AppShell` ; route `/me/notifications` en stub `notFound()`
+      (le système de notif n'est produit que par le backend prono, gelé).
 
 ### (2) Finir / réparer le forum
 
@@ -75,17 +80,35 @@ purs sont déjà invisibles dans le feed** (filtre OP `type === 'article'`).
 - [ ] Smoke local (`./scripts/dev.sh`) : `/`, `/post/new` (1 flux), `/post/[slug]`,
       commentaires, votes, `/me` — UI ouverte + logs inspectés.
 
-### (3) Déploiement prod
+### (3) Déploiement prod — **différé (décision 2026-06-06)**
 
-- [ ] **Baseline** : `supabase migration repair --status applied 20260402193700`
-      sur staging puis prod avant le premier `db push` (sinon migrate échoue).
-- [ ] **Runbook** `docs/runbook-prod.md` : retirer la dépendance bloquante aux
-      objets SQL prono et les smoke tests `/pronos*` ; garder le smoke forum.
-- [ ] **Env vars Vercel prod** : url + publishable key (client) + service role
-      (server-only) présents (le build prod fait tourner la validation
-      `@t3-oss/env-nextjs`).
-- [ ] **Migrations prono** : `db push --include-all` les applique (objets SQL
-      présents mais frontend non exposé) — acceptable.
-- [ ] **Publier une GitHub Release** → déclenche `deploy-production.yml`.
-- [ ] Post-déploiement : Vercel `READY`, smoke `/`, `/post/new`, `/post/[slug]`,
-      `/me` ; vérifier que `/pronos`, `/admin/pronos` renvoient 404.
+**Constat Supabase (audit MCP).** Le compte Supabase connecté ne voit qu'un
+projet **« Marto » (`pmzeiwrrciutmdvifyex`) — une app d'inventaire, pas
+PoliticoResto.** La prod référence `gzdpisxkavpyfmhsktcg`, invisible depuis ce
+compte. Aucune des 73 migrations PoliticoResto n'y est appliquée.
+
+**Décision.** On reste **local-first** ; le projet Supabase de prod sera créé
+**plus tard** par le propriétaire. Pas de provisioning automatique.
+
+**Modèle recommandé (free tier).** **Un seul** projet Supabase = prod (pas de
+split staging/prod : le tier gratuit n'a ni branching ni 2e env « propre »).
+Le pipeline CI à deux environnements devra être simplifié en conséquence.
+
+**Steps turnkey (quand le projet existe) :**
+
+1. Créer un projet Supabase (région EU), récupérer : `project_ref`, URL,
+   `publishable key`, `service_role key`, `db password`.
+2. GitHub → secrets : `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROD_PROJECT_REF`,
+   `SUPABASE_PROD_DB_PASSWORD` (+ Vercel : `VERCEL_TOKEN`, `VERCEL_ORG_ID`,
+   `VERCEL_PROJECT_ID`). Simplifier/retirer les secrets `*_STAGING_*`.
+3. Vercel → env prod : URL Supabase + publishable key (client) + `service_role`
+   (server-only). Le build prod fait tourner la validation `@t3-oss/env-nextjs`.
+4. **Baseline** : `supabase migration repair --status applied 20260402193700`
+   sur le projet avant le premier `db push` (sinon migrate échoue).
+5. `supabase db push` (73 migrations ; prono/poll inclus côté DB, frontend non
+   exposé — acceptable).
+6. **Runbook** `docs/runbook-prod.md` : retirer la dépendance bloquante aux
+   objets SQL prono + les smoke `/pronos*` ; refléter le mono-projet.
+7. Merger #65, publier une **GitHub Release** → `deploy-production.yml`.
+8. Post-déploiement : smoke `/`, `/post/new`, `/post/[slug]`, `/me` ; vérifier
+   que `/pronos`, `/admin/pronos`, `/me/notifications` renvoient 404.

@@ -8,13 +8,7 @@ import { AppDrawer } from '@/components/app/app-drawer';
 import { MainNav } from '@/components/navigation/main-nav';
 import { siteConfig } from '@/lib/config/site';
 
-export function AppHeader({
-  isAuthenticated,
-  unreadNotifications = 0,
-}: {
-  isAuthenticated: boolean;
-  unreadNotifications?: number;
-}) {
+export function AppHeader({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/95">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-10">
@@ -65,30 +59,9 @@ export function AppHeader({
           <MainNav />
           <AppPrimaryCTA isAuthenticated={isAuthenticated} />
           {isAuthenticated ? (
-            <>
-              <Link
-                href={'/me/notifications' as Route}
-                aria-label={
-                  unreadNotifications > 0
-                    ? `${unreadNotifications} notification(s) non lue(s)`
-                    : 'Notifications'
-                }
-                className="relative hidden h-8 items-center rounded-md border border-border px-3 text-xs font-medium text-foreground transition hover:bg-secondary lg:inline-flex"
-              >
-                Notifs
-                {unreadNotifications > 0 ? (
-                  <span
-                    data-testid="notif-badge"
-                    className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-semibold leading-none text-background"
-                  >
-                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                  </span>
-                ) : null}
-              </Link>
-              <AppButton variant="secondary" size="sm" href="/me">
-                Mon profil
-              </AppButton>
-            </>
+            <AppButton variant="secondary" size="sm" href="/me">
+              Mon profil
+            </AppButton>
           ) : (
             <div className="flex items-center gap-2">
               <AppButton variant="secondary" size="sm" href="/auth/login">
