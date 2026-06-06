@@ -1,7 +1,6 @@
 import { PostComposer } from '@/components/home/post-composer';
 import { PageContainer } from '@/components/layout/page-container';
 import { createPostAction } from '@/lib/actions/posts';
-import { requestPronoAction } from '@/lib/actions/pronos';
 import { requireSession } from '@/lib/guards/require-session';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { SubjectView } from '@/lib/types/screens';
@@ -40,7 +39,6 @@ export default async function NewPostPage({
     <PageContainer>
       <PostComposer
         action={createPostAction}
-        pronoAction={requestPronoAction}
         redirectPath="/"
         initialError={toComposerErrorMessage(error)}
         subjects={subjects}

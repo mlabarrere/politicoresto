@@ -69,24 +69,6 @@ export function LeftSidebar({
     <aside className="hidden xl:block">
       <AppCard className="p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Sondages
-        </p>
-        <div className="mt-3 space-y-2">
-          <FilterButton
-            label="En cours"
-            filter={{ type: 'sondage', status: 'open' }}
-            activeFilter={activeFilter}
-            onFilterChange={onFilterChange}
-          />
-          <FilterButton
-            label="Passé"
-            filter={{ type: 'sondage', status: 'closed' }}
-            activeFilter={activeFilter}
-            onFilterChange={onFilterChange}
-          />
-        </div>
-
-        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Partis
         </p>
         <div className="mt-3 space-y-2">

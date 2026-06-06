@@ -24,16 +24,6 @@ export function MobileNavDrawer() {
       >
         <div className="mt-2 space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Sondages
-          </p>
-          <p className="rounded-xl bg-muted px-3 py-2 text-sm text-foreground">
-            En cours
-          </p>
-          <p className="rounded-xl bg-muted px-3 py-2 text-sm text-foreground">
-            Passes
-          </p>
-
-          <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Couleur politique
           </p>
           {politicalBlocs.map((bloc) => (

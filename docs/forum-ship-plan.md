@@ -32,42 +32,47 @@ purs sont déjà invisibles dans le feed** (filtre OP `type === 'article'`).
 
 ### (1) Ranger sondage/prono hors prod — code conservé, usages débranchés
 
-- [ ] **Composer** `frontend/components/home/post-composer.tsx` : retirer les
-      items `poll` et `prono` du tableau d'onglets (le mode revient à `post`).
-- [ ] **Composer page** `frontend/app/post/new/page.tsx` : ne plus passer
-      `pronoAction` ; retirer l'import orphelin `requestPronoAction`.
-- [ ] **Feed item** `frontend/components/app/app-feed-item.tsx` : retirer le rendu
-      `PollPreview` (+ le composant local s'il devient inutilisé).
-- [ ] **PostCard** `frontend/components/forum/post-card.tsx` : retirer le bloc
-      `PollCardInline` + import.
-- [ ] **Détail post** `frontend/app/(public)/post/[slug]/page.tsx` : retirer le
-      bloc prono (imports, logique `market`/`userBets`, bannières, `PronoDetail`).
-- [ ] **Sidebar** `frontend/components/home/left-sidebar.tsx` : retirer la section
-      « Sondages ».
-- [ ] **Drawer mobile** `frontend/components/home/mobile-nav-drawer.tsx` : retirer
-      le bloc « Sondages ».
-- [ ] **Tri feed** `frontend/lib/ui/feed-sort-options.ts` + `post-feed.tsx` :
-      retirer l'option/les branches `sondages`/`sondage`.
-- [ ] **/me** `frontend/lib/account/sections.ts` + `me/page.tsx` : retirer la
-      section « Historique de vote » et le bloc Démographie (libellés
-      « redressement des sondages »).
-- [ ] **Routes** : neutraliser (hors build prod / `notFound()`) `app/(public)/pronos/**`,
-      `app/(authenticated)/me/pronos`, `app/(authenticated)/admin/pronos/**`,
-      `app/api/polls/vote`, `app/methodologie`.
-- [ ] **Migration feed** : nouvelle migration *forward-only* excluant du feed les
-      topics avec attachement poll (évite les « cartes nues »).
-- [ ] **E2E** : sortir de `tests/e2e/` les specs `poll-*`, `prono-*`, `pronos-*`,
-      `weighted-*`, `weighting-*`, `voting-history`, et le cas poll de
-      `post-creation.spec.ts`. **Les déplacer** (pas `.skip` — interdit en commit).
+- [x] **Composer** `frontend/components/home/post-composer.tsx` : réécrit
+      forum-only (plus d'onglets poll/prono ; un seul flux post).
+- [x] **Composer page** `frontend/app/post/new/page.tsx` : ne passe plus
+      `pronoAction` ; import `requestPronoAction` retiré.
+- [x] **Feed item** `frontend/components/app/app-feed-item.tsx` : `PollPreview`
+      retiré. Conséquence : un topic-sondage résiduel s'affiche en discussion
+      normale (poll masqué), **pas** en carte nue.
+- [x] **PostCard** `frontend/components/forum/post-card.tsx` : bloc
+      `PollCardInline` + import retirés.
+- [x] **Détail post** `frontend/app/(public)/post/[slug]/page.tsx` : bloc prono
+      retiré (un topic `market` accédé en direct dégrade en discussion).
+- [x] **Sidebar** `frontend/components/home/left-sidebar.tsx` : section
+      « Sondages » retirée.
+- [x] **Drawer mobile** `frontend/components/home/mobile-nav-drawer.tsx` : bloc
+      « Sondages » retiré.
+- [x] **Tri feed** `frontend/lib/ui/feed-sort-options.ts` : option `sondages`
+      retirée (les branches mortes de `post-feed.tsx` sont désormais inatteignables).
+- [x] **/me** `frontend/lib/account/sections.ts` + `me/page.tsx` : section
+      « Historique de vote » et bloc Démographie retirés.
+- [x] **Routes** : `app/(public)/pronos/**`, `me/pronos`, `admin/pronos/**`,
+      `methodologie` réduites à un stub `notFound()` (route conservée pour
+      `typedRoutes`, 404 en prod) ; `api/polls/vote` renvoie 404.
+- [~] **Migration feed** : **non nécessaire** — `PollPreview` étant retiré, un
+      topic-sondage dégrade en discussion. Une migration d'exclusion reste
+      *optionnelle* si l'on veut masquer ces topics entièrement.
+- [x] **E2E** : specs `poll-*`, `prono-*`, `pronos-*`, `weighted-*`,
+      `weighting-*`, `voting-history` **déplacées** vers `tests/_frozen-e2e/`
+      (exclue de tsconfig + eslint + testDir Playwright) ; cas poll retiré de
+      `post-creation.spec.ts`. Les tests d'**intégration** poll/prono restent —
+      ils visent le backend (RPC) qui n'est **pas** gelé.
 
 ### (2) Finir / réparer le forum
 
-- [ ] Retirer les imports orphelins créés par le rangement (`eslint`/`tsc`).
-- [ ] `npm run --prefix frontend verify` vert (prettier + eslint + auth guards +
-      typecheck + unit).
+- [x] Imports orphelins retirés ; tests unitaires des features gelées
+      (composer-tabs, sondages sidebar, section votes) supprimés/adaptés.
+- [x] `npm run --prefix frontend verify` **vert** (prettier + eslint + auth
+      guards + typecheck + 451 tests unit).
 - [ ] `npm run --prefix frontend test:integration && test:e2e` verts (Supabase
-      local up), sans les specs gelées.
-- [ ] Smoke local (`./scripts/dev.sh`) : `/`, `/post/new` (1 onglet), `/post/[slug]`,
+      local up) — **non exécuté dans cette session** (pas de stack Supabase) ;
+      laissé à la CI / au prochain run local.
+- [ ] Smoke local (`./scripts/dev.sh`) : `/`, `/post/new` (1 flux), `/post/[slug]`,
       commentaires, votes, `/me` — UI ouverte + logs inspectés.
 
 ### (3) Déploiement prod

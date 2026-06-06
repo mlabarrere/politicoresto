@@ -4,7 +4,7 @@ import { AppSectionNav } from '@/components/app/app-section-nav';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/me',
-  useSearchParams: () => new URLSearchParams('section=votes'),
+  useSearchParams: () => new URLSearchParams('section=comments'),
 }));
 
 describe('appSectionNav', () => {
@@ -13,17 +13,17 @@ describe('appSectionNav', () => {
       <AppSectionNav
         items={[
           { key: 'profile', label: 'Profil', description: 'identite' },
-          { key: 'votes', label: 'Historique de vote', description: 'prive' },
+          { key: 'comments', label: 'Commentaires', description: 'prive' },
         ]}
       />,
     );
 
-    const voteLinks = screen.getAllByRole('link', {
-      name: /Historique de vote/i,
+    const commentLinks = screen.getAllByRole('link', {
+      name: /Commentaires/i,
     });
     const profileLinks = screen.getAllByRole('link', { name: /Profil/i });
 
-    expect(voteLinks[0]).toHaveClass('border-[hsl(var(--primary))]');
+    expect(commentLinks[0]).toHaveClass('border-[hsl(var(--primary))]');
     expect(profileLinks[0]).not.toHaveClass('border-[hsl(var(--primary))]');
   });
 });

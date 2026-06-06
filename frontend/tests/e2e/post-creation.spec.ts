@@ -2,12 +2,10 @@
  * User Story 2 — post creation.
  *
  * Core feature: a signed-in user opens the composer, fills it out, submits,
- * and afterwards sees their post in the feed. Three supported modes must
- * all work end-to-end:
+ * and afterwards sees their post in the feed. Supported flows:
  *
- *   (a) text post (mode='post', body required)
- *   (b) poll post (mode='poll', question + ≥2 options)
- *   (c) post tagged with a political party (applies to either mode)
+ *   (a) text post (body required)
+ *   (b) post tagged with a political party
  *
  * The historical failure this suite guards against: the RPC succeeded,
  * the DB row was written, but `redirect()` lived inside a try/catch block
@@ -44,8 +42,6 @@ test.describe('User Story 2 — post creation', () => {
   }) => {
     await signInAsSeedUser(page);
     await page.goto('/post/new');
-    await expect(page.getByRole('tab', { name: /^Post$/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /^Sondage$/i })).toBeVisible();
     await expect(page.locator('input[name="title"]')).toBeVisible();
     await expect(page.locator('textarea[name="body"]')).toBeVisible();
     await expect(
@@ -71,32 +67,7 @@ test.describe('User Story 2 — post creation', () => {
     await expect(page.getByText(title)).toBeVisible({ timeout: 5_000 });
   });
 
-  // ── Happy path (b): poll post with question + 2 options ─────────────────
-  test('happy: poll post submits (question + options + deadline) and appears in feed', async ({
-    page,
-  }) => {
-    await signInAsSeedUser(page);
-    await page.goto('/post/new');
-
-    const title = `E2E poll ${Date.now()}`;
-    await page.locator('input[name="title"]').fill(title);
-
-    // Switch to poll tab. Clicking the tab trigger is the user-visible path.
-    await page.getByRole('tab', { name: /^Sondage$/i }).click();
-
-    await page.locator('input[name="poll_question"]').fill('Pour ou contre ?');
-    const optionInputs = page.locator('input[name="poll_options"]');
-    await optionInputs.nth(0).fill('Pour');
-    await optionInputs.nth(1).fill('Contre');
-    await page.locator('select[name="poll_deadline_hours"]').selectOption('24');
-
-    await submitAndAssertPublished(page);
-
-    await page.goto('/');
-    await expect(page.getByText(title)).toBeVisible({ timeout: 5_000 });
-  });
-
-  // ── Happy path (c): post tagged with one party ─────────────────────────
+  // ── Happy path (b): post tagged with one party ─────────────────────────
   test('happy: text post with a party tag selected submits and is listed', async ({
     page,
   }) => {
@@ -124,28 +95,6 @@ test.describe('User Story 2 — post creation', () => {
     // Middleware + page-level auth gate combine to keep the composer out of
     // reach. Accept either a redirect to /auth/login or a server-side bounce.
     await expect(page).not.toHaveURL(/\/post\/new$/);
-  });
-
-  // ── Failure: poll mode with only one option is rejected client-side ────
-  test('failure: poll with <2 options is blocked by HTML required-attribute', async ({
-    page,
-  }) => {
-    await signInAsSeedUser(page);
-    await page.goto('/post/new');
-
-    await page.locator('input[name="title"]').fill(`Bad poll ${Date.now()}`);
-    await page.getByRole('tab', { name: /^Sondage$/i }).click();
-    await page.locator('input[name="poll_question"]').fill('Q?');
-    // Fill ONLY option 1, leave option 2 empty. The HTML `required` on the
-    // first two option inputs means the submit never reaches the server.
-    await page.locator('input[name="poll_options"]').nth(0).fill('Only one');
-
-    await page
-      .getByRole('button', { name: /^Publier le post$/i })
-      .click({ force: true });
-
-    // Still on /post/new; browser refused to submit. Nothing created.
-    await expect(page).toHaveURL(/\/post\/new$/);
   });
 
   // ── Draft preservation (already covered by the project, kept here) ─────

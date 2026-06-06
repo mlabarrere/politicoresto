@@ -6,7 +6,7 @@ import { MessageSquare } from 'lucide-react';
 import { AppCard } from '@/components/app/app-card';
 import { ReactionBar } from '@/components/social/reaction-bar';
 import { HOME_STRINGS } from '@/lib/ui/strings';
-import type { PostPollSummaryView, PostFeedItemView } from '@/lib/types/views';
+import type { PostFeedItemView } from '@/lib/types/views';
 import { formatDate, formatNumber } from '@/lib/utils/format';
 import { normalizeMultilineText } from '@/lib/utils/multiline';
 
@@ -14,25 +14,6 @@ function truncatePreview(value: string) {
   const text = normalizeMultilineText(value).trim();
   if (!text) return '';
   return text;
-}
-
-function PollPreview({ poll }: { poll: PostPollSummaryView }) {
-  return (
-    <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground">
-          {poll.poll_status === 'open'
-            ? HOME_STRINGS.pollOpen
-            : HOME_STRINGS.pollClosed}
-        </p>
-      </div>
-      <p className="text-sm text-foreground">{poll.question}</p>
-      <p className="text-xs text-muted-foreground">
-        Panel: {poll.sample_size} - Représentativité:{' '}
-        {poll.representativity_score.toFixed(1)}
-      </p>
-    </div>
-  );
 }
 
 export function AppFeedItem({
@@ -106,10 +87,6 @@ export function AppFeedItem({
             </p>
           </Link>
         </div>
-      ) : null}
-
-      {item.feed_poll_summary ? (
-        <PollPreview poll={item.feed_poll_summary} />
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">

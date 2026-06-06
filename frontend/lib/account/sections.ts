@@ -4,11 +4,6 @@
     label: 'Profil',
     description: 'Identite publique et informations privees',
   },
-  {
-    key: 'votes',
-    label: 'Historique de vote',
-    description: 'Journal prive personnel',
-  },
   { key: 'drafts', label: 'Brouillons', description: 'Contenus non publies' },
   { key: 'posts', label: 'Publications', description: 'Posts publies' },
   {
