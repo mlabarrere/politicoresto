@@ -233,11 +233,13 @@ test.describe('Forum conversation demo (3 accounts, real debate)', () => {
         body: 'Question courte, vraie discussion : pour ou contre, et pourquoi ?',
       });
       await page.goto('/');
+      // Assert on the feed-card titles (headings), not loose text — the body
+      // preview repeats words from the title and would match twice.
       await expect(
-        page.getByText('La VIᵉ République', { exact: false }),
+        page.getByRole('heading', { name: /on en parle/i }),
       ).toBeVisible({ timeout: 10_000 });
       await expect(
-        page.getByText('grande fortune', { exact: false }),
+        page.getByRole('heading', { name: /grande fortune/i }),
       ).toBeVisible();
       await snap(page, 'feed-two-posts-long-and-short');
     });
