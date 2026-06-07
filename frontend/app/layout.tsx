@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Source_Sans_3 } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import type { PropsWithChildren } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AppShell } from '@/components/layout/app-shell';
@@ -7,7 +7,7 @@ import { siteConfig } from '@/lib/config/site';
 import { cn } from '@/lib/utils';
 import '@/app/globals.css';
 
-const sans = Source_Sans_3({
+const sans = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
 });

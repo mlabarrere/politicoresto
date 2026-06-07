@@ -5,10 +5,9 @@ import {
 } from '@/lib/account/sections';
 
 describe('aCCOUNT_SECTIONS', () => {
-  it('contains profile, votes, drafts, posts, comments, security', () => {
+  it('contains profile, drafts, posts, comments, security', () => {
     const keys = ACCOUNT_SECTIONS.map((s) => s.key);
     expect(keys).toContain('profile');
-    expect(keys).toContain('votes');
     expect(keys).toContain('drafts');
     expect(keys).toContain('posts');
     expect(keys).toContain('comments');
@@ -25,7 +24,6 @@ describe('aCCOUNT_SECTIONS', () => {
 
 describe('resolveAccountSection', () => {
   it('returns matching section key', () => {
-    expect(resolveAccountSection('votes')).toBe('votes');
     expect(resolveAccountSection('drafts')).toBe('drafts');
     expect(resolveAccountSection('posts')).toBe('posts');
     expect(resolveAccountSection('comments')).toBe('comments');

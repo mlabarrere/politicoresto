@@ -1,0 +1,23 @@
+# Codecov policy.
+#
+# `patch` is informational, not a merge gate. Rationale: this is an early-stage
+# solo project where PRs are frequently deletions/refactors (e.g. the Tranche 1
+# forum-only release removed ~2k lines and replaced poll/prono entry points with
+# notFound() stubs). Unit-testing such stubs is theatrical — the real flows are
+# covered by the integration + Playwright E2E suites, which DO gate CI. Patch
+# coverage still reports in the PR comment; it just never fails the check.
+#
+# `project` stays a real signal (coverage must not regress meaningfully).
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+    patch:
+      default:
+        informational: true
+
+comment:
+  layout: "reach, diff, files"
+  require_changes: false

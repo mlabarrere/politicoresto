@@ -6,5 +6,4 @@ export const HOME_FEED_SORT_OPTIONS: {
 }[] = [
   { value: 'popular', label: 'Populaires' },
   { value: 'recent', label: 'Récents' },
-  { value: 'sondages', label: 'Sondages' },
 ];

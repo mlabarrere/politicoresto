@@ -1,8 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { PageContainer } from '@/components/layout/page-container';
-import { PollEditForm } from '@/components/forum/poll-edit-form';
 import { PostEditForm } from '@/components/forum/post-edit-form';
-import { updatePollAction, updatePostAction } from '@/lib/actions/posts';
+import { updatePostAction } from '@/lib/actions/posts';
 import { requireSession } from '@/lib/guards/require-session';
 
 export default async function EditPostPage({
@@ -34,49 +33,8 @@ export default async function EditPostPage({
   if (post.status !== 'published') notFound();
   if (post.created_by !== userId) redirect(`/post/${slug}`);
 
-  // Is this a poll? Check for an existing post_poll row + load question + options.
-  const { data: pollRow } = await supabase
-    .from('post_poll')
-    .select('post_item_id, question')
-    .eq('post_item_id', post.id)
-    .maybeSingle();
-
-  if (pollRow) {
-    const { data: optionRows } = await supabase
-      .from('post_poll_option')
-      .select('id, label, sort_order')
-      .eq('post_item_id', post.id)
-      .order('sort_order', { ascending: true });
-
-    const { data: responseRow } = await supabase
-      .from('post_poll_response')
-      .select('id')
-      .eq('post_item_id', post.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (responseRow) {
-      // Soft-lock: poll has votes. Bounce to detail page — menu item was
-      // also disabled, but this is the belt-and-braces server gate.
-      redirect(`/post/${slug}`);
-    }
-
-    return (
-      <PageContainer>
-        <div className="mx-auto max-w-3xl">
-          <PollEditForm
-            action={updatePollAction}
-            postItemId={String(post.id)}
-            slug={topic.slug}
-            initialQuestion={String(pollRow.question ?? '')}
-            initialOptions={(optionRows ?? []).map((o) => String(o.label))}
-            cancelHref={`/post/${slug}`}
-          />
-        </div>
-      </PageContainer>
-    );
-  }
-
+  // Forum-only release (Tranche 1): polls are frozen, so every post edits as a
+  // plain article. A residual poll row (if any) is left untouched in the DB.
   return (
     <PageContainer>
       <div className="mx-auto max-w-3xl">

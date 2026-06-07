@@ -231,5 +231,8 @@ module.exports = {
     'postcss.config.js',
     'tailwind.config.ts',
     '*.cjs',
+    // Frozen E2E specs for polls/pronos (Tranche 2/3). Parked out of the
+    // Playwright run; not type-checked or linted until the features unfreeze.
+    'tests/_frozen-e2e/',
   ],
 };

@@ -10,7 +10,6 @@ import {
 } from '@/components/app/app-avatar';
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
-import { PollCardInline } from '@/components/poll/poll-card-inline';
 import { PostOwnerMenu } from '@/components/forum/post-owner-menu';
 import type { PostCardProps } from '@/lib/types/forum-components';
 import { formatDate } from '@/lib/utils/format';
@@ -20,7 +19,6 @@ const COLLAPSE_LIMIT = 480;
 export function PostCard({
   post,
   initialExpanded = false,
-  isAuthenticated = false,
   ownerMenu = null,
 }: PostCardProps & { isAuthenticated?: boolean }) {
   const initials = post.author.username.slice(0, 2).toUpperCase();
@@ -94,13 +92,6 @@ export function PostCard({
           </AppButton>
         ) : null}
       </div>
-
-      {post.pollSummary ? (
-        <PollCardInline
-          poll={post.pollSummary}
-          isAuthenticated={isAuthenticated}
-        />
-      ) : null}
     </AppCard>
   );
 }

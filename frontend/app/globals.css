@@ -8,37 +8,41 @@
   :root {
     color-scheme: light;
 
-    --background: 38 52% 97%;
-    --foreground: 25 22% 13%;
+    /* Neutral, high-contrast light theme — Reddit/X-inspired simplicity.
+       To rebrand, change --primary and --ring only (single accent hue). */
+    --background: 210 20% 98%;
+    --foreground: 222 24% 11%;
 
-    --card: 40 37% 99%;
-    --card-foreground: 25 22% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 24% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 28 19% 14%;
+    --popover-foreground: 222 24% 11%;
 
-    --primary: 21 88% 40%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 38 42% 92%;
-    --secondary-foreground: 25 22% 13%;
+    --secondary: 210 16% 93%;
+    --secondary-foreground: 222 24% 11%;
 
-    --muted: 42 30% 90%;
-    --muted-foreground: 24 11% 34%;
+    --muted: 210 16% 95%;
+    --muted-foreground: 215 16% 42%;
 
-    --accent: 43 86% 93%;
-    --accent-foreground: 25 22% 13%;
+    --accent: 214 95% 96%;
+    --accent-foreground: 221 83% 45%;
 
-    --destructive: 348 72% 41%;
+    --destructive: 0 72% 51%;
 
-    --border: 30 30% 80%;
-    --input: 30 30% 80%;
-    --ring: 20 81% 39%;
+    --border: 214 18% 90%;
+    --input: 214 18% 90%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.9rem;
+    --radius: 0.5rem;
 
-    --shadow-sm: 0 5px 18px rgba(73, 45, 18, 0.08);
-    --shadow-md: 0 16px 34px rgba(73, 45, 18, 0.12);
+    --shadow-sm:
+      0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.08);
+    --shadow-md:
+      0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.05);
 
     --spacing-compact: 0.5rem;
     --spacing-base: 0.75rem;
@@ -46,11 +50,11 @@
 
     --vichy-bg: linear-gradient(
       45deg,
-      hsl(43 76% 90% / 0.22) 25%,
+      hsl(214 32% 91% / 0.5) 25%,
       transparent 25%,
       transparent 50%,
-      hsl(43 76% 90% / 0.22) 50%,
-      hsl(43 76% 90% / 0.22) 75%,
+      hsl(214 32% 91% / 0.5) 50%,
+      hsl(214 32% 91% / 0.5) 75%,
       transparent 75%,
       transparent
     );
@@ -69,11 +73,6 @@
   body {
     min-height: 100vh;
     @apply bg-background text-foreground antialiased;
-    background-image: radial-gradient(
-      circle at top right,
-      hsl(42 92% 95%),
-      hsl(var(--background)) 58%
-    );
   }
 
   a {
