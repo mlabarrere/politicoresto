@@ -1,0 +1,14 @@
+# Team / enterprise overrides for _bmad/config.toml.
+# Committed to the repo — applies to every developer on the project.
+# Tables deep-merge over base config; keyed entries merge by key.
+# Example: override an agent descriptor, or add a new agent.
+#
+# [agents.bmad-agent-pm]
+# description = "Prefers short, bulleted PRDs over narrative drafts."
+
+# Define the output_folder token referenced by planning_artifacts /
+# implementation_artifacts. The non-interactive installer left it undefined,
+# so artifact paths resolved to a literal "{output_folder}". Pinned here so a
+# re-install preserves it (custom/* is never overwritten).
+[core]
+output_folder = "_bmad-output"
