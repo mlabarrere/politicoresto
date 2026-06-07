@@ -139,6 +139,11 @@ test.describe('Forum conversation demo (3 accounts, real debate)', () => {
           await admin.from('post').delete().in('thread_post_id', ids);
         }
         await admin.from('thread_post').delete().eq('created_by', u.userId);
+        // Topics must go before the user: topic.created_by → app_profile has
+        // no ON DELETE CASCADE, so a lingering topic blocks deleteUser() from
+        // cascading away the profile, and the next local re-run would then hit
+        // the unique app_profile.username constraint.
+        await admin.from('topic').delete().eq('created_by', u.userId);
         await admin.auth.admin.deleteUser(u.userId);
       } catch {
         /* best effort */
