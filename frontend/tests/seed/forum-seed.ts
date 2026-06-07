@@ -35,6 +35,14 @@ interface Persona {
   client: SupabaseClient;
 }
 
+interface Cast {
+  margaux: Persona;
+  thierry: Persona;
+  claire: Persona;
+  bernard: Persona;
+  yannis: Persona;
+}
+
 async function ensurePersona(
   handle: string,
   displayName: string,
@@ -68,13 +76,9 @@ async function makePost(
     .select('slug')
     .eq('id', row.thread_id)
     .single();
-  out(
-    `  · post "${title}" by ${p.handle} → /post/${(topic as { slug: string }).slug}`,
-  );
-  return {
-    postItemId: row.post_item_id,
-    slug: (topic as { slug: string }).slug,
-  };
+  const slug = (topic as { slug: string }).slug;
+  out(`  · post "${title}" by ${p.handle} → /post/${slug}`);
+  return { postItemId: row.post_item_id, slug };
 }
 
 async function addComment(
@@ -105,17 +109,10 @@ async function vote(
   if (error) throw new Error(`vote by ${p.handle}: ${error.message}`);
 }
 
-test('seed a living forum debate', { timeout: 180_000 }, async () => {
-  out('Seeding personas…');
-  const margaux = await ensurePersona('margaux_lfi', 'Margaux');
-  const thierry = await ensurePersona('thierry_rn', 'Thierry');
-  const claire = await ensurePersona('claire_centre', 'Claire');
-  const bernard = await ensurePersona('bernard_lr', 'Bernard');
-  const yannis = await ensurePersona('yannis_ecolo', 'Yannis');
-
-  // ── Thread 1: retraites — long OP, real clash ────────────────────────────
+async function seedRetraites(cast: Cast): Promise<void> {
+  const { margaux, thierry, claire, bernard, yannis } = cast;
   out('Thread: retraites');
-  const retraites = await makePost(
+  const post = await makePost(
     margaux,
     'Les 64 ans, ce n’est pas une réforme, c’est un vol',
     [
@@ -133,49 +130,39 @@ test('seed a living forum debate', { timeout: 180_000 }, async () => {
       'bien financer le système » répété en boucle comme une prière.',
     ].join('\n'),
   );
-  const t1c1 = await addComment(
+  const c1 = await addComment(
     bernard,
-    retraites.postItemId,
+    post.postItemId,
     'Toujours le même tour de passe-passe : on agite « les dividendes » pour ne pas parler démographie. Il y avait 4 actifs par retraité en 1960, il y en a 1,7 aujourd’hui. Aucun slogan ne fera disparaître cette courbe.',
   );
   await addComment(
     margaux,
-    retraites.postItemId,
+    post.postItemId,
     'La démographie, oui, je connais le tract du MEDEF par cœur. Curieux qu’elle n’empêche ni les rachats d’actions ni les cadeaux fiscaux. On finance ce qu’on décide de financer, Bernard.',
-    t1c1,
+    c1,
   );
-  const t1c2 = await addComment(
+  const c2 = await addComment(
     thierry,
-    retraites.postItemId,
+    post.postItemId,
     'D’accord avec Margaux sur un point, et ça me coûte de l’écrire : on matraque les Français qui bossent pendant qu’on distribue à tout-va. Mais la solution n’est pas de dépenser plus, c’est d’arrêter de payer pour ceux qui n’ont jamais cotisé ici.',
   );
   await addComment(
     yannis,
-    retraites.postItemId,
+    post.postItemId,
     'Et personne ne parle de la pénibilité réelle. Reculer l’âge légal sans toucher à l’usure des corps, c’est une politique hors-sol. On gère des tableurs, pas des gens.',
-    t1c2,
+    c2,
   );
-  await vote(
-    thierry,
-    { type: 'thread_post', id: retraites.postItemId },
-    'droite',
-  );
-  await vote(
-    bernard,
-    { type: 'thread_post', id: retraites.postItemId },
-    'droite',
-  );
-  await vote(
-    yannis,
-    { type: 'thread_post', id: retraites.postItemId },
-    'gauche',
-  );
-  await vote(claire, { type: 'comment', id: t1c1 }, 'droite');
-  await vote(margaux, { type: 'comment', id: t1c2 }, 'droite');
+  await vote(thierry, { type: 'thread_post', id: post.postItemId }, 'droite');
+  await vote(bernard, { type: 'thread_post', id: post.postItemId }, 'droite');
+  await vote(yannis, { type: 'thread_post', id: post.postItemId }, 'gauche');
+  await vote(claire, { type: 'comment', id: c1 }, 'droite');
+  await vote(margaux, { type: 'comment', id: c2 }, 'droite');
+}
 
-  // ── Thread 2: immigration — long OP from the other side ──────────────────
+async function seedImmigration(cast: Cast): Promise<void> {
+  const { margaux, thierry, claire, bernard, yannis } = cast;
   out('Thread: immigration');
-  const immigration = await makePost(
+  const post = await makePost(
     thierry,
     'On ne peut pas accueillir toute la misère du monde, et on le sait tous',
     [
@@ -192,38 +179,32 @@ test('seed a living forum debate', { timeout: 180_000 }, async () => {
       'troisième mot, si possible.',
     ].join('\n'),
   );
-  const t2c1 = await addComment(
+  const c1 = await addComment(
     claire,
-    immigration.postItemId,
+    post.postItemId,
     'Le problème Thierry, ce n’est pas la phrase de Rocard, c’est sa deuxième moitié que vous coupez toujours : « …mais elle doit en prendre fidèlement sa part. » L’immigration est aussi un besoin économique : qui pense que nos hôpitaux tournent sans elle ?',
   );
   await addComment(
     margaux,
-    immigration.postItemId,
+    post.postItemId,
     'Et statistiquement, l’immigration rapporte plus qu’elle ne coûte (OCDE, pas Mediapart). Mais bon, les chiffres n’ont jamais arrêté un bon ressenti de comptoir.',
-    t2c1,
+    c1,
   );
   await addComment(
     bernard,
-    immigration.postItemId,
+    post.postItemId,
     'Claire a raison sur le besoin de main-d’œuvre, Margaux a raison sur les chiffres, et Thierry a raison sur la saturation des services. Bizarrement c’est peut-être ça, la réalité : pas un camp qui a tout bon.',
   );
-  await vote(
-    margaux,
-    { type: 'thread_post', id: immigration.postItemId },
-    'droite',
-  );
-  await vote(
-    claire,
-    { type: 'thread_post', id: immigration.postItemId },
-    'droite',
-  );
-  await vote(yannis, { type: 'comment', id: t2c1 }, 'gauche');
-  await vote(thierry, { type: 'comment', id: t2c1 }, 'gauche');
+  await vote(margaux, { type: 'thread_post', id: post.postItemId }, 'droite');
+  await vote(claire, { type: 'thread_post', id: post.postItemId }, 'droite');
+  await vote(yannis, { type: 'comment', id: c1 }, 'gauche');
+  await vote(thierry, { type: 'comment', id: c1 }, 'gauche');
+}
 
-  // ── Thread 3: nucléaire vs renouvelables ─────────────────────────────────
+async function seedEnergie(cast: Cast): Promise<void> {
+  const { margaux, thierry, claire, bernard, yannis } = cast;
   out('Thread: énergie');
-  const energie = await makePost(
+  const post = await makePost(
     yannis,
     'Le nucléaire n’est pas « écolo », arrêtons ce conte de fées',
     [
@@ -237,58 +218,64 @@ test('seed a living forum debate', { timeout: 180_000 }, async () => {
       'idéologique déguisé en pragmatisme.',
     ].join('\n'),
   );
-  const t3c1 = await addComment(
+  const c1 = await addComment(
     bernard,
-    energie.postItemId,
+    post.postItemId,
     'Le « conte de fées », c’est de croire qu’on chauffe 68 millions de personnes avec du vent et de la bonne volonté. L’Allemagne a fermé ses centrales et rallumé le charbon. Voilà le résultat concret de votre idéologie.',
   );
   await addComment(
     yannis,
-    energie.postItemId,
+    post.postItemId,
     'L’épouvantail allemand, à chaque fois. Leur problème c’est d’avoir fermé le nucléaire ET sous-investi le renouvelable, pas le renouvelable en soi. Mais c’est plus simple de citer le charbon que de lire un rapport RTE.',
-    t3c1,
+    c1,
   );
   await addComment(
     claire,
-    energie.postItemId,
+    post.postItemId,
     'Et en même temps… les deux ? Du nucléaire pour la base, du renouvelable pour le reste. Je sais, ce n’est pas assez clivant pour faire un bon post.',
   );
-  await vote(
-    bernard,
-    { type: 'thread_post', id: energie.postItemId },
-    'gauche',
-  );
-  await vote(
-    margaux,
-    { type: 'thread_post', id: energie.postItemId },
-    'gauche',
-  );
-  await vote(thierry, { type: 'comment', id: t3c1 }, 'droite');
-  await vote(yannis, { type: 'comment', id: t3c1 }, 'gauche');
+  await vote(bernard, { type: 'thread_post', id: post.postItemId }, 'gauche');
+  await vote(margaux, { type: 'thread_post', id: post.postItemId }, 'gauche');
+  await vote(thierry, { type: 'comment', id: c1 }, 'droite');
+  await vote(yannis, { type: 'comment', id: c1 }, 'gauche');
+}
 
-  // ── Thread 4: short, spicy ───────────────────────────────────────────────
+async function seedSixieme(cast: Cast): Promise<void> {
+  const { margaux, thierry, bernard, yannis, claire } = cast;
   out('Thread: VIe République');
-  const sixieme = await makePost(
+  const post = await makePost(
     claire,
     'La VIᵉ République : grande idée ou doudou de ceux qui perdent les élections ?',
     'Question sincère, réponse courte attendue : on change de Constitution, ou on apprend à s’en servir ?',
   );
   await addComment(
     margaux,
-    sixieme.postItemId,
+    post.postItemId,
     'Doudou ? Le 49.3 à répétition, c’est un doudou peut-être ? La Ve est à bout de souffle, assumez-le.',
   );
   await addComment(
     bernard,
-    sixieme.postItemId,
+    post.postItemId,
     'On veut changer de Constitution tous les dix ans et on s’étonne que plus personne ne respecte les institutions. Le problème n’est pas le texte, c’est nous.',
   );
-  await vote(
-    thierry,
-    { type: 'thread_post', id: sixieme.postItemId },
-    'droite',
-  );
-  await vote(yannis, { type: 'thread_post', id: sixieme.postItemId }, 'gauche');
+  await vote(thierry, { type: 'thread_post', id: post.postItemId }, 'droite');
+  await vote(yannis, { type: 'thread_post', id: post.postItemId }, 'gauche');
+}
+
+test('seed a living forum debate', { timeout: 180_000 }, async () => {
+  out('Seeding personas…');
+  const cast: Cast = {
+    margaux: await ensurePersona('margaux_lfi', 'Margaux'),
+    thierry: await ensurePersona('thierry_rn', 'Thierry'),
+    claire: await ensurePersona('claire_centre', 'Claire'),
+    bernard: await ensurePersona('bernard_lr', 'Bernard'),
+    yannis: await ensurePersona('yannis_ecolo', 'Yannis'),
+  };
+
+  await seedRetraites(cast);
+  await seedImmigration(cast);
+  await seedEnergie(cast);
+  await seedSixieme(cast);
 
   // Confirm the data actually landed (4 article OPs + ~12 comments).
   const { count } = await adminClient()
