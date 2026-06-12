@@ -1,6 +1,6 @@
 ---
 title: PoliticoResto
-status: draft
+status: final
 created: 2026-06-12
 updated: 2026-06-12
 ---
@@ -791,7 +791,7 @@ l'énergie d'un jeu ; **honnêteté statistique** (jamais survendre) ; **fun et
 rassurant** (le score de représentativité est ludique, pas anxiogène). Spécifications
 de design system : `docs/research/2026-06-12-ux-patterns.md`.
 
-## 15bis. Acquisition & Rétention — le vrai problème `[à confirmer]`
+## 15bis. Acquisition & Rétention — le vrai problème
 **Principe (recadrage Micky 2026-06-12) :** le risque #1 n'est pas la conformité (parquée)
 ni la complétude des features — c'est le **cold-start** : *attirer des gens et les faire
 rester*. Une plateforme sociale, c'est d'abord ce problème.
@@ -807,7 +807,7 @@ rester*. Une plateforme sociale, c'est d'abord ce problème.
 - **Métrique-nord = rétention** (revenir), **pas** le nombre d'inscrits (cf. SM-3 ;
   ajout d'une **SM-0 rétention J7/J30** ci-dessous).
 
-### MVP phasé `[HYPOTHÈSE — séquençage à confirmer]`
+### MVP phasé (confirmé Micky 2026-06-12)
 Le MVP **ne sort pas les 15 axes d'un coup** ; il se séquence autour de l'acquisition/
 rétention :
 - **P1 — Aimant solo + espace sûr :** Boussole (virale) · graphe/fiches (SEO) · forum
@@ -817,9 +817,10 @@ rétention :
 - **P3 — Rendez-vous 2027 :** Pronos durables · Soirées électorales.
 - **Transverse dès P1 :** i18n · sécurité · MCP · découvrabilité.
 
-`[NOTE FOR PM]` ce phasage est une **recommandation** ; à valider avant epics/stories
-(il déterminera l'ordre de construction). Le périmètre §6 reste « v1 complète » ; ce
-§15bis en fixe l'**ordre**.
+Ce phasage est **confirmé** (Micky, 2026-06-12) et **fixe l'ordre des epics/stories**.
+Le périmètre §6 reste « v1 complète » ; ce §15bis en fixe l'**ordre de construction**.
+**P1 est la tête de pont** : Boussole (aimant viral solo) + graphe/fiches (SEO) +
+forum sûr.
 
 ## 16. Anti-patterns à éviter (guardrail de conception)
 **Principe :** le produit vise l'**auto-organisation libre (façon Reddit)** — mais le
