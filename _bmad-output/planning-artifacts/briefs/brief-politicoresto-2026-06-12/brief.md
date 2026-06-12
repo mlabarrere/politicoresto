@@ -71,6 +71,10 @@ celle d'un jeu social** :
 - **Flair parti** — chaque membre peut afficher (opt-in) son parti de prédilection
   à côté de son pseudo : on sait si on débat avec quelqu'un de LFI ou du RN. Le
   pendant assumé du mode aveugle (deux crans d'un même axe identité visible↔masquée).
+- **Comptes officiels & messagerie.** Les partis / organisations peuvent obtenir
+  un **compte officiel** (macaron distinctif, **octroyé manuellement via le
+  back-office**) et publient comme tout le monde. Les membres peuvent aussi
+  **s'envoyer des messages privés (DM)**.
 - **Boussole « quel candidat me ressemble »** — un quiz court, scoring transparent
   (façon Wahl-O-Mat 2/1/0), restitution sur des axes 2D + match candidat/parti.
 - **Pronos** — pronostics scorés *sans argent* (score de précision Brier/peer,
@@ -146,7 +150,17 @@ L'argent entre par les **pros/sponsors, jamais par les participants** :
    plus « propre ».
 2. **Sondages & pronos sponsorisés avec dotation.** Un sponsor met une cagnotte
    (ex. 1000 €) sur un sondage ou un prono ; elle est **distribuée aux
-   participants** ; la plateforme prélève un **pourcentage**.
+   participants** ; la plateforme prélève un **pourcentage**. **Seuls les comptes
+   certifiés sont éligibles à la rémunération** (cf. ci-dessous).
+
+**Compte certifié (électeur vérifié).** Pour toucher une rémunération, un compte
+doit être **certifié** : **pièce d'identité uploadée** + **preuve d'électeur
+local** (croisement avec la situation électorale — modalités à définir). Au-delà
+de la rému, c'est un **double levier produit** : **anti-fraude** (les sondages
+internet meurent du faux compte/bot) et **qualité du redressement** (un électeur
+local vérifié est un signal de représentativité en or). Un **badge « vérifié »**
+distingue ces comptes ; la certification reste **optionnelle** (le forum/les
+sondages restent ouverts aux comptes non certifiés, sans rému ni poids « vérifié »).
 
 **Invariant de design qui garde le modèle défendable** (le point que Micky sent
 « légalement limite ») : **le participant ne mise jamais rien** — l'argent est
@@ -167,6 +181,10 @@ un avocat au moment voulu. Détail : `addendum.md` §A.
 | 1 | **Forum** (topics, posts, commentaires, réactions, feed) | existant, à conserver |
 | 1b | **Posts riches** (images, GIF, embed YouTube) | ajout |
 | 1c | **Flair parti** (opt-in, à côté du pseudo) | socle data partiel existant |
+| 1d | **Compte certifié** (ID + électeur local → rému + anti-fraude + poids redressement) | nouveau, KYC |
+| 1e | **Messagerie privée (DM)** | nouveau |
+| 1f | **Comptes officiels** (partis/orgs, macaron) | nouveau |
+| 10 | **Back-office admin** (octroi comptes officiels, certifs, sponsors) | étendre `/admin` existant |
 | 2 | **Tables** (sous-forums, mode ouvert/aveugle, modération déléguée) | nouveau |
 | 3 | **Sondage redressé fun & grand public** (redressé par défaut, score visible) | dégeler + grand-publiciser |
 | 4 | **Boussole / candidat-match (VAA)** | nouveau |

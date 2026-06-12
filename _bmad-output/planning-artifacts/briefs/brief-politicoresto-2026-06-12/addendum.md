@@ -44,6 +44,13 @@ participants, paris d'argent entre particuliers.
    structurées (pas du texte libre).
 4. Consentement & visibilité de la donnée politique = curseurs explicites
    (cohérent avec mode aveugle / flair opt-in).
+5. **Compte certifié / KYC** : sous-système de vérification d'identité isolé —
+   upload pièce d'identité + preuve d'électeur local. Données d'identité
+   **chiffrées et séparées** du reste (sensibilité maximale), accès ultra-restreint,
+   idéalement déléguées à un prestataire KYC plutôt que stockées en clair. Sert
+   trois usages : éligibilité rému, anti-fraude, et **signal « électeur vérifié »**
+   dans le redressement. *Modalités de « preuve d'électeur local » à définir
+   (croisement situation électorale) — dépend aussi de la juridiction (parqué).*
 
 ## B. Existant repo à réutiliser (vérifier l'usage réel — CLAUDE.md règle #7)
 
@@ -52,9 +59,10 @@ participants, paris d'argent entre particuliers.
   `survey_respondent_snapshot`, `survey_poll_weights/estimate`, score confiance
   0-100, worker Python `worker/`). Vue `v_post_poll_summary` expose déjà le contrat.
 - **Pronos** conçus : `docs/pronos.md`, RPCs `rpc_request_prono`/`place_bet`/
-  `resolve_prono`, leaderboard. ⚠️ revoir la mécanique « multiplicateur sentinelle/
-  cote » → préférer un **score de précision (Brier/peer)** plus défendable et plus
-  éloigné de la logique de pari (cf. recherche §5).
+  `resolve_prono`, leaderboard. **Décision Micky (2026-06-12) : garder le
+  multiplicateur sentinelle / cote existant** (frisson « pari » assumé ; légal
+  parqué). Option à cadrer au PRD : exposer *en plus* un score de précision
+  (Brier/peer) pour le classement & la calibration, sans retirer la cote.
 - **MCP** v0.1 : `frontend/app/api/mcp/[transport]/route.ts`, `docs/mcp.md`, 6
   outils, OAuth 2.1 Supabase + DCR.
 - **Résidu `space_role`/`space_status`** (enum legacy/global/party/bloc) d'un
