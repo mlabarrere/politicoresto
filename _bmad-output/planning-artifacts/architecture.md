@@ -194,6 +194,33 @@ compté sur le profil destinataire. Feed via **vues à sorts nommés** (Populair
 **Ranking bridging** = score dérivé (réactions cross-bord + Deltas) pondérant le rang
 (FR-5, `[ASSUMPTION: heuristique v1 documentée]`). **Pourquoi.** Anti-pile-on structurel.
 
+### AD-10 — **Stratégie UI / qualité graphique** (honnête)
+**Constat.** L'IA est faible pour *inventer* une UI ex nihilo, forte pour *assembler*
+des composants éprouvés et *respecter* un design system spécifié. La qualité vient de
+la contrainte, pas de l'invention.
+**Décision (leviers, dans l'ordre) :**
+1. **Fondation top-tier, non réinventée** : **Tailwind v4 + Catalyst** (kit React
+   officiel Tailwind) + **`@base-ui/react`** (primitives accessibles). Tout composant
+   interactif (dialog, menu, combobox, switch…) vient de là — **jamais hand-roll**.
+2. **Contrat de design = `docs/research/2026-06-12-ux-patterns.md`** (tokens spacing
+   4px, échelle typo 4 rôles, cartes 8px, palette dark, motion, a11y WCAG 2.2 AA,
+   perf perçue). **Binding** : la cohérence fait la qualité ; un seul accent chromatique.
+3. **Copier les layouts éprouvés** (bottom-tab-bar, desktop 3 colonnes, composer
+   Reddit/X poll-swap, picker de réactions, threading collapse) — déjà spécifiés, pas
+   inventés.
+4. **Génération assistée pour écrans neufs** : **v0.dev** + registres **shadcn/ui** /
+   blocks Tailwind UI comme point de départ, **adaptés** aux tokens + Catalyst/Base UI.
+5. **★ Boucle visuelle (plus gros levier)** : **lancer l'app + screenshot** (Playwright
+   / skills `run`+`verify`) → voir le rendu → critiquer → corriger → re-screenshot.
+   **Ne jamais coder l'UI à l'aveugle.** Chaque écran user-facing = au moins un cycle
+   screenshot-critique avant « done ».
+6. **Passe de polish** a11y + cohérence visuelle par écran (focus-visible, cibles 44px,
+   reduced-motion, contraste).
+**Simplicité (garde-fou Micky) :** zéro complexité bespoke, pas d'abstraction
+spéculative, library-first ; l'avantage « zéro dette » se préserve en restant minimal.
+`[ASSUMPTION: v0/shadcn servent de point de départ ; on converge vers Catalyst+Base UI
++ tokens pour ne pas fragmenter le design system.]`
+
 ## 4. Patterns transverses (à imposer aux agents implémenteurs)
 
 - **Lecture = vues `SECURITY INVOKER`** ; **écriture = RPC** `security definer`
