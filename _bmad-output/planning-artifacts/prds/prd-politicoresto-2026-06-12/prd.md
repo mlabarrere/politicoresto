@@ -650,6 +650,8 @@ notifications) ; Back-office ; MCP public étendu ; i18n FR/EN ; Modération/int
 *`[HYPOTHÈSE]` — cibles à chiffrer avec Micky.*
 
 **Primary**
+- **SM-0 — Rétention (métrique-nord) :** part des nouveaux **revenant à J7 et J30**
+  (le vrai test d'existence de la plateforme). Valide §15bis + la boucle 3 piliers.
 - **SM-1 — Activation sondage :** part des nouveaux qui lancent **ou** votent un
   Sondage redressé en J+7. Valide FR-18/19.
 - **SM-2 — Représentativité atteinte :** part des Sondages redressés atteignant la
@@ -788,6 +790,36 @@ first, un seul accent chromatique, sobriété. **Ton** : la rigueur d'un institu
 l'énergie d'un jeu ; **honnêteté statistique** (jamais survendre) ; **fun et
 rassurant** (le score de représentativité est ludique, pas anxiogène). Spécifications
 de design system : `docs/research/2026-06-12-ux-patterns.md`.
+
+## 15bis. Acquisition & Rétention — le vrai problème `[à confirmer]`
+**Principe (recadrage Micky 2026-06-12) :** le risque #1 n'est pas la conformité (parquée)
+ni la complétude des features — c'est le **cold-start** : *attirer des gens et les faire
+rester*. Une plateforme sociale, c'est d'abord ce problème.
+
+- **Piège réseau :** sondages (votants), tables (membres), pronos (joueurs) ont tous
+  besoin de masse. → il faut de la **valeur « solo » (sans réseau) dès l'arrivée**.
+- **Aimants d'acquisition :** (1) **Boussole** = valeur solo + **partage viral** ;
+  (2) **graphe/fiches** = **aimant SEO/GEO** (« qui est mon député ») ; (3) **wedge
+  orphelins de Reddit** = audience qui cherche déjà une alternative ; (4) **2027 +
+  soirées** = crochet rendez-vous (raison de venir *maintenant*).
+- **Moteur de rétention :** **boucle 3 piliers** + **pronos durables** (mois) +
+  **notifications** + **Tables packs** (anti-feed-vide).
+- **Métrique-nord = rétention** (revenir), **pas** le nombre d'inscrits (cf. SM-3 ;
+  ajout d'une **SM-0 rétention J7/J30** ci-dessous).
+
+### MVP phasé `[HYPOTHÈSE — séquençage à confirmer]`
+Le MVP **ne sort pas les 15 axes d'un coup** ; il se séquence autour de l'acquisition/
+rétention :
+- **P1 — Aimant solo + espace sûr :** Boussole (virale) · graphe/fiches (SEO) · forum
+  **sûr** (pas de downvote = « pas comme Reddit ») · onboarding Tables-packs.
+- **P2 — Boucle de rétention :** Sondages redressés (différenciateur) · Tables ·
+  notifications · boucle 3 piliers.
+- **P3 — Rendez-vous 2027 :** Pronos durables · Soirées électorales.
+- **Transverse dès P1 :** i18n · sécurité · MCP · découvrabilité.
+
+`[NOTE FOR PM]` ce phasage est une **recommandation** ; à valider avant epics/stories
+(il déterminera l'ordre de construction). Le périmètre §6 reste « v1 complète » ; ce
+§15bis en fixe l'**ordre**.
 
 ## 16. Anti-patterns à éviter (guardrail de conception)
 **Principe :** le produit vise l'**auto-organisation libre (façon Reddit)** — mais le
