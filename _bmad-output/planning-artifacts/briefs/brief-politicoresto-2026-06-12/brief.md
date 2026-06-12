@@ -54,6 +54,10 @@ rendez-vous : soirées électorales, boussole des candidats, sondages de campagn
   algorithmique récompense l'outrage (modèle MAD), pas la qualité délibérative.
 - **On ne sait pas à qui on parle** — ni l'affiliation de l'interlocuteur, ni si
   son avis « pèse » dans un ensemble représentatif.
+- **La politique locale est délaissée.** Les gens s'intéressent d'abord à ce qui se
+  passe **près d'eux** (quartier, arrondissement, commune, département, leur
+  député) — mais l'offre en ligne est nationale et centralisée. Ce besoin de
+  proximité est massivement mal servi.
 
 ## La solution
 
@@ -65,6 +69,16 @@ celle d'un jeu social** :
   représentativité ludique** (« ton sondage est représentatif à 72 % — il te
   manque des 18-24 ans pour le rendre béton »), jamais du jargon (`deff`) brut.
   Toujours un **intervalle**, jamais un nombre nu.
+- **Tout est un nœud, chaque nœud est un forum (graphe politique).** Au-delà des
+  tables créées par les utilisateurs, il existe des **forums canoniques** adossés
+  aux **entités politiques** : **territoires** (**quartier / arrondissement /
+  commune / département** — la **politique locale, prioritaire**), **députés / élus**
+  (une **« fiche »** : actu, votes, prises de position, on en discute), **candidats**,
+  **partis**, **thèmes**. Chaque entité = un **nœud** qui est aussi un **forum**
+  (flux continu façon subreddit : poster, discuter, sonder, parier). Les nœuds sont
+  **reliés en graphe** (thème → candidats → partis ; territoire → député) et se
+  naviguent ainsi. *(Socle existant à auditer/réutiliser : `political_entity`, seed
+  partis/politiciens, enum `space_role`.)*
 - **Tables** — l'unité « groupe / sous-forum », créable par tout le monde, où
   l'on **discute, sonde et parie** comme partout ailleurs. **Deux curseurs
   indépendants** : **accès** (publique & découvrable ↔ **privée/secrète, sur
@@ -238,6 +252,7 @@ un avocat au moment voulu. Détail : `addendum.md` §A.
 | 1f | **Comptes officiels** (partis/orgs, macaron) | nouveau |
 | 10 | **Back-office admin** (octroi comptes officiels, certifs, sponsors) | étendre `/admin` existant |
 | 2 | **Tables** (sous-forums ; accès public/privé-sur-invitation × identité ouverte/aveugle ; discuss+sondages+pronos ; modération déléguée) | nouveau |
+| 2b | **Graphe politique : entités-nœuds = forums** (territoires/**local**, députés/élus + **fiche**, candidats, partis, thèmes ; reliés en graphe) | nouveau ; socle `political_entity` à auditer |
 | 3 | **Sondage redressé fun & grand public** (redressé par défaut, score visible) | dégeler + grand-publiciser |
 | 4 | **Boussole / candidat-match (VAA)** | nouveau |
 | 5 | **Pronos** (sans argent, score précision) | dégeler |

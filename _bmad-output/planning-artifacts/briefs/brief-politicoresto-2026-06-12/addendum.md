@@ -81,12 +81,30 @@ participants, paris d'argent entre particuliers.
   (invitation seulement, invisible aux non-membres) ; (2) **identité des
   participants** = ouverte ↔ aveugle (anonyme). Combinables (4 quadrants).
 - Une table héberge **tout** : discussions, sondages (redressés), pronos.
-- **Question ouverte (Micky) — tables thématiques par couleur/idéologie.** Non
-  tranchée. Bénéfice : « chez-soi » communautaire. Risque : **entre-soi / chambre
-  d'écho** (cf. recherche §6 — l'architecture doit récompenser le bridging, pas la
-  ségrégation). Pistes à explorer au PRD : tables thématiques **curées/officielles**
-  + exposition cross-bord via le feed bridging ; ou s'abstenir. À trancher.
-- Auditer le résidu `space_role/space_status` avant réutilisation (règle #7).
+- **Question « tables thématiques » — désormais ADRESSÉE** par le graphe politique
+  (ci-dessous) : les forums thématiques deviennent des **nœuds-entités canoniques
+  curés**, distincts des tables créées par les utilisateurs. Risque entre-soi
+  toujours à gérer via le feed bridging.
+
+## G. Graphe politique — entités-nœuds = forums (Micky, structurant)
+- **Principe** : la **politique locale est prioritaire** (les gens veulent parler
+  de leur quartier/commune/département/député). Chaque **entité politique** est un
+  **nœud** qui est aussi un **forum** hébergeant les 3 piliers (discuss/sondages/
+  pronos), avec un **flux continu** façon subreddit.
+- **Types de nœuds** : **territoires** (quartier, arrondissement, commune,
+  département, région, national), **élus/députés** (avec **fiche** : actu, votes,
+  prises de position), **candidats**, **partis**, **thèmes**.
+- **Graphe** : arêtes typées (candidat→parti, thème→candidats, territoire→élu,
+  élu→parti). Navigation de nœud en nœud ; un post/pari/sondage peut être rattaché
+  à un ou plusieurs nœuds.
+- **Deux familles de forums** : **canoniques** (entités-nœuds, curés/seedés) vs
+  **tables** (créées par les utilisateurs). UX cohérente, gouvernance différente.
+- **Réutilisation existant (auditer, règle #7)** : `political_entity`, seed
+  partis/politiciens (`20260419183950`), `media_outlets`, enums
+  `space_role`(legacy/global/party/bloc)/`space_status`. Le résidu de pivot
+  correspond **exactement** à ce concept → candidat à reprise plutôt que from-scratch.
+- **Données territoriales** : réutiliser le `postal→ville/région` (geo.api.gouv.fr)
+  déjà prévu pour le redressement ; étendre aux mailles locales.
 
 ## C. Roadmap explicitement post-v1
 - **Replay vidéo** des soirées électorales.
