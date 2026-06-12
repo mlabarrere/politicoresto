@@ -94,7 +94,7 @@ qu'ailleurs parce que l'architecture **récompense la qualité, pas la chaleur**
 
 - **UJ-3. Marc suit son député et débat localement.**
   Marc ouvre la **fiche** de son député (un **nœud-forum**), voit ses dernières
-  prises de position, lit le fil de discussion, lance une **consultation** « êtes-
+  prises de position, lit le fil de discussion, lance une **Consultation** « êtes-
   vous d'accord avec son vote sur X ? ». **Climax** : la politique locale devient
   tangible et discutable. **Resolution** : il s'abonne au nœud et reçoit les
   nouveautés.
@@ -410,8 +410,9 @@ de confiance** + **Intervalle**. Réalise UJ-1.
 **Consequences :**
 - Redressement **asynchrone** (Worker) ; résultat brut **et** redressé disponibles.
 - **Toujours un intervalle** (MoE incluant le design-effect), jamais un nombre nu.
-- Le Score (0-100) + **Bande** (indicatif/correctable/robuste) sont affichés de façon
-  **ludique** ; en-dessous d'un seuil, le redressé n'est pas présenté comme fiable
+- Le Score (0-100) + **Bande** (indicatif/correctable/robuste) sont affichés en clair
+  (jauge + libellé), **sans jargon** (`deff`/IPF jamais exposés au lecteur) ;
+  en-dessous d'un seuil, le redressé n'est pas présenté comme fiable
   (`[ASSUMPTION: seuil score<40 → pas de résultat corrigé, cf. design existant]`).
 - Ne **jamais survendre** : message clair que le redressement corrige la
   représentativité, pas le biais de mesure.
@@ -427,10 +428,10 @@ Le système montre **ce qui manque** pour fiabiliser et permet de **ré-inviter*
 #### FR-22 : Anti-fraude / qualité des réponses
 Le système détecte et atténue la fraude (multi-compte, bot) et la mauvaise qualité.
 **Consequences :**
-- Détection bot/doublon + flags qualité (speeders, straight-lining) ;
-  `[ASSUMPTION: les Comptes certifiés et les signaux de coordination renforcent le
-  filtrage]`.
-- Les réponses suspectes sont pondérées/exclues du redressement (journalisé).
+- Détection bot/doublon + flags qualité (speeders, straight-lining).
+- **Testable :** une 2e réponse du même compte au même sondage est **rejetée** ; une
+  réponse marquée frauduleuse **n'entre pas** dans le calcul redressé et reste **tracée**.
+- `[ASSUMPTION: les Comptes certifiés et les signaux de coordination renforcent le filtrage]`.
 
 **Feature-specific NFRs :** transparence méthodologique (page `/methodologie`,
 existant) ; **provenance structurée** d'un sondage (organisme, n, dates, questions,
@@ -494,8 +495,10 @@ pronos en direct. Réalise UJ-5. **Robustesse > esbroufe** (cf. recherche : la
 #### FR-28 : Suivre les résultats en temps réel
 Un membre suit la remontée des résultats d'un scrutin en direct. Réalise UJ-5.
 **Consequences :**
-- **Ticker/visualisation simple et robuste** alimenté par un canal temps réel
-  (Supabase Realtime) + **fallback** « dernière mise à jour HH:MM ».
+- Visualisation **simple** (barre / carte / ticker) alimentée par **Supabase Realtime**.
+- **Testable (résilience) :** si le canal temps réel se coupe, le **dernier état + un
+  horodatage « MAJ HH:MM »** restent affichés — jamais d'écran vide ni de chiffre périmé
+  sans marqueur.
 - `[ASSUMPTION: source des résultats = saisie back-office/officielle en v1 ; ingestion
   automatisée selon dispo.]`
 
@@ -517,8 +520,10 @@ Réalise UJ-5.
 #### FR-31 : Échanger des messages privés
 Un membre peut envoyer/recevoir des **DM**.
 **Consequences :**
-- Conversations 1:1 `[ASSUMPTION: groupes = v2]` ; RLS self-only stricte.
-- Throttling/anti-spam ; possibilité de bloquer un membre.
+- Conversations 1:1 `[ASSUMPTION: groupes = v2]`. **RLS self-only testable :** un tiers
+  ne peut lire/charger une conversation dont il n'est pas participant.
+- Un membre peut **bloquer** un autre → les DM d'un expéditeur bloqué sont **refusés**.
+- Au-delà de N messages/minute, l'envoi est **temporisé** (anti-spam).
 
 ### 4.10 Découverte, navigation & onboarding
 **Description :** Bottom-tab-bar mobile / 3 colonnes desktop ; recherche 3 segments ;
@@ -536,9 +541,11 @@ Le système offre une navigation cohérente mobile-first.
 #### FR-33 : Recherche & Explorer
 Un membre peut chercher (3 segments **Débats / Tables / Membres**) et explorer.
 **Consequences :**
-- Tendances **fenêtrées dans le temps** ; **contrer le biais méga-communautés**
-  (pondérer par vélocité + diversité, pas le nb de membres brut).
-- L'Explorer **localise** (« près de chez vous ») via la donnée territoriale.
+- Une requête retourne les **3 segments** ; une **Table privée n'apparaît jamais**
+  dans les résultats d'un non-membre.
+- Tendances **fenêtrées** (24 h / 7 j) ; le rang d'une Table dépend de la **vélocité
+  d'activité + diversité des contributeurs**, **pas** du nombre brut de membres.
+- L'Explorer propose des Nœuds/Tables « près de chez vous » via la donnée territoriale.
 
 #### FR-34 : Onboarding & empty states
 Un nouvel arrivant est guidé pour éviter le « feed vide ». Réalise UJ-2.
@@ -551,18 +558,22 @@ Un nouvel arrivant est guidé pour éviter le « feed vide ». Réalise UJ-2.
 #### FR-35 : Notifications
 Un membre reçoit des notifications agrégées.
 **Consequences :**
-- Centre **2 onglets** (Toutes / Mentions) ; **agrégation** (« X et 4 autres… ») ;
-  badge plafonné 9+ puis point.
-- Couvre : réponses, mentions, réactions/Deltas, résolutions de pronos, nouveautés des
-  Tables/Nœuds suivis.
+- Centre **2 onglets** ; l'onglet **Mentions** ne contient **que** les @-mentions
+  (sous-ensemble strict des notifications).
+- **Agrégation testable :** N événements (même verbe, même cible) = **une seule ligne**
+  (« X et 4 autres… »), pas N lignes ; badge plafonné à **9+** puis point.
+- Déclencheurs : réponses, mentions, réactions/Deltas, résolutions de pronos,
+  nouveautés des Tables/Nœuds suivis.
 
 ### 4.11 Back-office (admin)
 #### FR-36 : Administration
 Un administrateur peut octroyer les **macarons officiels**, gérer les
 **certifications**, les **sponsors**, et exercer la modération de dernier ressort.
 **Consequences :**
-- Étend le socle `/admin` existant ; toutes les actions **journalisées** (audit).
-- Accès gardé par rôle (RLS/`is_moderator()`), MFA `[ASSUMPTION: MFA back-office]`.
+- **Toute** action d'octroi (macaron / certif / sponsor) est **journalisée** (acteur,
+  cible, horodatage, motif) et consultable.
+- Accès **refusé** (403/redirect) à tout compte non-admin (gardé RLS/`is_moderator()`) ;
+  MFA requise `[ASSUMPTION: MFA back-office]`.
 
 ### 4.12 Modération & intégrité (transverse)
 **Description :** Empilement « santé du débat » : structure + bridging (FR-5) + Trust
@@ -582,11 +593,14 @@ Un membre peut signaler ; le système traite avec **transparence**.
 Un agent externe (au nom d'un utilisateur authentifié) peut lire/écrire via **MCP**
 sous RLS.
 **Consequences :**
-- Étend le serveur existant (OAuth 2.1 Supabase + DCR) avec outils pour
-  **sondages** (lire résultats redressés, voter), **pronos** (parier/leaderboard),
-  **tables** (créer/rejoindre/poster, y c. mode aveugle).
-- **Aucun `service_role`** dans le chemin ; RLS s'applique comme pour la GUI.
-- Référencement du serveur dans les registres MCP publics.
+- Outils MCP exposés (en plus de l'existant) : **sondages** (lire résultats redressés,
+  voter), **pronos** (parier, leaderboard), **tables** (créer/rejoindre/poster, y c.
+  mode aveugle).
+- **Testable :** un appel MCP au nom d'un utilisateur ne lit/écrit **que** ce que la
+  RLS de cet utilisateur autorise (une Table privée non rejointe reste **invisible**) ;
+  **aucun `service_role`** dans le chemin.
+- Le serveur est **découvrable** (PRM `/.well-known/oauth-protected-resource`) et
+  **référencé dans ≥1 registre MCP public**.
 
 ### 4.14 Internationalisation (i18n)
 #### FR-39 : Plateforme internationalisée FR/EN
@@ -641,7 +655,7 @@ notifications) ; Back-office ; MCP public étendu ; i18n FR/EN ; Modération/int
 - **SM-2 — Représentativité atteinte :** part des Sondages redressés atteignant la
   Bande **« robuste »**. Valide FR-20/21/22.
 - **SM-3 — Rétention boucle 3 piliers :** part des actifs touchant ≥2 piliers
-  (forum/sondage/prono) par semaine. Valide §IA + FR-25/18/1.
+  (forum/sondage/prono) par semaine. Valide §12 (IA) + FR-25/18/1.
 
 **Secondary**
 - **SM-4 — Santé du débat :** ratio réponses délibératives (Deltas, réactions
@@ -673,6 +687,10 @@ précision ; maille = émergente via nœuds créés par les utilisateurs.)*
 
 ## 9. Assumptions Index
 - §4.1 FR-1 — cap de threading 4-5 niveaux.
+- §4.1 FR-5 — signal de bridging dérivé des réactions cross-bord + Deltas.
+- §4.5 FR-21 — ré-invitation ciblée : nudge/notif v1, ciblage fin v2.
+- §4.5 FR-22 — Comptes certifiés + signaux de coordination renforcent le filtrage anti-fraude.
+- §4.11 FR-36 — MFA back-office.
 - §4.2 FR-6/7 — graphe & maille créés par les utilisateurs (gouvernance des Nœuds à
   cadrer — cf. Open Q5).
 - §4.3 FR-11 — pseudo anonyme stable par (table, fil, user).
@@ -770,3 +788,23 @@ first, un seul accent chromatique, sobriété. **Ton** : la rigueur d'un institu
 l'énergie d'un jeu ; **honnêteté statistique** (jamais survendre) ; **fun et
 rassurant** (le score de représentativité est ludique, pas anxiogène). Spécifications
 de design system : `docs/research/2026-06-12-ux-patterns.md`.
+
+## 16. Anti-patterns à éviter (guardrail de conception)
+**Principe :** le produit vise l'**auto-organisation libre (façon Reddit)** — mais le
+hands-off pur recrée les pathologies de Reddit (modération biaisée, chambres d'écho,
+pile-ons). On ne modère pas *plus*, on **conçoit mieux le terrain**. Catalogue complet
+et statut de mitigation : `docs/research/2026-06-12-anti-patterns.md`. À **interdire**
+explicitement et/ou **renforcer** :
+- **Dark patterns bannis** : ranking à l'outrage (→ bridging FR-5), infinite-scroll/
+  autoplay (→ charger-plus FR-4), feed voyeur (→ FR-35), notifs/badges manipulateurs
+  (fausse urgence), **roach-motel** (→ suppression/export de compte sans friction,
+  surtout KYC), privacy-zuckering (→ opinion **jamais publique par défaut**), vente de
+  vérification (→ FR-15).
+- **Pièges du modèle Reddit à neutraliser par structure** : **capture/biais des
+  modérateurs** (→ limites de pouvoir + méta-modération — `[NOTE FOR PM]` à renforcer),
+  domination méga-communautés (→ FR-33), brigading/sockpuppets (→ FR-22/37), pile-ons
+  (→ pas de downvote + Delta FR-3), **gatekeeping anti-nouveaux** (→ trust levels qui
+  débloquent sans humilier, FR-16/34), Goodhart/karma-farming (→ pas de karma public),
+  abus d'anonymat (→ responsabilisation serveur FR-11).
+- **Risque nouveau (nœuds créés par les utilisateurs)** : **squat/usurpation/spam de
+  Nœuds** → dédoublonnage + vérification d'entité (FR-8) + macaron (FR-15) + Open Q5.
