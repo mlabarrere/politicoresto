@@ -9,8 +9,8 @@ author: Micky (facilité par BMAD product-brief)
 # Product Brief : PoliticoResto
 
 > **Statut : v1.0 — périmètre figé par Micky le 2026-06-12** (« j'ai tout donné »).
-> Quelques `[HYPOTHÈSE]` subsistent (chiffrage des critères de succès, persona
-> journalistes, modèle économique) → **reportés au PRD**. Juridique **parqué**
+> Quelques `[HYPOTHÈSE]` subsistent (chiffrage des critères de succès, modèle
+> économique) → **reportés au PRD**. Juridique **parqué**
 > (domiciliation non choisie). Bases de preuves : `docs/research/2026-06-12-state-of-the-art.md`
 > (produit) + `docs/research/2026-06-12-ux-patterns.md` (UX). Détails techniques &
 > arbitrages : `addendum.md`. Mémoire des décisions : `.decision-log.md`.
@@ -72,23 +72,24 @@ celle d'un jeu social** :
   représentativité ludique** (« ton sondage est représentatif à 72 % — il te
   manque des 18-24 ans pour le rendre béton »), jamais du jargon (`deff`) brut.
   Toujours un **intervalle**, jamais un nombre nu.
-- **Tout est un nœud, chaque nœud est un forum (graphe politique).** Au-delà des
-  tables créées par les utilisateurs, il existe des **forums canoniques** adossés
-  aux **entités politiques** : **territoires** (**quartier / arrondissement /
-  commune / département** — la **politique locale, prioritaire**), **députés / élus**
-  (une **« fiche »** : actu, votes, prises de position, on en discute), **candidats**,
-  **partis**, **thèmes**. Chaque entité = un **nœud** qui est aussi un **forum**
-  (flux continu façon subreddit : poster, discuter, sonder, parier). Les nœuds sont
-  **reliés en graphe** (thème → candidats → partis ; territoire → député) et se
-  naviguent ainsi. *(Socle existant à auditer/réutiliser : `political_entity`, seed
-  partis/politiciens, enum `space_role`.)*
+- **Tout est un nœud, chaque nœud est un forum (graphe politique).** Les **nœuds**
+  (territoires, **députés / élus** avec **« fiche »**, candidats, partis, thèmes) sont
+  **créés par les utilisateurs** : le graphe et la **maille territoriale**
+  **s'auto-construisent** (bottom-up — du quartier au national, la **politique locale
+  prioritaire**), avec **dédoublonnage** (un nœud par entité/territoire) et
+  **vérification** pour les entités réelles. Chaque nœud est un **forum** (flux continu
+  façon subreddit : poster, discuter, sonder, parier), **relié en graphe** (thème →
+  candidats → partis ; territoire → député). Un nœud est un objet **partagé** du graphe,
+  distinct des **Tables** (salons sociaux). *(Amorçage à auditer/réutiliser :
+  `political_entity`, seed partis/politiciens, enum `space_role`.)*
 - **Tables** — l'unité « groupe / sous-forum », créable par tout le monde, où
   l'on **discute, sonde et parie** comme partout ailleurs. **Deux curseurs
   indépendants** : **accès** (publique & découvrable ↔ **privée/secrète, sur
   invitation seulement**) et **identité des participants** (*ouverte* ↔ *aveugle /
   anonyme intégral, « discussion à l'aveugle »*). Combinables librement. Modération
-  déléguée par table. *(Tables thématiques par couleur/idéologie = piste ouverte,
-  à cadrer au PRD — attention au risque d'entre-soi ; cf. addendum.)*
+  déléguée par table. *(Les forums thématiques / par-entité sont les **nœuds
+  canoniques** ci-dessus, distincts des Tables — ce qui tranche la « piste tables
+  thématiques ». Risque d'entre-soi géré par le feed bridging.)*
 - **Flair parti** — chaque membre peut afficher (opt-in) son parti de prédilection
   à côté de son pseudo : on sait si on débat avec quelqu'un de LFI ou du RN. Le
   pendant assumé du mode aveugle (deux crans d'un même axe identité visible↔masquée).
@@ -182,8 +183,9 @@ bridging, gates de confiance, pas l'amplification d'outrage), **(3)** un produit
   est vraiment représentatif, et je me suis amusé. »
 - **Secondaire : la communauté d'une table** — un groupe (asso, fac, bande
   d'amis politisés) qui veut son salon, parfois à l'abri (mode aveugle).
-- `[HYPOTHÈSE]` **Tertiaire : journalistes / curieux** qui citent un résultat
-  représentatif produit par la foule. (À confirmer — ça touche le légal parqué.)
+- **Tertiaire (cible assumée v1) : journalistes / médias** qui citent un résultat
+  représentatif produit par la foule. Les sondages sont conçus pour être **citables**
+  (provenance structurée). *(Démarchage presse actif après le légal dé-parqué.)*
 
 ## Critères de succès `[HYPOTHÈSE]` (à valider/chiffrer avec Micky)
 
@@ -242,6 +244,10 @@ particuliers parier entre eux pour de l'argent, on bascule dans le jeu d'argent.
 un avocat au moment voulu. Détail : `addendum.md` §A.
 
 ## Périmètre
+
+> **Ordre de construction :** la v1 **ne sort pas d'un coup** — elle est **phasée
+> P1 → P2 → P3** (défini au PRD §15bis). Tête de pont **P1** = Boussole + graphe/fiches
+> + forum sûr.
 
 **Dans la v1 (tout dégelé + élargi) :**
 

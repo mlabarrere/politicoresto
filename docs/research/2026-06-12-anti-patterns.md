@@ -34,7 +34,7 @@ garde-fous structurels** (les règles du jeu) qui rendent l'auto-organisation sa
 | **Capture / biais des modérateurs** → chambres d'écho | recrée la censure que les « orphelins de Reddit » fuient | ⚠️ **partiel** : modération **transparente** (motif + appel, FR-37) ; à renforcer : limites de pouvoir des modos de Table, méta-modération |
 | **Domination des méga-communautés** | quelques Tables/Nœuds écrasent les petits | ✅ tri par **vélocité + diversité**, pas nb de membres (FR-33) |
 | **Brigading / manipulation de votes** | prises de contrôle coordonnées | ✅ détection de **coordination** (FR-37) ; ⚠️ pas de downvote public retire déjà l'arme |
-| **Sockpuppets / astrotur:** | **critique en politique** (partis qui manipulent) | ✅ anti-fraude (FR-22), comptes certifiés ; ⚠️ surveiller le financement (transparence) |
+| **Sockpuppets / astroturfing** | **critique en politique** (partis qui manipulent) | ✅ anti-fraude (FR-22), comptes certifiés ; ⚠️ surveiller le financement (transparence) |
 | **Pile-on / dogpiling** sur les avis minoritaires | harcèlement de meute | ✅ **pas de downvote public** + réaction **delta** + emojis fermés (FR-3) |
 | **Hostilité aux nouveaux / gatekeeping** (piège Stack Overflow) | les trust levels peuvent humilier les débutants | ⚠️ **trust levels = débloquer, jamais humilier** ; onboarding chaleureux (FR-34) — à garder en tête |
 | **Goodhart / gaming** (karma farming) | optimiser la métrique, pas le débat | ✅ **pas de karma public** ; capacités, pas points (FR-16) ; counter-metrics (SM-C*) |

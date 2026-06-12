@@ -87,6 +87,9 @@ participants, paris d'argent entre particuliers.
   toujours à gérer via le feed bridging.
 
 ## G. Graphe politique — entités-nœuds = forums (Micky, structurant)
+> **MAJ 2026-06-12 :** les nœuds sont **créés par les utilisateurs** (graphe
+> **bottom-up**, maille émergente, dédoublonnage + vérification). L'amorçage
+> `political_entity` sert de **référentiel de dédoublonnage**, pas de liste figée.
 - **Principe** : la **politique locale est prioritaire** (les gens veulent parler
   de leur quartier/commune/département/député). Chaque **entité politique** est un
   **nœud** qui est aussi un **forum** hébergeant les 3 piliers (discuss/sondages/
