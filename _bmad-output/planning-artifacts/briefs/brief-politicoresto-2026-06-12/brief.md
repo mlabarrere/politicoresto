@@ -191,6 +191,14 @@ local vérifié est un signal de représentativité en or). Un **badge « vérif
 distingue ces comptes ; la certification reste **optionnelle** (le forum/les
 sondages restent ouverts aux comptes non certifiés, sans rému ni poids « vérifié »).
 
+3. **(Exploratoire `[À EXPLORER]`) Rémunérer la qualité.** Payer les contributeurs
+   qui produisent du contenu de grande qualité (logique « créateur/influenceur »),
+   financé par la plateforme **et/ou** par des sponsors / partis / institutions /
+   financeurs privés. **Se branche sur le système qualité** (deltas, trust levels,
+   précision pronos) → récompense un signal réel. **Garde-fou intégrité** :
+   **transparence du financement obligatoire** (qui finance qui), sinon risque
+   d'astroturfing / influence cachée — fatal pour la crédibilité en politique.
+
 **Invariant de design qui garde le modèle défendable** (le point que Micky sent
 « légalement limite ») : **le participant ne mise jamais rien** — l'argent est
 injecté par le sponsor, pas par le joueur. Sans *sacrifice financier* du
