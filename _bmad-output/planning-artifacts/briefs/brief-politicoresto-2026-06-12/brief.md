@@ -89,6 +89,12 @@ celle d'un jeu social** :
 - **Posts riches** — texte, images, GIF, **vidéos YouTube en embed**.
 - **International dès le départ** (i18n FR/EN) et **MCP public** : des agents
   externes (Claude & autres) peuvent se connecter à PoliticoResto.
+- **Découvrable par les humains ET les machines.** SEO classique (rendu
+  server-side, HTML sémantique, **données structurées schema.org/JSON-LD**,
+  sitemaps, OpenGraph, hreflang) **et** « SEO des agents/LLM » (GEO/AEO) : contenu
+  **entièrement parsable** (jamais de texte piégé dans une image), `llms.txt`, MCP
+  public comme canal d'accès. Objectif : **être la source que les LLM citent** sur
+  la politique.
 
 Fil rouge de modération : **récompenser la qualité délibérative, pas la chaleur**
 — gates de confiance progressifs (façon Discourse), ranking « bridging » plutôt

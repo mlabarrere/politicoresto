@@ -99,3 +99,17 @@ participants, paris d'argent entre particuliers.
   l'engagement) + gates de confiance progressifs (Discourse) + transparence ;
   ne pas se fier à un classifieur de toxicité seul (biais).
 - **Réputation** : débloquer des **capacités**, pas des **points-vanité** (Goodhart).
+
+## E. NFR Découvrabilité (SEO + GEO/AEO) — Micky
+- **SEO humain** : rendu server-side (RSC/SSR — déjà la stack), HTML sémantique,
+  **JSON-LD schema.org** (Article, DiscussionForumPosting, Question/Answer,
+  Organization, Event pour les soirées électorales), sitemaps dynamiques,
+  OpenGraph/Twitter cards, **hreflang** (couplé i18n), URLs propres/canoniques.
+- **SEO agents/LLM (GEO/AEO)** : **tout le texte parsable** (zéro texte en image),
+  `llms.txt` + `robots.txt` accueillants aux crawlers IA légitimes, contenu
+  accessible sans JS (server-rendered), **MCP public** comme canal d'accès
+  structuré pour agents. Objectif : être **cité par les LLM** sur les sujets
+  politiques.
+- **Conséquence d'architecture** : éviter les contenus client-only non indexables ;
+  exposer les résultats de sondage (avec score de représentativité) en données
+  structurées partageables/citables.
