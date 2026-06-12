@@ -135,6 +135,14 @@ bridging, gates de confiance, pas l'amplification d'outrage), **(3)** un produit
 
 ## Pour qui
 
+- **Tête de pont (acquisition v1) : les « orphelins politiques » de Reddit.** Les
+  gens qui utilisent Reddit pour parler politique mais s'y sentent **muselés** —
+  en France, la modération des subs politiques penche fortement à gauche, ce qui
+  **enterre les avis minoritaires** (la recherche le documente : biais de
+  modération Reddit → chambres d'écho). PoliticoResto leur offre un lieu où **on
+  n'est pas enterré pour un avis** : **pas de downvote public**, modération
+  transparente, exposition cross-bord (bridging). Capter ceux qui « n'arrivent
+  plus à parler sur Reddit » = la brèche d'entrée. **Ambition large : tout le monde.**
 - **Primaire : le citoyen politisé grand public** — suit la politique, a des
   opinions, veut être entendu *et* veut savoir si son avis est représentatif.
   Succès = « j'ai lancé un sondage que mes amis prennent au sérieux parce qu'il
