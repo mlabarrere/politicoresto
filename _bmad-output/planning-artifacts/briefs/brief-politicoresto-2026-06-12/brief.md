@@ -1,6 +1,6 @@
 ---
 title: "Product Brief — PoliticoResto"
-status: draft
+status: ready
 created: 2026-06-12
 updated: 2026-06-12
 author: Micky (facilité par BMAD product-brief)
@@ -8,9 +8,12 @@ author: Micky (facilité par BMAD product-brief)
 
 # Product Brief : PoliticoResto
 
-> **Statut : brouillon v0.1 (Fast path).** Les `[HYPOTHÈSE]` sont mes
-> inférences à corriger. Base de preuves : `docs/research/2026-06-12-state-of-the-art.md`.
-> Détails techniques & arbitrages parqués : `addendum.md`.
+> **Statut : v1.0 — périmètre figé par Micky le 2026-06-12** (« j'ai tout donné »).
+> Quelques `[HYPOTHÈSE]` subsistent (chiffrage des critères de succès, persona
+> journalistes, modèle économique) → **reportés au PRD**. Juridique **parqué**
+> (domiciliation non choisie). Bases de preuves : `docs/research/2026-06-12-state-of-the-art.md`
+> (produit) + `docs/research/2026-06-12-ux-patterns.md` (UX). Détails techniques &
+> arbitrages : `addendum.md`. Mémoire des décisions : `.decision-log.md`.
 
 ## Executive Summary
 
