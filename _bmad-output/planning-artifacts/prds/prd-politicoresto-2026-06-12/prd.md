@@ -58,6 +58,10 @@ qu'ailleurs parce que l'architecture **récompense la qualité, pas la chaleur**
 - **Se retrouver entre soi** quand on le souhaite : créer un salon (table), public
   ou secret, à visage découvert ou anonyme.
 - **Vivre l'événement** : suivre une soirée électorale en direct avec d'autres.
+- **Citer un résultat crédible (journaliste/média)** : reprendre un sondage citoyen
+  *visiblement* représentatif, avec sa **provenance** — **cible assumée dès v1** (les
+  sondages sont conçus pour être citables ; cf. FR-21). *(Le démarchage presse actif
+  attend le légal dé-parqué, mais le produit vise déjà cette citabilité.)*
 
 ### 2.2 Non-Users (v1)
 - **Instituts/marques en self-service B2B** : la vente de sondages pro existe au
@@ -243,38 +247,48 @@ plutôt que l'engagement brut. Réalise UJ-2.
 **Feature-specific NFRs :** interactions hot-path < 1 frame perçue (optimiste).
 
 ### 4.2 Graphe politique & entités-nœuds
-**Description :** Tout objet politique est un **Nœud** qui est aussi un **Forum
-canonique**, relié en **graphe**. **Politique locale prioritaire.** Réalise UJ-3.
-Réutilise le socle `political_entity`/seed partis-politiciens (audit règle #7).
+**Description :** Tout objet politique est un **Nœud** qui est aussi un **Forum**,
+relié en **graphe**. **Le graphe se construit bottom-up : les utilisateurs créent
+les nœuds** (leur commune, un thème, un candidat…) — la maille territoriale et le
+graphe **émergent de l'usage**, pas d'une liste figée seedée d'en haut. Un amorçage
+(seed `political_entity`/partis-politiciens) sert de point de départ et de
+référentiel de **dédoublonnage**. **Politique locale prioritaire.** Réalise UJ-3.
 
-#### FR-6 : Naviguer le graphe politique
-Un membre peut ouvrir un Nœud (Territoire/Élu/Candidat/Parti/Thème) et naviguer vers
-les Nœuds reliés.
+#### FR-6 : Créer & naviguer le graphe politique
+Un membre peut **créer/proposer un Nœud** (Territoire/Élu/Candidat/Parti/Thème),
+l'ouvrir, et naviguer vers les Nœuds reliés. Réalise UJ-3.
 **Consequences :**
-- Chaque Nœud expose son **Forum canonique** (discussions + sondages + pronos) et un
-  flux continu.
+- La création de Nœud est **ouverte aux utilisateurs** (le graphe s'auto-construit) ;
+  **dédoublonnage** à la création (un même territoire/entité = un seul Nœud).
+- Chaque Nœud expose son **Forum** (discussions + sondages + pronos) + un flux continu.
 - Arêtes typées navigables (candidat↔parti, thème↔candidats, territoire↔élu).
 - Un Post/Sondage/Prono peut être rattaché à un ou plusieurs Nœuds.
+- **Out of Scope :** un Nœud créé par un utilisateur n'est **pas** « vérifié » par
+  défaut (vérification/officialisation via FR-8/FR-15).
 
-#### FR-7 : Territoires & politique locale
-Un membre peut accéder au Nœud territorial correspondant à sa localité (quartier/
-commune/département/région/national) et y discuter. Réalise UJ-3.
+#### FR-7 : Territoires & politique locale (maille émergente)
+Un membre peut créer/rejoindre le Nœud territorial de sa localité et y discuter ; la
+**maille se construit d'elle-même** au gré des créations. Réalise UJ-3.
 **Consequences :**
+- Pas de maille imposée : commune, département, région, national — **et plus fin
+  (quartier/arrondissement) dès que des utilisateurs le créent** et que les données
+  le permettent.
 - La résolution `code postal → ville/région` (geo.api.gouv.fr, déjà prévue pour le
-  redressement) alimente l'ancrage territorial.
-- `[ASSUMPTION: maille v1 = commune + département + région + national ; quartier/
-  arrondissement = v2 selon données dispo.]`
+  redressement) **suggère** les Nœuds territoriaux pertinents et aide au rattachement.
 
-#### FR-8 : Fiche d'élu/candidat
-Un membre peut consulter la **Fiche** d'un élu/candidat (actu, prises de position) et
-discuter sur son Forum. Réalise UJ-3.
+#### FR-8 : Fiche d'élu/candidat & vérification d'entité
+Un membre peut consulter/enrichir la **Fiche** d'un Nœud élu/candidat (actu, prises de
+position) ; une entité réelle peut être **vérifiée/officialisée**. Réalise UJ-3.
 **Consequences :**
-- La Fiche agrège des contenus éditoriaux/sourcés `[ASSUMPTION: seedés + curés au
-  back-office en v1 ; ingestion automatisée = v2]`.
-- Un Compte officiel d'un élu (s'il existe) est lié à sa Fiche.
+- La Fiche agrège des contenus sourcés (contributions des membres + curation) ;
+  l'ingestion automatisée est hors v1.
+- Une entité réelle (élu/parti/candidat) peut être **vérifiée** (badge) et, si elle
+  s'inscrit, liée à un **Compte officiel** (macaron, FR-15) via le **Back-office**.
 
-**Notes :** `[NOTE FOR PM]` la frontière « forums canoniques curés » vs « tables
-utilisateurs » résout la question ouverte « tables thématiques » du brief.
+**Notes :** `[NOTE FOR PM]` distinction clé : **Nœud** = objet *partagé* du graphe
+(un par entité/territoire/thème, dédoublonné, vérifiable) ; **Table** = salon *social*
+créé par un utilisateur (FR-9). Les deux sont créables par tous, sémantiques
+différentes. Résout la question « tables thématiques » du brief.
 
 ### 4.3 Tables (sous-forums utilisateurs)
 **Description :** Salons créés par les utilisateurs. **Accès** (publique/privée-
@@ -467,8 +481,9 @@ Un membre place un pari sur une ou plusieurs options. Réalise UJ-5.
 **Consequences :**
 - Résolution par le modo (option(s) gagnante(s)) ; propagation des points + bannière
   rétroactive + notifs (existant).
-- **Score de précision** (Brier/peer) par joueur, alimentant classement + **reliability
-  diagram** perso `[ASSUMPTION: on garde la Cote ET on ajoute le score de précision]`.
+- **Décision :** on garde la **Cote** (frisson) **ET** un **Score de précision**
+  (Brier/peer) par joueur, alimentant le **Classement** + un **reliability diagram**
+  perso (calibration). Les deux coexistent.
 - Résolution **en direct** possible pendant une Soirée électorale (FR-30).
 
 ### 4.8 Soirées électorales (live)
@@ -644,28 +659,28 @@ notifications) ; Back-office ; MCP public étendu ; i18n FR/EN ; Modération/int
   **garder bas** (contrebalance la rétention).
 
 ## 8. Open Questions
+*(Résolues le 2026-06-12 : journalistes = cible assumée v1 ; pronos = Cote + Score de
+précision ; maille = émergente via nœuds créés par les utilisateurs.)*
 1. Chiffrage des cibles SM (par Micky).
-2. Persona **journalistes/médias** : cible assumée ? (dépend du légal parqué).
-3. **Modèle économique** : validation juridique (parqué) ; périmètre v1 de la rému.
-4. **Compte certifié** : modalités exactes de la « preuve d'électeur local » + choix
+2. **Modèle économique** : validation juridique (parqué) ; périmètre v1 de la rému.
+3. **Compte certifié** : modalités exactes de la « preuve d'électeur local » + choix
    du prestataire KYC.
-5. **Pronos** : cadrage final Cote + Score de précision (coexistence, affichage).
-6. **Maille territoriale** v1 (jusqu'où descendre) selon données disponibles.
-7. **Trust levels** : mapping précis niveau → capacité.
-8. **Sources** : fiches d'élus & résultats live (curation vs ingestion).
-9. **Domiciliation** : pays/entité (débloque le légal et fixe les données de référence).
+4. **Trust levels** : mapping précis niveau → capacité.
+5. **Gouvernance des Nœuds** : dédoublonnage/anti-spam/fusion des Nœuds créés par les
+   utilisateurs ; qui peut renommer/scinder ; modération d'un Nœud.
+6. **Sources** : fiches d'élus & résultats live (curation vs ingestion future).
+7. **Domiciliation** : pays/entité (débloque le légal et fixe les données de référence).
 
 ## 9. Assumptions Index
 - §4.1 FR-1 — cap de threading 4-5 niveaux.
-- §4.2 FR-7 — maille v1 commune/département/région/national.
-- §4.2 FR-8 — fiches d'élus seedées/curées en v1.
+- §4.2 FR-6/7 — graphe & maille créés par les utilisateurs (gouvernance des Nœuds à
+  cadrer — cf. Open Q5).
 - §4.3 FR-11 — pseudo anonyme stable par (table, fil, user).
 - §4.4 FR-14 — modalités « preuve d'électeur local » à définir ; KYC délégué.
 - §4.4 FR-16 — mapping Trust level → capacité à fixer.
 - §4.5 FR-18 — sondage politique « redressé » par défaut, Consultation = choix explicite.
 - §4.5 FR-20 — seuil score<40 → pas de résultat corrigé présenté comme fiable.
 - §4.6 FR-23/24 — ~30 thèses 2027 ; positions candidats curées v1.
-- §4.7 FR-27 — coexistence Cote + Score de précision.
 - §4.8 FR-28 — résultats live saisis/curés en v1.
 - §4.9 FR-31 — DM 1:1 en v1 (groupes v2).
 - §4.14 FR-39 — FR+EN au lancement.
