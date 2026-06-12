@@ -65,9 +65,13 @@ celle d'un jeu social** :
   représentativité ludique** (« ton sondage est représentatif à 72 % — il te
   manque des 18-24 ans pour le rendre béton »), jamais du jargon (`deff`) brut.
   Toujours un **intervalle**, jamais un nombre nu.
-- **Tables** — des sous-forums créés par les utilisateurs, avec un **curseur
-  d'identité** : *ouvert* (identités visibles) ↔ *aveugle* (anonyme intégral,
-  « discussion à l'aveugle »). Modération déléguée par table.
+- **Tables** — l'unité « groupe / sous-forum », créable par tout le monde, où
+  l'on **discute, sonde et parie** comme partout ailleurs. **Deux curseurs
+  indépendants** : **accès** (publique & découvrable ↔ **privée/secrète, sur
+  invitation seulement**) et **identité des participants** (*ouverte* ↔ *aveugle /
+  anonyme intégral, « discussion à l'aveugle »*). Combinables librement. Modération
+  déléguée par table. *(Tables thématiques par couleur/idéologie = piste ouverte,
+  à cadrer au PRD — attention au risque d'entre-soi ; cf. addendum.)*
 - **Flair parti** — chaque membre peut afficher (opt-in) son parti de prédilection
   à côté de son pseudo : on sait si on débat avec quelqu'un de LFI ou du RN. Le
   pendant assumé du mode aveugle (deux crans d'un même axe identité visible↔masquée).
@@ -89,6 +93,11 @@ celle d'un jeu social** :
 Fil rouge de modération : **récompenser la qualité délibérative, pas la chaleur**
 — gates de confiance progressifs (façon Discourse), ranking « bridging » plutôt
 qu'engagement, transparence des décisions.
+
+**Direction UI/UX :** **copier la simplicité et l'efficacité des réseaux sociaux
+modernes** (Reddit, X, Threads, Instagram…) — **mobile-first**, friction minimale,
+codes connus de tous. La rigueur statistique se cache derrière une UX familière et
+fluide. *(Recherche de patterns d'UI en cours → nourrira la phase UX du PRD.)*
 
 ## Ce qui rend ça différent
 
@@ -185,7 +194,7 @@ un avocat au moment voulu. Détail : `addendum.md` §A.
 | 1e | **Messagerie privée (DM)** | nouveau |
 | 1f | **Comptes officiels** (partis/orgs, macaron) | nouveau |
 | 10 | **Back-office admin** (octroi comptes officiels, certifs, sponsors) | étendre `/admin` existant |
-| 2 | **Tables** (sous-forums, mode ouvert/aveugle, modération déléguée) | nouveau |
+| 2 | **Tables** (sous-forums ; accès public/privé-sur-invitation × identité ouverte/aveugle ; discuss+sondages+pronos ; modération déléguée) | nouveau |
 | 3 | **Sondage redressé fun & grand public** (redressé par défaut, score visible) | dégeler + grand-publiciser |
 | 4 | **Boussole / candidat-match (VAA)** | nouveau |
 | 5 | **Pronos** (sans argent, score précision) | dégeler |

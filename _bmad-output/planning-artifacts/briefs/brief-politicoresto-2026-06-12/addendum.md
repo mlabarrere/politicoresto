@@ -71,6 +71,18 @@ participants, paris d'argent entre particuliers.
   (socle du **flair parti**), `user_private_political_profile` (DOB, postal_code).
   **Manquent pour le redressement** : sexe, CSP, diplôme, région dérivée, vote passé.
 
+## B-bis. Tables — modèle à deux axes + question ouverte
+- **Deux axes orthogonaux** : (1) **accès** = public/découvrable ↔ privé/secret
+  (invitation seulement, invisible aux non-membres) ; (2) **identité des
+  participants** = ouverte ↔ aveugle (anonyme). Combinables (4 quadrants).
+- Une table héberge **tout** : discussions, sondages (redressés), pronos.
+- **Question ouverte (Micky) — tables thématiques par couleur/idéologie.** Non
+  tranchée. Bénéfice : « chez-soi » communautaire. Risque : **entre-soi / chambre
+  d'écho** (cf. recherche §6 — l'architecture doit récompenser le bridging, pas la
+  ségrégation). Pistes à explorer au PRD : tables thématiques **curées/officielles**
+  + exposition cross-bord via le feed bridging ; ou s'abstenir. À trancher.
+- Auditer le résidu `space_role/space_status` avant réutilisation (règle #7).
+
 ## C. Roadmap explicitement post-v1
 - **Replay vidéo** des soirées électorales.
 - **MRP** (ventilations sous-nationales) après le raking v1.
