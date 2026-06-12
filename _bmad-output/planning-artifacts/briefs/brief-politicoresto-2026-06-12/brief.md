@@ -81,8 +81,12 @@ celle d'un jeu social** :
   **s'envoyer des messages privés (DM)**.
 - **Boussole « quel candidat me ressemble »** — un quiz court, scoring transparent
   (façon Wahl-O-Mat 2/1/0), restitution sur des axes 2D + match candidat/parti.
-- **Pronos** — pronostics scorés *sans argent* (score de précision Brier/peer,
-  classement, calibration) ; le frisson de la prédiction, pas le pari.
+- **Pronos** — pronostics *sans argent* à **durée longue** (un pari présidentiel
+  vit des **mois**, ce n'est pas un post éphémère). **Section/hub dédié** pour
+  suivre ses paris ouverts et où la **discussion vit dans le temps**, **+
+  apparition dans le feed**. Mécanique de **cote/multiplicateur** (le frisson) **+
+  classement de précision** (Brier/peer, calibration). Résolution **en direct**
+  lors des soirées électorales.
 - **Soirées électorales** — événements live le soir d'un scrutin : remontée des
   résultats en temps réel, fil de commentaires live, **résolution des pronos en
   direct** ; ambiance watch-party.
@@ -106,10 +110,16 @@ Fil rouge de modération : **récompenser la qualité délibérative, pas la cha
 — gates de confiance progressifs (façon Discourse), ranking « bridging » plutôt
 qu'engagement, transparence des décisions.
 
+**Boucle vertueuse des 3 piliers.** L'IA tisse **Forum ↔ Pronos ↔ Sondages** : on
+débat, on parie, on sonde, puis on revient débattre. Chaque pilier nourrit les
+autres (un pari ouvre un débat ; un débat appelle un sondage). Naviguer entre les
+trois doit être **sans friction** — chacun est une **destination de premier rang**.
+C'est le moteur de rétention « on y passe des heures ».
+
 **Direction UI/UX :** **copier la simplicité et l'efficacité des réseaux sociaux
 modernes** (Reddit, X, Threads, Instagram…) — **mobile-first**, friction minimale,
 codes connus de tous. La rigueur statistique se cache derrière une UX familière et
-fluide. *(Recherche de patterns d'UI en cours → nourrira la phase UX du PRD.)*
+fluide.
 
 ## Ce qui rend ça différent
 

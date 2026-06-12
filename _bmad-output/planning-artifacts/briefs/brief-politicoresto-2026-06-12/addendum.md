@@ -63,6 +63,11 @@ participants, paris d'argent entre particuliers.
   multiplicateur sentinelle / cote existant** (frisson « pari » assumé ; légal
   parqué). Option à cadrer au PRD : exposer *en plus* un score de précision
   (Brier/peer) pour le classement & la calibration, sans retirer la cote.
+  **Refonte IA nécessaire (Micky)** : le prono était designé comme un *post
+  éphémère* qui disparaît ; or un pari (présidentielle) vit **des mois** → en faire
+  une **entité durable** avec **section/hub dédié** + fil de discussion persistant,
+  surfacée aussi dans le feed. **Boucle 3 piliers (Forum↔Pronos↔Sondages) =
+  principe d'IA** : chacun est une destination de 1er rang, navigation sans friction.
 - **MCP** v0.1 : `frontend/app/api/mcp/[transport]/route.ts`, `docs/mcp.md`, 6
   outils, OAuth 2.1 Supabase + DCR.
 - **Résidu `space_role`/`space_status`** (enum legacy/global/party/bloc) d'un
