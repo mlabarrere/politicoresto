@@ -177,7 +177,12 @@ bridging, gates de confiance, pas l'amplification d'outrage), **(3)** un produit
   réactions à chaud.
 - **Rétention événementielle :** participants à une soirée électorale qui
   reviennent à la suivante.
-- **Pronos :** nb de parieurs actifs ; amélioration de la calibration moyenne.
+- **Pronos :** nb de parieurs actifs ; **intensité du challenge entre joueurs**
+  (classements consultés, duels) ; amélioration de la calibration moyenne.
+- **Aspiration ultime (objectif, pas feature) :** la communauté **s'auto-organise
+  politiquement** — capacité à faire émerger une action collective réelle (un
+  mouvement façon Gilets Jaunes pourrait y naître). Signe que la plateforme rend
+  un **pouvoir d'agir** aux citoyens.
 - *(Pas d'objectif business monétaire à ce stade — passion project / pré-domiciliation.)*
 
 ## Modèle économique `[HYPOTHÈSE — à valider, légal parqué]`
@@ -260,4 +265,7 @@ sondages redressés et sa boussole. Multi-pays par conception (données de
 référence par locale, distinction sondage/jeu paramétrable par juridiction),
 ouvert aux agents via MCP. **Étape 1 : être incontournable sur la présidentielle
 française 2027. Étape 2 : répliquer le playbook pays par pays, événement par
-événement.** La rigueur d'un institut, l'énergie d'un jeu.
+événement.** La rigueur d'un institut, l'énergie d'un jeu. **L'aspiration ultime
+(un objectif, pas une feature) : que la communauté s'auto-organise politiquement —
+qu'une action collective réelle puisse y naître, preuve que la plateforme rend aux
+citoyens un véritable pouvoir d'agir.**
