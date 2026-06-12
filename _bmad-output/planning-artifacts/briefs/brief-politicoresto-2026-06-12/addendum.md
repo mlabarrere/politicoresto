@@ -100,6 +100,27 @@ participants, paris d'argent entre particuliers.
   ne pas se fier à un classifieur de toxicité seul (biais).
 - **Réputation** : débloquer des **capacités**, pas des **points-vanité** (Goodhart).
 
+## F. NFR Sécurité — **étalon-maître** (Micky : « la plus violente possible »)
+Justification : données sensibles (opinions politiques = RGPD Art. 9 ; **pièces
+d'identité KYC** des comptes certifiés). Defense-in-depth, par couches :
+- **Données & accès** : **RLS sur chaque table, default-deny** (CLAUDE.md #4) ;
+  `service_role` **server-only**, jamais client/Edge (#5) ; chiffrement au repos +
+  en transit. **Données d'identité KYC isolées/chiffrées, idéalement déléguées à
+  un prestataire KYC** (ne pas stocker les pièces en clair) ; accès ultra-restreint
+  + audité. Minimisation : ne stocker que le strict nécessaire.
+- **Auth** : `@supabase/ssr` canonique, `getClaims()` (JWKS), jamais de session
+  non vérifiée ; pas d'auth maison. MFA pour back-office/comptes officiels (à voir).
+- **Anti-abus** (existentiel — cf. recherche §2/§6) : anti-fraude/bot, détection
+  sockpuppet/CIB (coordination, pas texte seul), **rate limiting**, modération
+  transparente type DSA (notice/appel), audit logs (Santa Clara).
+- **App sec** : security headers + **CSP**, validation **Zod** systématique, zéro
+  SQL brut exposé à l'UI, **secrets jamais loggés** (redaction Pino), CSRF/cookies
+  `@supabase/ssr`.
+- **Supply chain** : **Snyk + Codacy déjà en CI** ; lockfile pinné ; dépendances
+  à jour. MCP : **OAuth 2.1 + DCR** déjà en place (suite sécurité existante).
+- **Process** (quand pertinent) : DPIA (au moment du légal dé-parqué), revues de
+  sécurité, pen-test, journalisation/rétention maîtrisée, plan de réponse incident.
+
 ## E. NFR Découvrabilité (SEO + GEO/AEO) — Micky
 - **SEO humain** : rendu server-side (RSC/SSR — déjà la stack), HTML sémantique,
   **JSON-LD schema.org** (Article, DiscussionForumPosting, Question/Answer,

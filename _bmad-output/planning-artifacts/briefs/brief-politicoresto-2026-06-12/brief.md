@@ -95,6 +95,12 @@ celle d'un jeu social** :
   **entièrement parsable** (jamais de texte piégé dans une image), `llms.txt`, MCP
   public comme canal d'accès. Objectif : **être la source que les LLM citent** sur
   la politique.
+- **Sécurité comme étalon-maître.** La plateforme manipule des données
+  personnelles **sensibles** (opinions politiques, **pièces d'identité KYC**) →
+  posture **defense-in-depth maximale** : RLS Supabase systématique (déjà la
+  règle), `service_role` jamais côté client, chiffrement, **isolation/délégation
+  des données d'identité**, anti-fraude/bot, audit logs, scanning de dépendances.
+  *La sécurité n'est pas une feature, c'est le socle.* (détail : addendum §F.)
 
 Fil rouge de modération : **récompenser la qualité délibérative, pas la chaleur**
 — gates de confiance progressifs (façon Discourse), ranking « bridging » plutôt
