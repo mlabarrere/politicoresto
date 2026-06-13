@@ -151,6 +151,35 @@ grant select on public.space to anon, authenticated;
 grant insert, update on public.space to authenticated;
 grant all on public.space to service_role;
 
+-- Intégrité : les colonnes sensibles d'un Espace (created_by, kind, node_type,
+-- entity_id) sont IMMUABLES pour les clients ; seul service_role (RPC/back-office)
+-- peut les changer (ex. officialisation/fusion de nœuds). Évite qu'un créateur/modo
+-- ne réécrive la nature ou la propriété d'un Espace.
+create or replace function public.tg_space_protect_immutable()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if auth.role() = 'service_role' then
+    return new;
+  end if;
+  if new.created_by   is distinct from old.created_by
+     or new.kind         is distinct from old.kind
+     or new.node_type    is distinct from old.node_type
+     or new.entity_id    is distinct from old.entity_id
+     or new.verification is distinct from old.verification then
+    raise exception 'Colonnes immuables d''un space (created_by, kind, node_type, entity_id, verification) — réservées au service_role'
+      using errcode = '42501';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_space_protect_immutable on public.space;
+create trigger trg_space_protect_immutable
+  before update on public.space
+  for each row execute function public.tg_space_protect_immutable();
+
 -- 4.2 space_member
 alter table public.space_member enable row level security;
 
@@ -210,10 +239,17 @@ create policy topic_space_read on public.topic_space
     )
   );
 
+-- L'auteur d'un topic peut le rattacher à un Espace QU'IL PEUT VOIR (Nœud / Table
+-- publique / Table dont il est membre) — aligne l'écriture sur la visibilité de lecture.
 drop policy if exists topic_space_author_write on public.topic_space;
 create policy topic_space_author_write on public.topic_space
   for insert to authenticated with check (
     exists (select 1 from public.topic t where t.id = topic_id and t.created_by = auth.uid())
+    and exists (
+      select 1 from public.space s
+      where s.id = space_id
+        and (s.kind = 'node' or s.access = 'public' or public.is_space_member(s.id))
+    )
   );
 
 grant select, insert on public.topic_space to authenticated;

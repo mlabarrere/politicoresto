@@ -75,8 +75,8 @@ qu'ailleurs parce que l'architecture **récompense la qualité, pas la chaleur**
 - **UJ-1. Karim lance un sondage et découvre qu'il « pèse ».**
   Karim, 24 ans, Roubaix, sent que les sondages classiques ne parlent jamais des
   gens comme lui. Authentifié (Google SSO), profil de base rempli. Depuis le
-  composer, il choisit l'onglet **Sondage**, écrit « Faut-il gratuiter les
-  transports ? », ajoute 3 options, publie dans le forum de sa **commune**. À
+  composer, il choisit l'onglet **Sondage**, écrit « Faut-il rendre les
+  transports gratuits ? », ajoute 3 options, publie dans le forum de sa **commune**. À
   mesure que les votes tombent, une carte affiche un **score de confiance** (« 48 %
   — il manque des +65 ans et des cadres pour fiabiliser »). Le redressement tourne
   en tâche de fond ; le résultat redressé + **intervalle** s'affichent.
