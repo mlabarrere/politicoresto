@@ -70,13 +70,15 @@ create table if not exists public.space (
   constraint space_kind_shape_chk check (
     (kind = 'node'  and node_type is not null and access is null and identity_mode is null)
     or
-    (kind = 'table' and node_type is null and access is not null and identity_mode is not null)
+    (kind = 'table' and node_type is null and access is not null and identity_mode is not null
+                    and entity_id is null)
   )
 );
 
--- Dédoublonnage : au plus un Nœud par entité politique réelle.
+-- Dédoublonnage : au plus un Nœud par entité politique réelle (scopé aux Nœuds ;
+-- les Tables ne peuvent pas porter d'entity_id — cf. space_kind_shape_chk).
 create unique index if not exists space_entity_uq
-  on public.space (entity_id) where entity_id is not null;
+  on public.space (entity_id) where kind = 'node' and entity_id is not null;
 create index if not exists space_kind_idx on public.space (kind);
 create index if not exists space_node_type_idx on public.space (node_type) where kind = 'node';
 create index if not exists space_created_by_idx on public.space (created_by);
@@ -134,6 +136,7 @@ create policy space_read on public.space
   for select using (
     kind = 'node'
     or access = 'public'
+    or created_by = auth.uid()
     or public.is_space_member(id)
     or public.is_moderator()
   );
@@ -198,11 +201,14 @@ create policy space_member_read on public.space_member
     )
   );
 
--- Auto-adhésion aux Nœuds et Tables publiques (privées = invitation, story ultérieure).
+-- Auto-adhésion aux Nœuds et Tables publiques, EN TANT QUE MEMBRE uniquement
+-- (rôles élevés owner/moderator réservés à un chemin de confiance — RPC/back-office).
+-- Tables privées = invitation (story ultérieure).
 drop policy if exists space_member_self_join on public.space_member;
 create policy space_member_self_join on public.space_member
   for insert to authenticated with check (
     user_id = auth.uid()
+    and role = 'member'
     and exists (
       select 1 from public.space s
       where s.id = space_id and (s.kind = 'node' or s.access = 'public')
