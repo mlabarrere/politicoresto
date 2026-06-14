@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { CornerDownLeft } from 'lucide-react';
 import { CommentActionsMenu } from '@/components/forum/comment-actions-menu';
+import { DeltaButton } from '@/components/forum/delta-button';
 import { EditComposer } from '@/components/forum/edit-composer';
 import { ReplyComposer } from '@/components/forum/reply-composer';
 import { ReactionBar } from '@/components/social/reaction-bar';
@@ -185,6 +186,12 @@ function CommentNodeBase({
             currentVote={toBackendVoteSide(node.currentUserVote)}
             isAuthenticated={Boolean(currentUserId)}
             compact
+          />
+
+          <DeltaButton
+            targetType="comment"
+            targetId={node.id}
+            currentUserId={currentUserId ?? null}
           />
 
           {node.children.length ? (

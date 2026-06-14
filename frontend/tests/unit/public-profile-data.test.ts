@@ -26,8 +26,13 @@ function makeClient({
   commentsError = null as unknown,
   topics = [] as unknown[],
   topicsError = null as unknown,
+  deltasReceived = 0 as number,
+  deltasError = null as unknown,
 } = {}) {
   return {
+    rpc: vi
+      .fn()
+      .mockResolvedValue({ data: deltasReceived, error: deltasError }),
     from: vi.fn().mockImplementation((table: FromTable) => {
       if (table === 'app_profile') {
         return {
@@ -113,8 +118,26 @@ describe('getPublicProfile', () => {
     const result = await getPublicProfile('citoyen');
     expect(result?.profile.username).toBe('citoyen');
     expect(result?.profile.bio).toBe('Ma bio');
+    expect(result?.profile.deltasReceived).toBe(0);
     expect(result?.posts).toHaveLength(0);
     expect(result?.comments).toHaveLength(0);
+  });
+
+  it('maps the Deltas-received tally from the RPC', async () => {
+    mocks.createServerSupabaseClient.mockResolvedValue(
+      makeClient({ deltasReceived: 7 }),
+    );
+    const result = await getPublicProfile('citoyen');
+    expect(result?.profile.deltasReceived).toBe(7);
+  });
+
+  it('throws when the Deltas-received RPC errors', async () => {
+    mocks.createServerSupabaseClient.mockResolvedValue(
+      makeClient({ deltasError: { message: 'deltas error' } }),
+    );
+    await expect(getPublicProfile('citoyen')).rejects.toEqual({
+      message: 'deltas error',
+    });
   });
 
   it('throws when posts fetch errors', async () => {

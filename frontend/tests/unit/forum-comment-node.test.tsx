@@ -3,6 +3,25 @@ import { describe, expect, it, vi } from 'vitest';
 import { CommentNode } from '@/components/forum/comment-node';
 import type { CommentTreeNode } from '@/lib/types/forum';
 
+// CommentNode mounts <DeltaButton>, which reads its counter through the browser
+// Supabase client. In jsdom there is no project URL/key, so stub the client with
+// a chainable, awaitable builder (resolves to an empty count / no row).
+vi.mock('@/lib/supabase/client', () => {
+  const builder = {
+    select: () => builder,
+    eq: () => builder,
+    maybeSingle: async () => ({ data: null, error: null }),
+    then: (resolve: (value: unknown) => unknown) =>
+      resolve({ count: 0, data: null, error: null }),
+  };
+  return {
+    createBrowserSupabaseClient: () => ({
+      from: () => builder,
+      rpc: async () => ({ data: false, error: null }),
+    }),
+  };
+});
+
 const node: CommentTreeNode = {
   id: 'comment-1',
   author: { id: 'user-1', username: 'Alice' },

@@ -27,6 +27,16 @@ export default async function PublicProfilePage({
           {data.profile.bio ? (
             <p className="text-sm text-foreground/90">{data.profile.bio}</p>
           ) : null}
+          {data.profile.deltasReceived > 0 ? (
+            <p
+              className="inline-flex w-fit items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
+              title="Delta : « ça m’a fait réfléchir » reçus sur ses contributions"
+            >
+              💡 {data.profile.deltasReceived} Delta
+              {data.profile.deltasReceived > 1 ? 's' : ''} reçu
+              {data.profile.deltasReceived > 1 ? 's' : ''}
+            </p>
+          ) : null}
         </AppCard>
 
         <PublicProfileTabs posts={data.posts} comments={data.comments} />
