@@ -7,14 +7,44 @@
 --
 -- ⚠️ DONNÉES DE POSITION ILLUSTRATIVES — placeholder pour construire/tester le
 -- mécanisme. À REMPLACER par des positions SOURCÉES (citation inspectable, FR-24
--- [advanced]) avant toute exposition « sérieuse ». Référence les partis seedés.
+-- [advanced]) avant toute exposition « sérieuse ».
 --
--- Forward-only, idempotent. RLS : lecture publique (données de référence), écriture
--- service_role uniquement.
+-- NB ordonnancement : les migrations s'exécutent AVANT les seeds locaux
+-- (forum_minimal_seed). Les partis majeurs (rn/lfi/lr/renaissance) n'étant seedés
+-- que localement, on les garantit ici via migration (idempotent) → ils existent
+-- partout (CI + prod), avec leur Nœud, et les positions se seedent correctement.
+--
+-- Forward-only, idempotent.
 
 do $$ begin
   create type public.boussole_stance as enum ('agree', 'neutral', 'disagree');
 exception when duplicate_object then null; end $$;
+
+-- 0. Garantir l'existence des partis majeurs (idempotent) — voir NB ci-dessus.
+insert into public.political_entity (type, slug, name) values
+  ('party', 'rn',          'Rassemblement national'),
+  ('party', 'lfi',         'La France insoumise'),
+  ('party', 'lr',          'Les Républicains'),
+  ('party', 'renaissance', 'Renaissance'),
+  ('party', 'ps',          'Parti socialiste')
+on conflict (slug) do nothing;
+
+-- 0bis. Garantir un Nœud pour chaque parti/candidat (re-backfill idempotent ;
+--       complète 20260614120000 pour les entités seedées hors migration).
+insert into public.space (kind, slug, title, node_type, entity_id, verification)
+select
+  'node'::public.space_kind,
+  pe.slug,
+  pe.name,
+  (case pe.type
+     when 'party'     then 'party'
+     when 'candidate' then 'candidate'
+   end)::public.space_node_type,
+  pe.id,
+  'verified'::public.space_verification
+from public.political_entity pe
+where pe.type in ('party', 'candidate')
+on conflict (slug) do nothing;
 
 -- 1. Thèses
 create table if not exists public.boussole_thesis (
