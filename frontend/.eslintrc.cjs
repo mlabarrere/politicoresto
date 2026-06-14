@@ -129,6 +129,12 @@ module.exports = {
 
     // `consistent-type-imports` — autofixable; keep as error.
     '@typescript-eslint/consistent-type-imports': 'error',
+
+    // `react/no-danger` — on. Security default: forbid `dangerouslySetInnerHTML`
+    // repo-wide. The single legitimate exception (JSON-LD injection) carries an
+    // explicit, described eslint-disable. Aligns the repo gate with Codacy's
+    // eslint ruleset, which already flags this as critical.
+    'react/no-danger': 'error',
   },
   overrides: [
     // Tests: relax strict unsafe-any and allow vi.spyOn patterns.

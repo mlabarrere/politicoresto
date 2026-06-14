@@ -22,12 +22,16 @@ export function NodeJsonLd({ node }: { node: PublicNode }) {
     ...(node.description ? { description: node.description } : {}),
   };
 
+  // Durcissement XSS : on échappe `<` (et donc tout `</script>`) avant injection.
+  const json = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+
   return (
     <script
       type="application/ld+json"
-      // JSON-LD : injection brute requise ; contenu sérialisé depuis des
-      // données serveur maîtrisées (pas d'entrée utilisateur arbitraire).
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      // JSON-LD requiert une injection brute ; le contenu est sérialisé depuis
+      // des données serveur maîtrisées et `<` est échappé ci-dessus.
+      // eslint-disable-next-line react/no-danger -- JSON-LD: pas d'alternative sûre au rendu enfant
+      dangerouslySetInnerHTML={{ __html: json }}
     />
   );
 }

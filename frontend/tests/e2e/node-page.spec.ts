@@ -27,8 +27,16 @@ test.describe('Page nœud (graphe politique)', () => {
     expect(data.name).toBe('Parti socialiste');
   });
 
-  test('nœud inexistant → 404', async ({ page }) => {
-    const response = await page.goto('/n/ce-noeud-nexiste-pas-zzz');
-    expect(response?.status()).toBe(404);
+  test('nœud inexistant : aucune fiche rendue + UI introuvable', async ({
+    page,
+  }) => {
+    await page.goto('/n/ce-noeud-nexiste-pas-zzz');
+    // notFound() : pas de fiche (donc pas de JSON-LD) et l'UI « introuvable »
+    // s'affiche. On n'assert pas le statut HTTP : avec force-dynamic + streaming,
+    // Next a déjà émis 200 avant que notFound() ne se déclenche.
+    await expect(
+      page.locator('script[type="application/ld+json"]'),
+    ).toHaveCount(0);
+    await expect(page.getByText(/introuvable/i).first()).toBeVisible();
   });
 });
