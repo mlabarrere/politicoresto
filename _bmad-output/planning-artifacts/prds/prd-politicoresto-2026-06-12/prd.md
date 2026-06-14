@@ -458,6 +458,40 @@ proximité** candidats/partis. Réalise UJ-6.
   positionnement expert/curé v1 ; v2 enrichi]`.
 - Le résultat peut être affiché en **Flair** opt-in (FR-13).
 
+### 4.6b Positionnement dans le temps & multi-axes (extension Boussole) `[NOUVEAU — Micky 2026-06-14]`
+**Description :** au-delà du one-shot de la Boussole, suivre l'**évolution** du
+positionnement de l'utilisateur. S'appuie sur le **mécanisme existant `left-right-vote`**
+(réactions **gauche/droite** sur posts/commentaires via `react_post` ; comptes
+`gauche_count`/`droite_count` dans `v_thread_posts`/`v_post_comments`) + le résultat
+Boussole + le flair.
+
+#### FR-40 : Multi-axes
+La Boussole positionne sur **plusieurs axes**, pas seulement gauche-droite :
+**gauche↔droite** (synthèse), **économique** (interventionnisme↔marché), **culturel**
+(progressiste↔conservateur), **européen** (souverainiste↔fédéraliste), **écologie**
+(productiviste↔écologiste). Chaque thèse porte un `axis` + un poids.
+**Consequences :** restitution **2D (compas)** + barres par axe ; positions des partis par axe.
+`[ASSUMPTION: jeu d'axes v1 = gauche-droite + économique + culturel ; européen/écologie ensuite.]`
+
+#### FR-41 : Position gauche-droite dans le temps
+Le profil affiche un **graphe temporel** du positionnement gauche-droite (reste à
+gauche / dérive vers le centre…).
+**Consequences :** un **score gauche-droite dérivé** (pondération Boussole +
+comportement de réactions gauche/droite) est **snapshoté périodiquement** → série
+temporelle affichée en courbe.
+`[ASSUMPTION: signal = mix Boussole + réactions gauche/droite émises ; cadence (hebdo ?) à définir.]`
+
+#### FR-42 : Visibilité du penchant gauche/droite — **OPT-IN**
+On peut voir **publiquement** le penchant d'un membre **s'il l'active**, et des
+**agrégats anonymisés** par fil/nœud.
+**Consequences :**
+- **Tension à trancher** avec le guardrail « opinion **jamais publique par défaut** »
+  (§16 ; RGPD Art. 9). → **opt-in** recommandé (le membre choisit d'afficher son penchant)
+  **+** vue **agrégée/anonymisée** publique (« ce fil : 60 % gauche / 40 % droite »).
+- **Jamais** affiché en Table aveugle.
+- **Notes :** `[NOTE FOR PM / DÉCISION]` rendre le penchant public **par défaut** = risque
+  crédibilité + vie privée ; je recommande **opt-in individuel + agrégats publics**.
+
 ### 4.7 Pronos (jeu de pronostics, sans argent)
 **Description :** Entité **durable** (mois), **Hub dédié** + apparition feed, **Cote**
 (frisson) **+ Score de précision** (classement/calibration), résolution en soirée.
