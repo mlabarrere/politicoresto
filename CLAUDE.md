@@ -363,6 +363,25 @@ fails loudly — which is the correct behaviour.
   applies exactly as with the GUI. Six tools in v0.1: whoami, browse_topics,
   read_topic, reply_to_post, react (+ remove_my_reaction), edit_my_profile.
   Enums typed end-to-end via Zod → JSON Schema. See `docs/mcp.md`.
+- 2026-06-14 — Session 5 (forum sûr + Boussole) :
+  - **Delta** (« ça m'a fait réfléchir », FR-3 / AD-9) : table polymorphe
+    `post_delta` + RPC `toggle_delta`, indépendante du tag gauche/droite.
+    `DeltaButton` sur posts **et** commentaires. Compteur « Deltas reçus »
+    au profil via `count_deltas_received` (migrations `20260614220000`,
+    `20260614230000`).
+  - **Boussole position G↔D dans le temps** (FR-41) : poids d'axe
+    `left_right_weight` par thèse + `computeLeftRight` (scalaire [-1,1]).
+    Résultats **privés** (`boussole_result`, RLS owner-only) via
+    `save_boussole_result` ; graphe temporel sur `/me?section=boussole`
+    (migration `20260614240000`). Positions/poids **illustratifs** (à
+    sourcer, FR-24).
+  - **Recharts `^3.8.1`** adopté comme lib de charting (React 19 OK, types
+    inclus, leader catégorie) — réutilisable pour sondages redressés,
+    soirées électorales, cotes pronos. Une seule valeur statique →
+    présentation CSS native (`LeftRightGauge`), pas de chart lib.
+  - **Codacy / CodeFactor / Codecov = advisory**, pas des gates. Seul
+    `ci.yml` fait foi (ils tournent leur propre ruleset, divergent de
+    notre `.eslintrc.cjs` autoritatif). On ne réagit pas à leurs webhooks.
 
 ## Instructions to future sessions
 

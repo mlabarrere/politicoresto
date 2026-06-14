@@ -27,27 +27,25 @@ export function DeltaButton({
     const supabase = createBrowserSupabaseClient();
 
     void (async () => {
-      const { count: total } = await supabase
+      // One query: the table is public-read, deltas per item are few →
+      // fetch the user_ids and derive both count and "mine" client-side.
+      const { data } = await supabase
         .from('post_delta')
-        .select('*', { count: 'exact', head: true })
+        .select('user_id')
         .eq('target_type', targetType)
         .eq('target_id', targetId);
 
-      let mine = false;
-      if (currentUserId) {
-        const { data } = await supabase
-          .from('post_delta')
-          .select('user_id')
-          .eq('target_type', targetType)
-          .eq('target_id', targetId)
-          .eq('user_id', currentUserId)
-          .maybeSingle();
-        mine = Boolean(data);
-      }
-
       if (active) {
-        setCount(total ?? 0);
-        setHasDelta(mine);
+        setCount(data?.length ?? 0);
+        setHasDelta(
+          currentUserId
+            ? Boolean(
+                data?.some(
+                  (row: { user_id: string }) => row.user_id === currentUserId,
+                ),
+              )
+            : false,
+        );
       }
     })();
 

@@ -12,6 +12,40 @@ export interface PartyPosition {
   stances: Record<number, Stance>;
 }
 
+/** Poids gauche/droite d'une thèse : effet d'un « agree ». -1 gauche, +1 droite, 0 hors-axe. */
+export type ThesisAxisWeights = Record<number, number>;
+
+const STANCE_SIGN: Record<Stance, number> = {
+  agree: 1,
+  neutral: 0,
+  disagree: -1,
+};
+
+/**
+ * Position gauche↔droite de l'utilisateur, normalisée dans [-1, 1]
+ * (négatif = gauche, positif = droite). On somme, par thèse répondue,
+ * `signe(réponse) × poids_axe`, puis on divise par le total des poids
+ * absolus engagés (thèses hors-axe ou non répondues ignorées). FR-41.
+ */
+export function computeLeftRight(
+  answers: Record<number, Stance>,
+  axisWeights: ThesisAxisWeights,
+): number {
+  let weighted = 0;
+  let engaged = 0;
+  for (const ordering of Object.keys(answers).map(Number)) {
+    const weight = axisWeights[ordering] ?? 0;
+    if (weight === 0) continue;
+    const stance = answers[ordering];
+    if (!stance) continue;
+    weighted += STANCE_SIGN[stance] * weight;
+    engaged += Math.abs(weight);
+  }
+  if (engaged === 0) return 0;
+  // Arrondi à 3 décimales (aligné sur numeric(4,3) côté DB).
+  return Math.round((weighted / engaged) * 1000) / 1000;
+}
+
 export interface BoussoleResult {
   party_slug: string;
   party_name: string;

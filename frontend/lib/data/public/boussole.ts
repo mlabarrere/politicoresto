@@ -1,4 +1,8 @@
-import type { PartyPosition, Stance } from '@/lib/boussole/scoring';
+import type {
+  PartyPosition,
+  Stance,
+  ThesisAxisWeights,
+} from '@/lib/boussole/scoring';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export interface BoussoleThesis {
@@ -9,6 +13,8 @@ export interface BoussoleThesis {
 export interface BoussoleData {
   theses: BoussoleThesis[];
   parties: PartyPosition[];
+  /** Poids gauche/droite par numéro de thèse (FR-41). */
+  axisWeights: ThesisAxisWeights;
 }
 
 /**
@@ -21,7 +27,7 @@ export async function getBoussole(): Promise<BoussoleData> {
   const [thesesRes, positionsRes, partiesRes] = await Promise.all([
     supabase
       .from('boussole_thesis')
-      .select('id, ordering, statement')
+      .select('id, ordering, statement, left_right_weight')
       .order('ordering', { ascending: true }),
     supabase.from('boussole_position').select('thesis_id, entity_id, stance'),
     supabase.from('political_entity').select('id, slug, name').eq('type', 'party'),
@@ -32,9 +38,12 @@ export async function getBoussole(): Promise<BoussoleData> {
   if (partiesRes.error) throw partiesRes.error;
 
   const orderingByThesisId = new Map<string, number>();
+  const axisWeights: ThesisAxisWeights = {};
   const theses: BoussoleThesis[] = (thesesRes.data ?? []).map((row) => {
-    orderingByThesisId.set(String(row.id), Number(row.ordering));
-    return { ordering: Number(row.ordering), statement: String(row.statement) };
+    const ordering = Number(row.ordering);
+    orderingByThesisId.set(String(row.id), ordering);
+    axisWeights[ordering] = Number(row.left_right_weight ?? 0);
+    return { ordering, statement: String(row.statement) };
   });
 
   const partyById = new Map<string, { slug: string; name: string }>();
@@ -59,5 +68,5 @@ export async function getBoussole(): Promise<BoussoleData> {
     entry.stances[ordering] = position.stance as Stance;
   }
 
-  return { theses, parties: Array.from(partyMap.values()) };
+  return { theses, parties: Array.from(partyMap.values()), axisWeights };
 }
