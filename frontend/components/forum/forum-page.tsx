@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { CommentThread } from '@/components/forum/comment-thread';
+import { DeltaButton } from '@/components/forum/delta-button';
 import { PostActionsBar } from '@/components/forum/post-actions-bar';
 import { PostCard } from '@/components/forum/post-card';
 import { PostToolbar } from '@/components/forum/post-toolbar';
@@ -200,6 +201,12 @@ export function ForumPage({
           onReplyClick={() => {
             setShowRootComposer(true);
           }}
+        />
+
+        <DeltaButton
+          targetType="thread_post"
+          targetId={post.id}
+          currentUserId={currentUserId ?? null}
         />
 
         {showRootComposer ? (
