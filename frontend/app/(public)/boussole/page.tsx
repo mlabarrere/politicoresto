@@ -13,10 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function BoussolePage() {
-  const [{ theses, parties, axisWeights }, supabase] = await Promise.all([
-    getBoussole(),
-    createServerSupabaseClient(),
-  ]);
+  const [
+    { theses, parties, axisWeights, economicWeights, culturalWeights },
+    supabase,
+  ] = await Promise.all([getBoussole(), createServerSupabaseClient()]);
   const userId = await getAuthUserId(supabase);
 
   return (
@@ -31,6 +31,8 @@ export default async function BoussolePage() {
           theses={theses}
           parties={parties}
           axisWeights={axisWeights}
+          economicWeights={economicWeights}
+          culturalWeights={culturalWeights}
           isAuthenticated={Boolean(userId)}
         />
       </div>

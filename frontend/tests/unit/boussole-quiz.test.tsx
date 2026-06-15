@@ -26,6 +26,8 @@ describe('boussole quiz', () => {
         theses={theses}
         parties={parties}
         axisWeights={{ 1: -1 }}
+        economicWeights={{ 1: -1 }}
+        culturalWeights={{ 1: 0 }}
         isAuthenticated={false}
       />,
     );
@@ -47,6 +49,8 @@ describe('boussole quiz', () => {
         theses={theses}
         parties={parties}
         axisWeights={{ 1: -1 }}
+        economicWeights={{ 1: -1 }}
+        culturalWeights={{ 1: 0 }}
         isAuthenticated
       />,
     );

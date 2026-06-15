@@ -3,9 +3,11 @@
 import { useMemo, useState, useTransition } from 'react';
 import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
+import { BoussoleCompass } from '@/components/boussole/boussole-compass';
 import { LeftRightGauge } from '@/components/boussole/left-right-gauge';
 import { saveBoussoleResultAction } from '@/lib/actions/boussole';
 import {
+  buildCompass,
   computeBoussole,
   computeLeftRight,
   type PartyPosition,
@@ -25,11 +27,15 @@ export function BoussoleQuiz({
   theses,
   parties,
   axisWeights,
+  economicWeights,
+  culturalWeights,
   isAuthenticated,
 }: {
   theses: BoussoleThesis[];
   parties: PartyPosition[];
   axisWeights: ThesisAxisWeights;
+  economicWeights: ThesisAxisWeights;
+  culturalWeights: ThesisAxisWeights;
   isAuthenticated: boolean;
 }) {
   const [answers, setAnswers] = useState<Record<number, Stance>>({});
@@ -48,6 +54,13 @@ export function BoussoleQuiz({
   const leftRight = useMemo(
     () => (submitted ? computeLeftRight(answers, axisWeights) : 0),
     [submitted, answers, axisWeights],
+  );
+  const compassMarkers = useMemo(
+    () =>
+      submitted
+        ? buildCompass(answers, parties, economicWeights, culturalWeights)
+        : [],
+    [submitted, answers, parties, economicWeights, culturalWeights],
   );
 
   if (submitted) {
@@ -123,6 +136,8 @@ export function BoussoleQuiz({
             </p>
           )}
         </AppCard>
+
+        <BoussoleCompass markers={compassMarkers} />
 
         <ul className="space-y-2">
           {results.map((result, index) => (

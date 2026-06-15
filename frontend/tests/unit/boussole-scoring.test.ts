@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildCompass,
   computeBoussole,
+  computeCompass,
   computeLeftRight,
   matchPoints,
   type PartyPosition,
@@ -70,5 +72,52 @@ describe('computeLeftRight', () => {
   it('normalise sur les poids engagés et arrondit à 3 décimales', () => {
     // un seul axe engagé, neutre → 0 ; deux axes, un neutre → moyenne
     expect(computeLeftRight({ 1: 'neutral', 2: 'agree' }, weights)).toBe(0.5);
+  });
+});
+
+describe('computeCompass (FR-40)', () => {
+  // thèse 1 : économique gauche · thèse 2 : culturel conservateur · thèse 3 : culturel progressiste
+  const economic = { 1: -1, 2: 0, 3: 0 };
+  const cultural = { 1: 0, 2: 1, 3: -1 };
+
+  it('projette les réponses sur les deux axes indépendamment', () => {
+    // d’accord pour + de services publics (éco gauche) et pour réduire l’immigration (conservateur)
+    expect(
+      computeCompass({ 1: 'agree', 2: 'agree' }, economic, cultural),
+    ).toEqual({ x: -1, y: 1 });
+  });
+
+  it('renvoie le centre (0,0) sans réponse', () => {
+    expect(computeCompass({}, economic, cultural)).toEqual({ x: 0, y: 0 });
+  });
+});
+
+describe('buildCompass (FR-40)', () => {
+  const economic = { 1: -1, 2: 0 };
+  const cultural = { 1: 0, 2: 1 };
+  const parties: PartyPosition[] = [
+    {
+      party_slug: 'lfi',
+      party_name: 'LFI',
+      stances: { 1: 'agree', 2: 'disagree' },
+    },
+    {
+      party_slug: 'rn',
+      party_name: 'RN',
+      stances: { 1: 'neutral', 2: 'agree' },
+    },
+  ];
+
+  it('place l’utilisateur en premier puis les partis, positionnés à l’identique', () => {
+    const markers = buildCompass(
+      { 1: 'agree', 2: 'agree' },
+      parties,
+      economic,
+      cultural,
+    );
+
+    expect(markers[0]).toEqual({ x: -1, y: 1, label: 'Moi', isUser: true });
+    expect(markers[1]).toEqual({ x: -1, y: -1, label: 'LFI', isUser: false });
+    expect(markers[2]).toEqual({ x: 0, y: 1, label: 'RN', isUser: false });
   });
 });

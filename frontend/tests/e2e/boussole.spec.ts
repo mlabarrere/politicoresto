@@ -21,6 +21,9 @@ test('boussole : répondre à une thèse et obtenir un résultat', async ({
   await page.getByRole('button', { name: /Voir mon résultat/ }).click();
 
   await expect(page.getByText(/Le plus proche/)).toBeVisible();
+  // Compas 2D (FR-40) : la restitution multi-axes s'affiche.
+  await expect(page.getByText(/Ton compas politique/)).toBeVisible();
+  await expect(page.getByTestId('boussole-compass-chart')).toBeVisible();
   // Anonyme : invitation à se connecter, pas de bouton d'enregistrement.
   await expect(page.getByText(/Connecte-toi pour suivre/)).toBeVisible();
 });

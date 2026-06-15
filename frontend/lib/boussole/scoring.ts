@@ -46,6 +46,58 @@ export function computeLeftRight(
   return Math.round((weighted / engaged) * 1000) / 1000;
 }
 
+/** Un point sur le compas 2D : x = axe économique, y = axe culturel (∈ [-1, 1]). */
+export interface CompassPoint {
+  x: number;
+  y: number;
+}
+
+/**
+ * Position de l'utilisateur sur le compas 2D (FR-40). Réutilise le calcul d'axe
+ * scalaire (`computeLeftRight`) une fois par axe — pas de moteur dédié.
+ * x : interventionniste (−1) ↔ marché (+1) · y : progressiste (−1) ↔ conservateur (+1).
+ */
+export function computeCompass(
+  answers: Record<number, Stance>,
+  economicWeights: ThesisAxisWeights,
+  culturalWeights: ThesisAxisWeights,
+): CompassPoint {
+  return {
+    x: computeLeftRight(answers, economicWeights),
+    y: computeLeftRight(answers, culturalWeights),
+  };
+}
+
+/** Un marqueur du compas : un point nommé (l'utilisateur ou un parti). */
+export interface CompassMarker extends CompassPoint {
+  label: string;
+  isUser: boolean;
+}
+
+/**
+ * Assemble les marqueurs du compas : l'utilisateur d'abord, puis chaque parti
+ * (positionné par la même mécanique que l'utilisateur, à partir de ses stances).
+ * Fonction pure → testable sans monter le composant Recharts.
+ */
+export function buildCompass(
+  answers: Record<number, Stance>,
+  parties: PartyPosition[],
+  economicWeights: ThesisAxisWeights,
+  culturalWeights: ThesisAxisWeights,
+): CompassMarker[] {
+  const user: CompassMarker = {
+    ...computeCompass(answers, economicWeights, culturalWeights),
+    label: 'Moi',
+    isUser: true,
+  };
+  const partyMarkers = parties.map((party) => ({
+    ...computeCompass(party.stances, economicWeights, culturalWeights),
+    label: party.party_slug.toUpperCase(),
+    isUser: false,
+  }));
+  return [user, ...partyMarkers];
+}
+
 export interface BoussoleResult {
   party_slug: string;
   party_name: string;

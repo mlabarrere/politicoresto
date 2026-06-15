@@ -15,6 +15,10 @@ export interface BoussoleData {
   parties: PartyPosition[];
   /** Poids gauche/droite par numéro de thèse (FR-41). */
   axisWeights: ThesisAxisWeights;
+  /** Poids axe économique par numéro de thèse (FR-40). */
+  economicWeights: ThesisAxisWeights;
+  /** Poids axe culturel par numéro de thèse (FR-40). */
+  culturalWeights: ThesisAxisWeights;
 }
 
 /**
@@ -27,7 +31,9 @@ export async function getBoussole(): Promise<BoussoleData> {
   const [thesesRes, positionsRes, partiesRes] = await Promise.all([
     supabase
       .from('boussole_thesis')
-      .select('id, ordering, statement, left_right_weight')
+      .select(
+        'id, ordering, statement, left_right_weight, economic_weight, cultural_weight',
+      )
       .order('ordering', { ascending: true }),
     supabase.from('boussole_position').select('thesis_id, entity_id, stance'),
     supabase.from('political_entity').select('id, slug, name').eq('type', 'party'),
@@ -39,10 +45,14 @@ export async function getBoussole(): Promise<BoussoleData> {
 
   const orderingByThesisId = new Map<string, number>();
   const axisWeights: ThesisAxisWeights = {};
+  const economicWeights: ThesisAxisWeights = {};
+  const culturalWeights: ThesisAxisWeights = {};
   const theses: BoussoleThesis[] = (thesesRes.data ?? []).map((row) => {
     const ordering = Number(row.ordering);
     orderingByThesisId.set(String(row.id), ordering);
     axisWeights[ordering] = Number(row.left_right_weight ?? 0);
+    economicWeights[ordering] = Number(row.economic_weight ?? 0);
+    culturalWeights[ordering] = Number(row.cultural_weight ?? 0);
     return { ordering, statement: String(row.statement) };
   });
 
@@ -68,5 +78,11 @@ export async function getBoussole(): Promise<BoussoleData> {
     entry.stances[ordering] = position.stance as Stance;
   }
 
-  return { theses, parties: Array.from(partyMap.values()), axisWeights };
+  return {
+    theses,
+    parties: Array.from(partyMap.values()),
+    axisWeights,
+    economicWeights,
+    culturalWeights,
+  };
 }
