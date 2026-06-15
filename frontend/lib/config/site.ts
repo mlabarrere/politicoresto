@@ -2,15 +2,10 @@ export const siteConfig = {
   name: 'PoliticoResto',
   description: 'Forum public minimal: posts, commentaires et profil.',
   navigation: {
-    primary: [{ href: '/', label: 'Accueil' }],
-    authenticated: [
-      { href: '/me?section=profile', label: 'Profil', hint: 'Prive' },
-      {
-        href: '/me?section=security',
-        label: 'Compte & securite',
-        hint: 'Prive',
-      },
+    primary: [
+      { href: '/', label: 'Accueil' },
+      { href: '/n', label: 'Explorer' },
+      { href: '/boussole', label: 'Boussole' },
     ],
   },
-  editorialTabs: ['Populaires', 'Recents'],
 } as const;

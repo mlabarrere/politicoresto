@@ -1,14 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Route } from 'next';
-import { EmptyState } from '@/components/layout/empty-state';
+import { AppEmptyState } from '@/components/app/app-empty-state';
 import { ScreenState } from '@/components/layout/screen-state';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { AppBadge } from '@/components/app/app-badge';
 
 describe('editorial UI states', () => {
   it('renders an empty state with a clear recovery action', () => {
     render(
-      <EmptyState
+      <AppEmptyState
         title="Aucun Post visible pour le moment"
         body="Revenez plus tard ou explorez un autre bloc."
         actionHref={'/' as Route}
@@ -53,7 +53,7 @@ describe('editorial UI states', () => {
   });
 
   it('exposes a readable warning status badge', () => {
-    render(<StatusBadge label="Resolution imminente" tone="warning" />);
+    render(<AppBadge label="Resolution imminente" tone="warning" />);
 
     const badge = screen.getByText('Resolution imminente');
 

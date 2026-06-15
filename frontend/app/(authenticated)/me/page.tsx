@@ -25,6 +25,8 @@ import {
   resolveAccountSection,
 } from '@/lib/account/sections';
 import { getAccountWorkspaceData } from '@/lib/data/authenticated/account-workspace';
+import { getBoussoleTrajectory } from '@/lib/data/authenticated/boussole-trajectory';
+import { BoussoleTrajectory } from '@/components/boussole/boussole-trajectory';
 
 type SearchParams = Promise<{ section?: string; error?: string }>;
 
@@ -36,6 +38,8 @@ export default async function MePage({
   const params = await searchParams;
   const section = resolveAccountSection(params.section);
   const data = await getAccountWorkspaceData();
+  const trajectory =
+    section === 'boussole' ? await getBoussoleTrajectory() : [];
 
   const heading =
     ACCOUNT_SECTIONS.find((item) => item.key === section)?.label ?? 'Profil';
@@ -211,6 +215,10 @@ export default async function MePage({
             status={data.sectionStatus.comments.state}
             message={data.sectionStatus.comments.message}
           />
+        ) : null}
+
+        {section === 'boussole' ? (
+          <BoussoleTrajectory points={trajectory} />
         ) : null}
 
         {section === 'security' ? (

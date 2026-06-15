@@ -12,6 +12,11 @@
     description: 'Historique de vos interventions',
   },
   {
+    key: 'boussole',
+    label: 'Boussole',
+    description: 'Ta position gauche-droite dans le temps',
+  },
+  {
     key: 'security',
     label: 'Compte & securite',
     description: 'Connexion et actions sensibles',

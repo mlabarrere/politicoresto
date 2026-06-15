@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { AppFilterBar } from '@/components/app/app-filter-bar';
-import { AppFilter } from '@/components/app/app-filter';
 
 const options = [
   { value: 'all' as const, label: 'Tous' },
@@ -52,12 +51,5 @@ describe('appFilterBar', () => {
     );
     const buttons = screen.queryAllByRole('button');
     expect(buttons).toHaveLength(0);
-  });
-});
-
-describe('appFilter (re-export)', () => {
-  it('is exported and works the same as AppFilterBar', () => {
-    render(<AppFilter options={options} value="all" onChange={vi.fn()} />);
-    expect(screen.getByText('Tous')).toBeTruthy();
   });
 });

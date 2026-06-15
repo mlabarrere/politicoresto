@@ -48,6 +48,10 @@ politicoresto-audit.patch
 # also ignore frontend/lib/data/.
 /Data/
 
+# Seed SQL généré par scripts/generate_fr_political_seed.py (régénérable, non
+# wiré dans le seeding — on ne versionne pas l'artefact de 789 Ko).
+/supabase/seed/french_political_conversation_seed_2026.sql
+
 # Python bytecode (scripts/generate_fr_political_seed.py)
 __pycache__/
 *.pyc

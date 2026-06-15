@@ -33,13 +33,10 @@ from __future__ import annotations
 import os
 import random
 import sys
-import time
-import uuid
 from dataclasses import dataclass
 
 import httpx
 
-BENCH_TITLE_PREFIX = "BENCH-TURNOUT-2022"
 INSEE_PR1_2022_TURNOUT_PCT = 73.69  # Ministère de l'Intérieur, official
 # Over-declaration of PR1 turnout on a self-selected politically engaged
 # panel is typically ~10-15 points above official turnout. We target 88 %
@@ -124,59 +121,6 @@ def _rpc(e: Env, fn: str, body: dict) -> httpx.Response:
         timeout=30.0,
     )
     return r
-
-
-def _admin_sql(e: Env, sql: str) -> None:
-    """Service-role SQL via PostgREST isn't a thing — we call a purpose-
-    built RPC or fail loudly. Kept as placeholder for future custom
-    RPCs; for now we use REST table endpoints."""
-    raise NotImplementedError("no raw SQL endpoint — use REST")
-
-
-def _rest_insert(e: Env, table: str, rows: list[dict]) -> None:
-    r = httpx.post(
-        f"{e.url}/rest/v1/{table}",
-        headers={
-            "apikey": e.service_key,
-            "Authorization": f"Bearer {e.service_key}",
-            "Content-Type": "application/json",
-            "Prefer": "return=minimal",
-        },
-        json=rows,
-        timeout=30.0,
-    )
-    if r.status_code >= 300:
-        raise RuntimeError(f"insert {table} failed: {r.status_code} {r.text[:500]}")
-
-
-def create_test_poll(e: Env) -> tuple[str, str, list[str]]:
-    """Create a single test poll with two options. Returns (topic_id,
-    post_item_id, [option_ids])."""
-    title = f"{BENCH_TITLE_PREFIX}-{int(time.time())}"
-
-    # We rely on the app's RPC `rpc_create_post_full` which needs an
-    # authed user. For a service-role benchmark, we side-step by going
-    # straight to SQL via a small custom RPC. Simpler: use an existing
-    # authed test user.
-    r = _rpc(
-        e,
-        "rpc_create_post_full_asadmin",  # This RPC may not exist — fallback below.
-        {
-            "p_title": title,
-            "p_body": "Benchmark synthetic poll",
-            "p_mode": "poll",
-            "p_poll_question": "Avez-vous voté au 1er tour de la présidentielle 2022 ?",
-            "p_poll_deadline_at": "2099-01-01T00:00:00Z",
-            "p_poll_options": ["Oui", "Non"],
-        },
-    )
-    if r.status_code >= 300:
-        sys.exit(
-            f"rpc_create_post_full_asadmin missing on target: {r.status_code} {r.text[:300]}\n"
-            "→ benchmark needs an admin-create-poll RPC. Skip if staging not yet migrated."
-        )
-    data = r.json()
-    return data["thread_id"], data["post_item_id"], data["option_ids"]
 
 
 def main() -> None:

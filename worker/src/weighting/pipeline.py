@@ -10,13 +10,14 @@ swap in a fake or a real local-Supabase instance without patching.
 from __future__ import annotations
 
 import logging
+from collections import Counter
 from dataclasses import dataclass
 from typing import Final
 
 import numpy as np
 import pandas as pd
 
-from .calibration import CellConstraint, calibrate
+from .calibration import CalibrationResult, CellConstraint, calibrate
 from .estimation import OptionEstimate, estimate_shares
 from .score import compute_confidence
 from .supabase_client import PollOption, Snapshot, SupabaseClient
@@ -417,14 +418,10 @@ def run(
         # coverage component. Surfacing this gracefully is preferable
         # to raising — the UI still gets a valid (if unhelpful)
         # estimate row.
-        import numpy as _np
-
         n = len(snapshots)
-        weights_fallback = _np.ones(n, dtype=_np.float64)
+        weights_fallback = np.ones(n, dtype=np.float64)
 
-        from .calibration import CalibrationResult as _CalibrationResult
-
-        calib = _CalibrationResult(
+        calib = CalibrationResult(
             weights=weights_fallback,
             bounds=bounds,
             n_clipped=0,
@@ -507,16 +504,13 @@ def run(
 def _canonical_ref_as_of(snapshots: list[Snapshot]) -> str:
     """Pick the most common ref_as_of. Warn if snapshots disagree —
     this should be impossible under the trigger's contract."""
-    dates = [s.ref_as_of for s in snapshots]
-    counts: dict[str, int] = {}
-    for d in dates:
-        counts[d] = counts.get(d, 0) + 1
-    best = max(counts, key=lambda d: counts[d])
+    counts = Counter(s.ref_as_of for s in snapshots)
+    best, _ = counts.most_common(1)[0]
     if len(counts) > 1:
         log.warning(
             "pipeline.ref_as_of.mixed",
             extra={
-                "counts": counts,
+                "counts": dict(counts),
                 "chosen": best,
             },
         )

@@ -1,7 +1,7 @@
 ﻿import { AppButton } from '@/components/app/app-button';
 import { AppCard } from '@/components/app/app-card';
-import { AppEmptyState } from '@/components/app/app-empty-state';
 import { AppBadge } from '@/components/app/app-badge';
+import { listStatusFallback } from '@/components/app/list-status';
 import { formatDate } from '@/lib/utils/format';
 
 interface DraftItem {
@@ -28,38 +28,20 @@ export function AppDraftList({
   status?: 'ready' | 'unavailable' | 'error';
   message?: string | null;
 }) {
-  if (loading) {
-    return <AppCard>Chargement des brouillons...</AppCard>;
-  }
-
-  if (status === 'unavailable') {
-    return (
-      <AppEmptyState
-        title="Brouillons indisponibles temporairement"
-        body={
-          message ?? 'Cette section sera active bientot sur cet environnement.'
-        }
-      />
-    );
-  }
-
-  if (status === 'error') {
-    return (
-      <AppEmptyState
-        title="Brouillons indisponibles"
-        body={message ?? 'Reessayez dans quelques instants.'}
-      />
-    );
-  }
-
-  if (!items.length) {
-    return (
-      <AppEmptyState
-        title="Aucun brouillon"
-        body="Commencez un post ou un sondage, il apparaitra ici."
-      />
-    );
-  }
+  const fallback = listStatusFallback({
+    loading,
+    status,
+    itemCount: items.length,
+    message,
+    labels: {
+      loading: 'Chargement des brouillons...',
+      unavailableTitle: 'Brouillons indisponibles temporairement',
+      errorTitle: 'Brouillons indisponibles',
+      emptyTitle: 'Aucun brouillon',
+      emptyBody: 'Commencez un post ou un sondage, il apparaitra ici.',
+    },
+  });
+  if (fallback) return fallback;
 
   return (
     <div className="space-y-3">

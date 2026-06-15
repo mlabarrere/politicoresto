@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AppButton } from '@/components/app/app-button';
-import { EmptyState } from '@/components/layout/empty-state';
+import { AppEmptyState } from '@/components/app/app-empty-state';
 import { AppFeedItem } from '@/components/app/app-feed-item';
 import { HOME_STRINGS } from '@/lib/ui/strings';
 import type { CategoryFilter, FeedSortMode } from '@/lib/types/homepage';
@@ -172,7 +172,7 @@ export function PostFeed({
 
   if (!sortedItems.length) {
     return (
-      <EmptyState
+      <AppEmptyState
         title={HOME_STRINGS.emptyTitle}
         body={HOME_STRINGS.emptyBody}
         actionHref="/post/new"

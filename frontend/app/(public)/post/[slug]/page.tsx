@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { ForumPage } from '@/components/forum/forum-page';
-import { EmptyState } from '@/components/layout/empty-state';
+import { AppEmptyState } from '@/components/app/app-empty-state';
 import { PageContainer } from '@/components/layout/page-container';
 import { ScreenState } from '@/components/layout/screen-state';
 import { getPostDetail } from '@/lib/data/public/posts';
@@ -61,7 +61,7 @@ export default async function PostDetailPage({
             postSlug={post.slug}
           />
         ) : (
-          <EmptyState
+          <AppEmptyState
             title="Post d'origine introuvable"
             body="Impossible de lancer la discussion sans message initial."
           />

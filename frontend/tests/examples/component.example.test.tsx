@@ -11,16 +11,16 @@
  */
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { AppBadge } from '@/components/app/app-badge';
 
-describe('<StatusBadge /> [reference component example]', () => {
+describe('<AppBadge /> [reference component example]', () => {
   it('renders the provided label', () => {
-    render(<StatusBadge label="Online" tone="success" />);
+    render(<AppBadge label="Online" tone="success" />);
     expect(screen.getByText('Online')).toBeInTheDocument();
   });
 
   it('defaults to the neutral tone when none is supplied', () => {
-    render(<StatusBadge label="Idle" />);
+    render(<AppBadge label="Idle" />);
     expect(screen.getByText('Idle')).toBeInTheDocument();
   });
 });
