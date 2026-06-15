@@ -57,7 +57,9 @@ Verify conventions against these sources rather than extrapolating from existing
 7. **Existing code is not evidence of necessity.** Three pivots have left
    residue. Verify actual usage before preserving anything.
 8. **Always simplify.** Deletions are progress. But applied migrations are
-   **never rewritten** — forward-only, additive.
+   **never rewritten** — forward-only, additive. Run the `ponytail` skill on
+   every code change (laziest solution that actually works: stdlib/native
+   before deps, one line before fifty) before committing.
 9. **Diagnose, don't mask.** If a thing is slow, find the root cause before
    hiding it behind cache / debounce / optimistic UI.
 10. **No speculative code.** No feature flags mort-nés, no props "au cas où",
