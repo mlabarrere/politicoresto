@@ -27,7 +27,6 @@ const sourceFiles = [
   'components/layout/app-header.tsx',
   'components/layout/site-footer.tsx',
   'components/layout/section-card.tsx',
-  'components/layout/empty-state.tsx',
   'components/layout/screen-state.tsx',
   'app/not-found.tsx',
   'components/domain/post-card.tsx',

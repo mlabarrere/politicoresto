@@ -438,12 +438,10 @@ def calibrate(
     if weights.sum() == 0:
         raise RuntimeError("calibrate: all weights summed to zero")
 
-    # n_clipped = units currently at a boundary.
+    # n_clipped: units whose g is at either boundary.
     low, high = bounds
     tol = 1e-9
     g = weights / initial_weight
-    n_clipped = int(np.sum((g <= low + tol) | (g >= high - tol) & ~np.isclose(g, 1.0)))
-    # A cleaner definition: units whose g is at either boundary.
     at_low = np.isclose(g, low, atol=tol)
     at_high = np.isclose(g, high, atol=tol)
     n_clipped = int(np.sum(at_low | at_high))

@@ -4,28 +4,24 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 import re
+import unicodedata
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 OUTPUT_PATH = BASE_DIR / "supabase" / "seed" / "french_political_conversation_seed_2026.sql"
 
 
+# Les ligatures (œ, æ) n'ont pas de décomposition Unicode → remplacement
+# explicite ; NFKD gère le reste des diacritiques (accents, cédille…).
+_LIGATURES = {"œ": "oe", "æ": "ae"}
+
+
 def slugify(value: str) -> str:
     value = value.lower()
-    replacements = {
-        "a": r"[àáâãäå]",
-        "c": r"[ç]",
-        "e": r"[èéêë]",
-        "i": r"[ìíîï]",
-        "n": r"[ñ]",
-        "o": r"[òóôõö]",
-        "u": r"[ùúûü]",
-        "y": r"[ýÿ]",
-        "oe": r"[œ]",
-        "ae": r"[æ]",
-    }
-    for repl, pattern in replacements.items():
-        value = re.sub(pattern, repl, value)
+    for ligature, replacement in _LIGATURES.items():
+        value = value.replace(ligature, replacement)
+    value = unicodedata.normalize("NFKD", value)
+    value = "".join(c for c in value if not unicodedata.combining(c))
     value = value.replace("'", " ")
     value = re.sub(r"[^a-z0-9]+", "-", value)
     return value.strip("-")

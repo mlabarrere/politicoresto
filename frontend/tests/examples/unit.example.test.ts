@@ -10,7 +10,7 @@
  * test is imported and called directly with real inputs.
  */
 import { describe, expect, it } from 'vitest';
-import { cn } from '@/lib/utils/cn';
+import { cn } from '@/lib/utils';
 
 describe('cn() — className merge utility [reference unit example]', () => {
   it('concatenates truthy class names', () => {
@@ -21,7 +21,7 @@ describe('cn() — className merge utility [reference unit example]', () => {
     expect(cn('a', false, undefined, null, '', 'b')).toBe('a b');
   });
 
-  it('preserves order and does not de-duplicate (by design, lib/utils/cn.ts is a simple filter+join)', () => {
-    expect(cn('p-2', 'p-4')).toBe('p-2 p-4');
+  it('resolves conflicting Tailwind classes (tailwind-merge: last wins)', () => {
+    expect(cn('p-2', 'p-4')).toBe('p-4');
   });
 });

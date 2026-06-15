@@ -1,6 +1,6 @@
 ﻿import { AppCard } from '@/components/app/app-card';
-import { AppEmptyState } from '@/components/app/app-empty-state';
 import { AppBadge } from '@/components/app/app-badge';
+import { listStatusFallback } from '@/components/app/list-status';
 import { formatDate } from '@/lib/utils/format';
 
 interface CommentHistoryItem {
@@ -28,38 +28,20 @@ export function AppCommentHistoryList({
   status?: 'ready' | 'unavailable' | 'error';
   message?: string | null;
 }) {
-  if (loading) {
-    return <AppCard>Chargement des commentaires...</AppCard>;
-  }
-
-  if (status === 'unavailable') {
-    return (
-      <AppEmptyState
-        title="Commentaires indisponibles temporairement"
-        body={
-          message ?? 'Cette section sera active bientot sur cet environnement.'
-        }
-      />
-    );
-  }
-
-  if (status === 'error') {
-    return (
-      <AppEmptyState
-        title="Commentaires indisponibles"
-        body={message ?? 'Reessayez dans quelques instants.'}
-      />
-    );
-  }
-
-  if (!items.length) {
-    return (
-      <AppEmptyState
-        title="Aucun commentaire"
-        body="Vos commentaires apparaissent ici avec leur contexte."
-      />
-    );
-  }
+  const fallback = listStatusFallback({
+    loading,
+    status,
+    itemCount: items.length,
+    message,
+    labels: {
+      loading: 'Chargement des commentaires...',
+      unavailableTitle: 'Commentaires indisponibles temporairement',
+      errorTitle: 'Commentaires indisponibles',
+      emptyTitle: 'Aucun commentaire',
+      emptyBody: 'Vos commentaires apparaissent ici avec leur contexte.',
+    },
+  });
+  if (fallback) return fallback;
 
   return (
     <div className="space-y-3">
